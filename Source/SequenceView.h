@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "StepView.h"
 #include "Cursor.h"
 #include "Sequence.h"
 #include <JuceHeader.h>
@@ -25,6 +26,7 @@ public:
 
     void paint (juce::Graphics&) override;
     void resized() override;
+    void resizeSteps();
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SequenceView)
@@ -34,4 +36,6 @@ private:
     
     const Sequence& sequence;
     const Cursor& cursor;
+    
+    std::vector<std::unique_ptr<StepView>> stepViews;
 };

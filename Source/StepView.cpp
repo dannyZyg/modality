@@ -12,11 +12,8 @@
 #include "StepView.h"
 
 //==============================================================================
-StepView::StepView()
+StepView::StepView(const Step& s) : step(s)
 {
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
-
 }
 
 StepView::~StepView()
@@ -25,22 +22,27 @@ StepView::~StepView()
 
 void StepView::paint (juce::Graphics& g)
 {
-    /* This demo code just fills the component's background and
-       draws some placeholder text to get you started.
-
-       You should replace everything in this method with your own
-       drawing code..
-    */
-
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
-
-    g.setColour (juce::Colours::grey);
+    g.fillAll (juce::Colours::white);   // clear the background
+    g.setColour (juce::Colours::black);
     g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
+    
+    juce::Rectangle<int> bar (pos.x, pos.y, shapeHeight, shapeHeight);
+    
+    if (step.isSelected()) {
+        g.setColour (juce::Colours::black);
+        g.fillRect(bar);
+    } else if (false) {
+        g.setColour (juce::Colours::yellow);
+        g.fillRect(bar);
+        g.setColour (juce::Colours::black);
+        g.drawRect(bar);
+    } else {
+        g.setColour (juce::Colours::lightgrey);
+        g.fillRect(bar);
+        g.setColour (juce::Colours::black);
+        g.drawRect(bar);
+    }
 
-    g.setColour (juce::Colours::white);
-    g.setFont (juce::FontOptions (14.0f));
-    g.drawText ("StepView", getLocalBounds(),
-                juce::Justification::centred, true);   // draw some placeholder text
 }
 
 void StepView::resized()

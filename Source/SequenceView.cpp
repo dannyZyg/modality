@@ -15,8 +15,14 @@
 SequenceView::SequenceView(const Sequence& s, const Cursor& c)
     : sequence(s), cursor(c)
 {
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
+    for (int i = 0; i < s.steps.size(); ++i) {
+        auto step = s.steps[i].get();
+        if (step) {
+            auto stepView = std::make_unique<StepView>(*step);
+            addAndMakeVisible(stepView.get());
+            stepViews.emplace_back(std::move(stepView));
+        }
+    }
 }
 
 SequenceView::~SequenceView()
@@ -32,8 +38,6 @@ void SequenceView::paint (juce::Graphics& g)
        drawing code..
     */
 
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
-
     g.setColour (juce::Colours::grey);
     g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
 
@@ -48,4 +52,18 @@ void SequenceView::resized()
     // This method is where you should set the bounds of any child
     // components that your component contains..
 
+}
+
+void SequenceView::resizeSteps()
+{
+    int padding = 50;
+    int height = getHeight() - 2 * padding;
+    int xStart = padding;
+    int blockSize = 40;
+    
+    for (auto i = 0; i < stepViews.size(); i++)
+    {
+        int spacing = i * 10;
+        stepViews[i]->setBounds(xStart + i * blockSize + spacing, padding, blockSize, height);
+    }
 }

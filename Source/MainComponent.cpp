@@ -1,34 +1,20 @@
 #include "MainComponent.h"
 
 //==============================================================================
-MainComponent::MainComponent()
+MainComponent::MainComponent() : sequenceView(sequence, cursor)
 {
     // Make sure you set the size of the component after
     // you add any child components.
     setSize (800, 600);
     setFramesPerSecond (60); // This sets the frequency of the update calls.
     setWantsKeyboardFocus(true);
+    addAndMakeVisible(sequenceView);
     
-    for (int i = 0; i < numPortions; ++i) {
-        auto s = std::make_unique<Step>();
-        addAndMakeVisible(s.get());
-        steps.emplace_back(std::move(s));
-    }
+    cursor.selectSequence(&sequence);
 }
 
 MainComponent::~MainComponent()
 {
-}
-
-
-constexpr const char* MainComponent::ModeToString(Mode m) throw()
-{
-    switch (m)
-    {
-        case Mode::normal: return "Normal Mode";
-        case Mode::visual: return "Visual Mode";
-        default: throw std::invalid_argument("Unimplemented item");
-    }
 }
 
 //==============================================================================
@@ -36,14 +22,6 @@ void MainComponent::update()
 {
     // This function is called at the frequency specified by the setFramesPerSecond() call
     // in the constructor. You can use it to update counters, animate values, etc.
-    
-    for (auto i = 0; i < steps.size(); i++) {
-        if (i == selectedPortion) {
-            steps[i]->select();
-        } else {
-            steps[i]->unselect();
-        }
-    }
 }
 
 //==============================================================================
@@ -53,28 +31,12 @@ void MainComponent::paint (juce::Graphics& g)
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (juce::Colours::white);
     
-    resizeSteps();
-    
     g.setFont (20.0f);
     g.setColour(juce::Colours::black);
     
     g.drawText (keyText, 20, getHeight() - 50, 200, 40, juce::Justification::bottomLeft, true);
-    g.drawText (ModeToString(mode), getWidth() - 250, getHeight() - 50, 200, 40, juce::Justification::bottomRight, true);
+    g.drawText (cursor.getModeName(), getWidth() - 250, getHeight() - 50, 200, 40, juce::Justification::bottomRight, true);
     g.drawLine(0, getHeight()/2, getWidth(), getHeight()/2);
-}
-
-void MainComponent::resizeSteps()
-{
-    int padding = 50;
-    int height = getHeight() - 2 * padding;
-    int xStart = padding;
-    int blockSize = 40;
-    
-    for (auto i = 0; i < steps.size(); i++)
-    {
-        int spacing = i * 10;
-        steps[i]->setBounds(xStart + i * blockSize + spacing, padding, blockSize, height);
-    }
 }
 
 void MainComponent::resized()
@@ -82,8 +44,9 @@ void MainComponent::resized()
     // This is called when the MainContentComponent is resized.
     // If you add any child components, this is where you should
     // update their positions.
+    sequenceView.setBounds(50, 50, getWidth() - 100, getHeight() - 100);
     
-    resizeSteps();
+    sequenceView.resizeSteps();
 }
 
 bool MainComponent::keyPressed (const juce::KeyPress& key)
@@ -99,59 +62,47 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
     
     if (key.getTextCharacter() == 'h')
     {
-        if (selectedPortion <= 0)
-            selectedPortion = 0;
-        else
-            selectedPortion--;
-
-        //if (mode == "v") {
-        //    visualSelection.emplace_back(steps[selectedPortion]);
-        //}
+        cursor.moveLeft();
         return true; // Indicate that the event was handled
     }
     
     if (key.getTextCharacter() == 'l')
     {
-        if (selectedPortion >= numPortions -1) selectedPortion = numPortions - 1;
-        else
-            selectedPortion++;
-        
+        cursor.moveRight();
         return true; // Indicate that the event was handled
     }
     
     if (key.getTextCharacter() == 'j')
     {
-        steps[selectedPortion]->stepDown();
+        cursor.moveDown();
         return true;
     }
     
     if (key.getTextCharacter() == 'k')
     {
-        steps[selectedPortion]->stepUp();
+        cursor.moveUp();
         return true;
     }
 
     if (key.getTextCharacter() == '^')
     {
-        selectedPortion = 0;
         return true;
     }
     
     if (key.getTextCharacter() == '$')
     {
-        selectedPortion = numPortions - 1;
         return true;
     }
     
     if (key.getTextCharacter() == 'v')
     {
-        mode = Mode::visual;
+        cursor.enableVisualMode();
         return true;
     }
     
     if (key == juce::KeyPress::escapeKey)
     {
-        mode = Mode::normal;
+        cursor.enableNormalMode();
         return true;
     }
 

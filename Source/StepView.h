@@ -11,6 +11,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "Step.h"
 
 //==============================================================================
 /*
@@ -18,7 +19,7 @@
 class StepView  : public juce::Component
 {
 public:
-    StepView();
+    StepView(const Step& s);
     ~StepView() override;
 
     void paint (juce::Graphics&) override;
@@ -26,4 +27,10 @@ public:
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StepView)
+    
+    int stepValue = 20;
+    int shapeHeight = 40;
+    juce::Point<int> pos{0, 0};
+    
+    const Step& step;
 };

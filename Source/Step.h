@@ -21,22 +21,19 @@ class Step  : public juce::Component
 {
 public:
     Step();
-    ~Step() override;
+    ~Step();
 
-    void paint (juce::Graphics&) override;
-    void resized() override;
-    void select();
-    void unselect();
     void stepUp();
     void stepDown();
     bool isVisuallySelected = false;
+    
+    bool isSelected() const;
+    void setIsSelectedCallback(std::function<bool(const Step&)> callback);
 
 private:
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Step)
-    
     int stepValue = 20;
     int shapeHeight = 40;
-    bool isSelected = false;
     juce::Point<int> pos{0, 0};
-
+    
+    std::function<bool(const Step&)> isSelectedCallback = nullptr;
 };

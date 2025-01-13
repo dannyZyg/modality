@@ -8,8 +8,12 @@
   ==============================================================================
 */
 
+# include <JuceHeader.h>
 # include "Step.h"
+# include "Sequence.h"
 #pragma once
+
+enum class Mode { normal, visual };
 
 class Cursor
 {
@@ -18,8 +22,28 @@ public:
     Cursor();
     ~Cursor();
     
+    void selectSequence(Sequence* seq);
+    
     void setVisualSelection();
+    void moveRight();
+    void moveLeft();
+    void moveDown();
+    void moveUp();
+    void enableNormalMode();
+    void enableVisualMode();
+    Mode getMode();
+    juce::String getModeName();
+    constexpr const char* modeToString(Mode m) throw();
+    
+    bool isStepSelected(const Step& step) const;
+
 private:
-    std::vector<std::unique_ptr<Step>> visualSelection{};
-    std::unique_ptr<Step> focusedStep = nullptr;
+    Mode mode = Mode::normal;
+
+    Sequence* sequence = nullptr;
+    Step* selectedStep = nullptr;
+    std::vector<Step*> visualSelection;
+
+    void selectStep(Step* s, int sIndex);
+    int selectedStepIndex = 0;
 };
