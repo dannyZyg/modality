@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="GYcenm" name="Modality" projectType="guiapp" useAppConfig="0"
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
+  <MAINGROUP id="SStqPm" name="Modality">
+    <GROUP id="{A7C62C16-DC88-36A5-7333-D1EF42F7E1BA}" name="Source">
+      <FILE id="nqZ0HI" name="StepView.cpp" compile="1" resource="0" file="Source/StepView.cpp"/>
+      <FILE id="q6iGAZ" name="StepView.h" compile="0" resource="0" file="Source/StepView.h"/>
+      <FILE id="utqJfO" name="Sequence.cpp" compile="1" resource="0" file="Source/Sequence.cpp"/>
+      <FILE id="GGDQly" name="SequenceView.cpp" compile="1" resource="0"
+            file="Source/SequenceView.cpp"/>
+      <FILE id="QrmfoX" name="SequenceView.h" compile="0" resource="0" file="Source/SequenceView.h"/>
+      <FILE id="i4bun3" name="Sequence.h" compile="0" resource="0" file="Source/Sequence.h"/>
+      <FILE id="UuYKsF" name="Cursor.cpp" compile="1" resource="0" file="Source/Cursor.cpp"/>
+      <FILE id="u2wly7" name="Cursor.h" compile="0" resource="0" file="Source/Cursor.h"/>
+      <FILE id="W2Lf4p" name="Step.cpp" compile="1" resource="0" file="Source/Step.cpp"/>
+      <FILE id="zIXI24" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="RIWAcU" name="Step.h" compile="0" resource="0" file="Source/Step.h"/>
+      <FILE id="TOTyEa" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
+      <FILE id="XsidDC" name="MainComponent.cpp" compile="1" resource="0"
+            file="Source/MainComponent.cpp"/>
+    </GROUP>
+  </MAINGROUP>
+  <MODULES>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+  </MODULES>
+  <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1"/>
+  <EXPORTFORMATS>
+    <XCODE_MAC targetFolder="Builds/MacOSX">
+      <CONFIGURATIONS>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="Modality"/>
+        <CONFIGURATION isDebug="0" name="Release" targetName="Modality"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../../JUCE/modules"/>
+      </MODULEPATHS>
+    </XCODE_MAC>
+  </EXPORTFORMATS>
+</JUCERPROJECT>
