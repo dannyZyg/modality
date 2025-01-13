@@ -27,7 +27,7 @@ void Cursor::selectSequence(Sequence* seq)
     }
 };
 
-void Cursor::selectStep(Step* s, int sIndex)
+void Cursor::selectStep(Step* s, unsigned long sIndex)
 {
     selectedStepIndex = sIndex;
     selectedStep = s;
@@ -80,6 +80,24 @@ void Cursor::moveUp()
         return;
     
     selectedStep->stepUp();
+}
+
+void Cursor::jumpToStart()
+{
+    if (sequence == nullptr)
+        return;
+    
+    selectedStepIndex = 0;
+    selectedStep = sequence->steps[selectedStepIndex].get();
+}
+
+void Cursor::jumpToEnd()
+{
+    if (sequence == nullptr)
+        return;
+    
+    selectedStepIndex = sequence->steps.size();
+    selectedStep = sequence->steps[selectedStepIndex - 1].get();
 }
 
 void Cursor::enableNormalMode()

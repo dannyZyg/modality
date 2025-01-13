@@ -25,6 +25,8 @@ public:
     void selectSequence(Sequence* seq);
     
     void setVisualSelection();
+    void jumpToStart();
+    void jumpToEnd();
     void moveRight();
     void moveLeft();
     void moveDown();
@@ -44,6 +46,6 @@ private:
     Step* selectedStep = nullptr;
     std::vector<Step*> visualSelection;
 
-    void selectStep(Step* s, int sIndex);
-    int selectedStepIndex = 0;
+    void selectStep(Step* s, unsigned long sIndex);
+    unsigned long selectedStepIndex = 0;
 };

@@ -86,11 +86,13 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
 
     if (key.getTextCharacter() == '^')
     {
+        cursor.jumpToStart();
         return true;
     }
     
     if (key.getTextCharacter() == '$')
     {
+        cursor.jumpToEnd();
         return true;
     }
     
