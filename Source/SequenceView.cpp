@@ -42,9 +42,6 @@ void SequenceView::paint (juce::Graphics& g)
     g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
 
     g.setColour (juce::Colours::white);
-    g.setFont (juce::FontOptions (14.0f));
-    g.drawText ("SequenceView", getLocalBounds(),
-                juce::Justification::centred, true);   // draw some placeholder text
 }
 
 void SequenceView::resized()
@@ -65,5 +62,18 @@ void SequenceView::resizeSteps()
     {
         int spacing = i * 10;
         stepViews[i]->setBounds(xStart + i * blockSize + spacing, padding, blockSize, height);
+    }
+}
+
+//==============================================================================
+void SequenceView::update()
+{
+    // This function is called at the frequency specified by the setFramesPerSecond() call
+    // in the constructor. You can use it to update counters, animate values, etc.
+    
+    for (int i = 0; i < stepViews.size(); i++) {
+        
+        stepViews[i]->setPos(visibleRange);
+        
     }
 }

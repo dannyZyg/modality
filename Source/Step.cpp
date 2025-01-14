@@ -18,12 +18,11 @@ Step::Step()
 
 Step::~Step()
 {
-    //isSelectedCallback = nullptr;
 }
 
-void Step::stepUp() { pos.y = pos.y - stepValue; }
+void Step::stepUp() { --stepValue; }  // Move up the y axis
 
-void Step::stepDown() { pos.y = pos.y + stepValue; }
+void Step::stepDown() { ++stepValue; }  // Move down the y axis
 
 bool Step::isSelected() const {
     return isSelectedCallback ? isSelectedCallback(*this) : false;

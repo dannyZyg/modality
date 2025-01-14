@@ -26,6 +26,7 @@ public:
 
     void paint (juce::Graphics&) override;
     void resized() override;
+    void update();
     void resizeSteps();
 
 private:
@@ -38,4 +39,7 @@ private:
     const Cursor& cursor;
     
     std::vector<std::unique_ptr<StepView>> stepViews;
+    
+    int visibleRange = 30;
+    
 };

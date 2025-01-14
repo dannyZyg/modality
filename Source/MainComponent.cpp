@@ -22,6 +22,7 @@ void MainComponent::update()
 {
     // This function is called at the frequency specified by the setFramesPerSecond() call
     // in the constructor. You can use it to update counters, animate values, etc.
+    sequenceView.update();
 }
 
 //==============================================================================
@@ -45,7 +46,6 @@ void MainComponent::resized()
     // If you add any child components, this is where you should
     // update their positions.
     sequenceView.setBounds(50, 50, getWidth() - 100, getHeight() - 100);
-    
     sequenceView.resizeSteps();
 }
 

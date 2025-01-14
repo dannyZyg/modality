@@ -24,6 +24,8 @@ public:
 
     void paint (juce::Graphics&) override;
     void resized() override;
+    
+    void setPos(int range);
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StepView)
@@ -33,4 +35,6 @@ private:
     juce::Point<int> pos{0, 0};
     
     const Step& step;
+    
+    
 };

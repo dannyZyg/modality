@@ -33,7 +33,16 @@ void Cursor::selectStep(Step* s, unsigned long sIndex)
     selectedStep = s;
 };
 
-bool Cursor::isStepSelected(const Step& step) const {
+bool Cursor::isStepSelected(const Step& step) const
+{
+    if (selectedStep == nullptr)
+        return false;
+    
+    return selectedStep == &step;
+}
+
+bool Cursor::isStepVisuallySelected(const Step& step) const
+{
     if (selectedStep == nullptr)
         return false;
     

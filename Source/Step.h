@@ -30,10 +30,8 @@ public:
     bool isSelected() const;
     void setIsSelectedCallback(std::function<bool(const Step&)> callback);
 
+    int stepValue = 0;
 private:
-    int stepValue = 20;
-    int shapeHeight = 40;
-    juce::Point<int> pos{0, 0};
     
     std::function<bool(const Step&)> isSelectedCallback = nullptr;
 };

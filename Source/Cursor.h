@@ -15,6 +15,11 @@
 
 enum class Mode { normal, visual };
 
+struct SelectionDetails {
+    bool isFocused = false;
+    bool isVisuallySelected = false;
+};
+
 class Cursor
 {
     
@@ -38,6 +43,8 @@ public:
     constexpr const char* modeToString(Mode m) throw();
     
     bool isStepSelected(const Step& step) const;
+    bool isStepVisuallySelected(const Step& step) const;
+    SelectionDetails getSelectionDetails(const Step& step) const;
 
 private:
     Mode mode = Mode::normal;
