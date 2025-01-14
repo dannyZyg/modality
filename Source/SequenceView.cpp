@@ -53,15 +53,11 @@ void SequenceView::resized()
 
 void SequenceView::resizeSteps()
 {
-    int padding = 50;
-    int height = getHeight() - 2 * padding;
-    int xStart = padding;
-    int blockSize = 40;
+    int blockSize = getWidth() / (sequence.lengthBeats * sequence.stepsPerBeat);
     
     for (auto i = 0; i < stepViews.size(); i++)
     {
-        int spacing = i * 10;
-        stepViews[i]->setBounds(xStart + i * blockSize + spacing, padding, blockSize, height);
+        stepViews[i]->setBounds(i * blockSize, 0, blockSize, getHeight());
     }
 }
 
@@ -72,8 +68,6 @@ void SequenceView::update()
     // in the constructor. You can use it to update counters, animate values, etc.
     
     for (int i = 0; i < stepViews.size(); i++) {
-        
-        stepViews[i]->setPos(visibleRange);
-        
+        stepViews[i]->setSizeAndPos(visibleRange);
     }
 }

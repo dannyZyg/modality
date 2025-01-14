@@ -12,7 +12,7 @@
 
 Sequence::Sequence()
 {
-    for (int i = 0; i < lengthBeats; ++i) {
+    for (int i = 0; i < lengthBeats * stepsPerBeat; ++i) {
         auto s = std::make_unique<Step>();
         steps.emplace_back(std::move(s));
     }

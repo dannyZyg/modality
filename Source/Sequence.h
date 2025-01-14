@@ -19,8 +19,8 @@ public:
     
     void setIsSelectedCallback(std::function<bool(const Step&)>);
 
-private:
     int lengthBeats = 4;
     int stepsPerBeat = 4;
+private:
     
 };

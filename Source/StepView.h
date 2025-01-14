@@ -25,13 +25,12 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
     
-    void setPos(int range);
+    void setSizeAndPos(int range);
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StepView)
     
-    int stepValue = 20;
-    int shapeHeight = 40;
+    int shapeHeight = 30;
     juce::Point<int> pos{0, 0};
     
     const Step& step;

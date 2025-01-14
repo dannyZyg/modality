@@ -15,7 +15,7 @@
 StepView::StepView(const Step& s) : step(s)
 {
     pos.x = getWidth() / 2;
-    pos.y = 0;
+    pos.y = getWidth() / 2;
 }
 
 StepView::~StepView()
@@ -26,9 +26,8 @@ void StepView::paint (juce::Graphics& g)
 {
     //g.fillAll (juce::Colours::white);   // clear the background
     //g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
-    g.setColour (juce::Colours::black);
-    int triWidth = getWidth() / 2;
     
+    g.setColour (juce::Colours::black);
     
     juce::Line<float> line (juce::Point<float> (pos.x, pos.y),
                             juce::Point<float> (getWidth() / 2, getHeight() / 2));
@@ -36,8 +35,8 @@ void StepView::paint (juce::Graphics& g)
 
     juce::Path path;
     path.startNewSubPath (juce::Point<float> (pos.x, pos.y));
-    path.lineTo (juce::Point<float> (pos.x + triWidth, pos.y + triWidth / 2));
-    path.lineTo (juce::Point<float> (pos.x, pos.y + triWidth));
+    path.lineTo (juce::Point<float> (pos.x + shapeHeight, pos.y + shapeHeight / 2));
+    path.lineTo (juce::Point<float> (pos.x, pos.y + shapeHeight));
     path.closeSubPath();
     
     float timeInSeconds = juce::Time::getMillisecondCounterHiRes() / 500.0f;
@@ -74,9 +73,11 @@ void StepView::resized()
 
 }
 
-void StepView::setPos(int range)
+void StepView::setSizeAndPos(int range)
 {
     float stepSize = getHeight() / range;
     pos.x = getWidth() / 2;
-    pos.y = getHeight() / 2 + stepSize * step.stepValue;
+    pos.y = (getHeight() / 2) - (stepSize / 2) + (stepSize * step.stepValue);
+    shapeHeight = stepSize;
 }
+
