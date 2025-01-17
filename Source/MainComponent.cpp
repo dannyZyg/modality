@@ -102,9 +102,27 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
         return true;
     }
     
+    if (key.getTextCharacter() == 'm')
+    {
+        cursor.enableVisualMode();
+        return true;
+    }
+
     if (key == juce::KeyPress::escapeKey)
     {
         cursor.enableNormalMode();
+        return true;
+    }
+    
+    if (key.getTextCharacter() == 'a')
+    {
+        cursor.addNote();
+        return true;
+    }
+    
+    if (key.getTextCharacter() == 'r')
+    {
+        cursor.removeNote();
         return true;
     }
 

@@ -4,6 +4,8 @@
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="SStqPm" name="Modality">
     <GROUP id="{A7C62C16-DC88-36A5-7333-D1EF42F7E1BA}" name="Source">
+      <FILE id="XVoI8u" name="Note.cpp" compile="1" resource="0" file="Source/Note.cpp"/>
+      <FILE id="fSrrRw" name="Note.h" compile="0" resource="0" file="Source/Note.h"/>
       <FILE id="nqZ0HI" name="StepView.cpp" compile="1" resource="0" file="Source/StepView.cpp"/>
       <FILE id="q6iGAZ" name="StepView.h" compile="0" resource="0" file="Source/StepView.h"/>
       <FILE id="utqJfO" name="Sequence.cpp" compile="1" resource="0" file="Source/Sequence.cpp"/>
@@ -22,6 +24,8 @@
     </GROUP>
   </MAINGROUP>
   <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
@@ -43,6 +47,8 @@
         <MODULEPATH id="juce_graphics" path="../../../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../../../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../../JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
   </EXPORTFORMATS>

@@ -26,12 +26,12 @@ public:
     void resized() override;
     
     void setSizeAndPos(int range);
+    juce::Path createPath(juce::Point<float> p);
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StepView)
     
     int shapeHeight = 30;
-    juce::Point<int> pos{0, 0};
     
     const Step& step;
     

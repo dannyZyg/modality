@@ -18,8 +18,12 @@ Sequence::Sequence()
     }
 };
 
-void Sequence::setIsSelectedCallback(std::function<bool(const Step&)> callback) {
+void Sequence::setIsSelectedCallback(std::function<bool(const Step&)> stepCallback, std::function<bool(const Note&)> noteCallback) {
     for (auto& step : steps) {
-        step->setIsSelectedCallback(callback);
+        step->setIsSelectedCallback(stepCallback);
+        
+        for (auto& note: step->notes) {
+            note->setIsSelectedCallback(noteCallback);
+        }
     }
 }

@@ -1,0 +1,31 @@
+/*
+  ==============================================================================
+
+    Note.h
+    Created: 17 Jan 2025 7:00:41am
+    Author:  Danny Keig
+
+  ==============================================================================
+*/
+
+
+#include <JuceHeader.h>
+#pragma once
+
+class Note
+{
+public:
+    Note();
+    Note(int deg);
+    ~Note();
+    int degree = 0;
+    
+    bool isSelected() const;
+    void setIsSelectedCallback(std::function<bool(const Note&)> callback);
+
+    // TODO move to a NoteView class
+    juce::Point<float> pos{0, 0};
+private:
+    std::function<bool(const Note&)> isSelectedCallback = nullptr;
+
+};

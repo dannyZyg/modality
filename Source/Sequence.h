@@ -17,7 +17,7 @@ public:
     Sequence();
     std::vector<std::unique_ptr<Step>> steps;
     
-    void setIsSelectedCallback(std::function<bool(const Step&)>);
+    void setIsSelectedCallback(std::function<bool(const Step&)>, std::function<bool(const Note&)>);
 
     int lengthBeats = 4;
     int stepsPerBeat = 4;

@@ -11,7 +11,7 @@
 #pragma once
 
 #include <JuceHeader.h>
-//#include <juce_graphics/juce_graphics.h>
+#include "Note.h"
 
 
 //==============================================================================
@@ -23,15 +23,23 @@ public:
     Step();
     ~Step();
 
-    void stepUp();
-    void stepDown();
+    void stepUp(size_t nIndex);
+    void stepDown(size_t nIndex);
+    void playNote();
+    void setMidiOutput();
+    void toggleMute();
     bool isVisuallySelected = false;
     
     bool isSelected() const;
     void setIsSelectedCallback(std::function<bool(const Step&)> callback);
 
     int stepValue = 0;
-private:
     
+    void addNote();
+    void removeNote(int noteIndex);
+    std::vector<std::unique_ptr<Note>> notes;
+private:
     std::function<bool(const Step&)> isSelectedCallback = nullptr;
+    enum class MuteMode { muted, unmuted };
+    MuteMode muteMode = MuteMode::unmuted;
 };

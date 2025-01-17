@@ -10,6 +10,7 @@
 
 # include <JuceHeader.h>
 # include "Step.h"
+# include "Note.h"
 # include "Sequence.h"
 #pragma once
 
@@ -36,6 +37,9 @@ public:
     void moveLeft();
     void moveDown();
     void moveUp();
+    void toggleStepMute();
+    void addNote();
+    void removeNote();
     void enableNormalMode();
     void enableVisualMode();
     Mode getMode();
@@ -43,16 +47,22 @@ public:
     constexpr const char* modeToString(Mode m) throw();
     
     bool isStepSelected(const Step& step) const;
+    bool isNoteSelected(const Note& note) const;
     bool isStepVisuallySelected(const Step& step) const;
     SelectionDetails getSelectionDetails(const Step& step) const;
+    size_t getStepIndex();
+    size_t getNoteIndex();
+    Step& getCurrentStep();
 
 private:
     Mode mode = Mode::normal;
 
     Sequence* sequence = nullptr;
-    Step* selectedStep = nullptr;
+    size_t selectedStepIndex = 0;
+    size_t selectedNoteIndex = 0;
     std::vector<Step*> visualSelection;
+    Step* selectedStep = nullptr;
 
-    void selectStep(Step* s, unsigned long sIndex);
-    unsigned long selectedStepIndex = 0;
+    void selectStep(Step* s, size_t sIndex);
+    void selectNote(size_t nIndex);
 };
