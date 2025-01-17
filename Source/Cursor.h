@@ -56,6 +56,9 @@ public:
     size_t getNoteIndex();
     Step& getCurrentStep();
 
+    void previewNote();
+    void previewStep();
+    
 private:
     Mode mode = Mode::normal;
 

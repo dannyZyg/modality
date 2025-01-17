@@ -27,6 +27,7 @@ public:
     void selectedNoteUp(size_t nIndex);
     void selectedNoteDown(size_t nIndex);
     void playNote(int degree);
+    void playStep();
     void setMidiOutput();
     void toggleMute();
     bool isVisuallySelected = false;

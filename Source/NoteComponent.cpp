@@ -28,17 +28,15 @@ void NoteComponent::paint (juce::Graphics& g)
     // Interpolate between black and light grey
     juce::Colour blink = juce::Colours::black.interpolatedWith(juce::Colours::lightgrey, blendFactor);
     
-    
-    bool isSelected = true;
     juce::Path path = createPath();
 
-    if (isSelected && note.isSelected()) {
+    if (note.isSelected()) {
         g.setColour (blink);
         g.fillPath(path);
         g.setColour (juce::Colours::black);
         g.strokePath(path, juce::PathStrokeType(1.0f));
     // TODO: fix visual select
-    } else if (isSelected) {
+    } else if (false) {
         g.setColour (juce::Colours::yellow);
         g.strokePath(path, juce::PathStrokeType(1.0f));
         g.setColour (juce::Colours::black);

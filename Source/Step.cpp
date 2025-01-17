@@ -97,15 +97,13 @@ void Step::playNote(int degree)
     
     midiOutput->sendMessageNow(message);
     midiOutput->sendMessageNow(messageOff);
+}
 
-    //for (int i = 0; i < midiOutputs.size(); i++) {
-    //    if (i == 0) {
-    //        juce::Logger::writeToLog(midiOutputs[i].name);
-    //        auto midiOutput = juce::MidiOutput::openDevice(midiOutputs[i].identifier);
-    //        midiOutput->sendMessageNow(message);
-    //        midiOutput->sendMessageNow(messageOff);
-    //        juce::Logger::writeToLog("sending message");
-    //    }
-    //}
+void Step::playStep()
+{
+    
+    for (auto& n : notes) {
+        playNote(n->degree);
+    }
 }
 

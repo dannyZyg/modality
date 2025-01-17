@@ -185,3 +185,15 @@ void Cursor::prevNoteInStep()
 {
     selectedNoteIndex = sequence->prevNoteIndexInStep(selectedStepIndex, selectedNoteIndex);
 }
+
+void Cursor::previewNote()
+{
+    Step& step = sequence->getStep(selectedStepIndex);
+    //step.playNote(step);
+}
+
+void Cursor::previewStep()
+{
+    Step& step = sequence->getStep(selectedStepIndex);
+    step.playStep();
+}

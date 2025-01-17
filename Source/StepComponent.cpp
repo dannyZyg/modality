@@ -15,7 +15,7 @@
 //==============================================================================
 StepComponent::StepComponent(const Step& s) : step(s)
 {
-    for (int i = 0; i < s.notes.size(); ++i) {
+    for (size_t i = s.notes.size(); i-- > 0; ) {
         auto note = s.notes[i].get();
         if (note) {
             auto noteComponent = std::make_unique<NoteComponent>(*note);
@@ -62,13 +62,18 @@ void StepComponent::paint (juce::Graphics& g)
         return;
     }
 
+    
+    float maxY = getHeight() / 2;
+    float minY = getHeight() / 2;
 
     for (const auto& noteComponent : noteComponents) {
         g.setColour (juce::Colours::black);
-
-        //juce::Line<float> line (juce::Point<float> (x, y),
-        //                        juce::Point<float> (getWidth() / 2, getHeight() / 2));
-        //g.drawLine (line, 1.0f);
+        
+        if (noteComponent->pos.y > maxY)
+            maxY = noteComponent->pos.y;
+        
+        if (noteComponent->pos.y < minY)
+            minY = noteComponent->pos.y;
 
         //juce::Path path;
         //path.startNewSubPath (juce::Point<float> (x, y));
@@ -76,7 +81,13 @@ void StepComponent::paint (juce::Graphics& g)
         //path.lineTo (juce::Point<float> (x, y + shapeHeight));
         //path.closeSubPath();
     }
+    
+    //TODO fix this so that pos x belongs to the step component (notes will share x, mostly)
+    float x = noteComponents[0]->pos.x;
 
+    g.setColour (juce::Colours::black);
+    juce::Line<float> line (juce::Point<float> (x, maxY), juce::Point<float> (x, minY));
+    g.drawLine (line, 1.0f);
 
 }
 

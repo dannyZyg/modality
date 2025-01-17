@@ -56,7 +56,8 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
     // Handle key presses here
     if (key == juce::KeyPress::spaceKey)
     {
-        juce::Logger::writeToLog("Space key pressed!");
+        cursor.previewStep();
+        cursor.moveRight();
         return true; // Indicate that the event was handled
     }
     
@@ -135,6 +136,12 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
     if (key.getTextCharacter() == 'N')
     {
         cursor.prevNoteInStep();
+        return true;
+    }
+    
+    if (key.getTextCharacter() == 's')
+    {
+        cursor.previewStep();
         return true;
     }
 
