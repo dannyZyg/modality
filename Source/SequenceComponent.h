@@ -1,7 +1,7 @@
 /*
   ==============================================================================
 
-    SequenceView.h
+    SequenceComponent.h
     Created: 13 Jan 2025 3:17:50pm
     Author:  Danny Keig
 
@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "StepView.h"
+#include "StepComponent.h"
 #include "Cursor.h"
 #include "Sequence.h"
 #include <JuceHeader.h>
@@ -18,11 +18,11 @@
 //==============================================================================
 /*
 */
-class SequenceView  : public juce::Component
+class SequenceComponent  : public juce::Component
 {
 public:
-    SequenceView(const Sequence& s, const Cursor& c);
-    ~SequenceView() override;
+    SequenceComponent(const Sequence& s, const Cursor& c);
+    ~SequenceComponent() override;
 
     void paint (juce::Graphics&) override;
     void resized() override;
@@ -30,16 +30,16 @@ public:
     void resizeSteps();
 
 private:
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SequenceView)
-    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SequenceComponent)
+
     void drawSequence();
     void drawCursor();
-    
+
     const Sequence& sequence;
     const Cursor& cursor;
-    
-    std::vector<std::unique_ptr<StepView>> stepViews;
-    
+
+    std::vector<std::unique_ptr<StepComponent>> stepComponents;
+
     int visibleRange = 30;
-    
+
 };

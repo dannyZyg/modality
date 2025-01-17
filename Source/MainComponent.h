@@ -3,7 +3,7 @@
 #include <JuceHeader.h>
 #include "Step.h"
 #include "Cursor.h"
-#include "SequenceView.h"
+#include "SequenceComponent.h"
 #include "Sequence.h"
 
 //==============================================================================
@@ -37,7 +37,7 @@ private:
     
     Sequence sequence;
     Cursor cursor;
-    SequenceView sequenceView;
+    SequenceComponent sequenceComponent;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

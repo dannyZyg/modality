@@ -1,14 +1,14 @@
 #include "MainComponent.h"
 
 //==============================================================================
-MainComponent::MainComponent() : sequenceView(sequence, cursor)
+MainComponent::MainComponent() : sequenceComponent(sequence, cursor)
 {
     // Make sure you set the size of the component after
     // you add any child components.
     setSize (800, 600);
     setFramesPerSecond (60); // This sets the frequency of the update calls.
     setWantsKeyboardFocus(true);
-    addAndMakeVisible(sequenceView);
+    addAndMakeVisible(sequenceComponent);
     
     cursor.selectSequence(&sequence);
 }
@@ -22,7 +22,7 @@ void MainComponent::update()
 {
     // This function is called at the frequency specified by the setFramesPerSecond() call
     // in the constructor. You can use it to update counters, animate values, etc.
-    sequenceView.update();
+    sequenceComponent.update();
 }
 
 //==============================================================================
@@ -45,8 +45,8 @@ void MainComponent::resized()
     // This is called when the MainContentComponent is resized.
     // If you add any child components, this is where you should
     // update their positions.
-    sequenceView.setBounds(50, 50, getWidth() - 100, getHeight() - 100);
-    sequenceView.resizeSteps();
+    sequenceComponent.setBounds(50, 50, getWidth() - 100, getHeight() - 100);
+    sequenceComponent.resizeSteps();
 }
 
 bool MainComponent::keyPressed (const juce::KeyPress& key)

@@ -1,7 +1,7 @@
 /*
   ==============================================================================
 
-    SequenceView.cpp
+    SequenceComponent.cpp
     Created: 13 Jan 2025 3:17:50pm
     Author:  Danny Keig
 
@@ -9,27 +9,27 @@
 */
 
 #include <JuceHeader.h>
-#include "SequenceView.h"
+#include "SequenceComponent.h"
 
 //==============================================================================
-SequenceView::SequenceView(const Sequence& s, const Cursor& c)
+SequenceComponent::SequenceComponent(const Sequence& s, const Cursor& c)
     : sequence(s), cursor(c)
 {
     for (int i = 0; i < s.steps.size(); ++i) {
         auto step = s.steps[i].get();
         if (step) {
-            auto stepView = std::make_unique<StepView>(*step);
-            addAndMakeVisible(stepView.get());
-            stepViews.emplace_back(std::move(stepView));
+            auto stepComponent = std::make_unique<StepComponent>(*step);
+            addAndMakeVisible(stepComponent.get());
+            stepComponents.emplace_back(std::move(stepComponent));
         }
     }
 }
 
-SequenceView::~SequenceView()
+SequenceComponent::~SequenceComponent()
 {
 }
 
-void SequenceView::paint (juce::Graphics& g)
+void SequenceComponent::paint (juce::Graphics& g)
 {
     /* This demo code just fills the component's background and
        draws some placeholder text to get you started.
@@ -44,30 +44,30 @@ void SequenceView::paint (juce::Graphics& g)
     g.setColour (juce::Colours::white);
 }
 
-void SequenceView::resized()
+void SequenceComponent::resized()
 {
     // This method is where you should set the bounds of any child
     // components that your component contains..
 
 }
 
-void SequenceView::resizeSteps()
+void SequenceComponent::resizeSteps()
 {
     int blockSize = getWidth() / (sequence.lengthBeats * sequence.stepsPerBeat);
-    
-    for (auto i = 0; i < stepViews.size(); i++)
+
+    for (auto i = 0; i < stepComponents.size(); i++)
     {
-        stepViews[i]->setBounds(i * blockSize, 0, blockSize, getHeight());
+        stepComponents[i]->setBounds(i * blockSize, 0, blockSize, getHeight());
     }
 }
 
 //==============================================================================
-void SequenceView::update()
+void SequenceComponent::update()
 {
     // This function is called at the frequency specified by the setFramesPerSecond() call
     // in the constructor. You can use it to update counters, animate values, etc.
-    
-    for (int i = 0; i < stepViews.size(); i++) {
-        stepViews[i]->setSizeAndPos(visibleRange);
+
+    for (int i = 0; i < stepComponents.size(); i++) {
+        stepComponents[i]->setSizeAndPos(visibleRange);
     }
 }
