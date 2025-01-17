@@ -125,6 +125,18 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
         cursor.removeNote();
         return true;
     }
+    
+    if (key.getTextCharacter() == 'n')
+    {
+        cursor.nextNoteInStep();
+        return true;
+    }
+    
+    if (key.getTextCharacter() == 'N')
+    {
+        cursor.prevNoteInStep();
+        return true;
+    }
 
     return false; // Pass unhandled keys to the base class
 }

@@ -39,6 +39,8 @@ public:
     void moveUp();
     void toggleStepMute();
     void addNote();
+    void nextNoteInStep();
+    void prevNoteInStep();
     void removeNote();
     void enableNormalMode();
     void enableVisualMode();
@@ -61,8 +63,7 @@ private:
     size_t selectedStepIndex = 0;
     size_t selectedNoteIndex = 0;
     std::vector<Step*> visualSelection;
-    Step* selectedStep = nullptr;
 
-    void selectStep(Step* s, size_t sIndex);
+    void selectStep(size_t sIndex);
     void selectNote(size_t nIndex);
 };

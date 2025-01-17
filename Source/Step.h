@@ -11,6 +11,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include <cstdlib>
 #include "Note.h"
 
 
@@ -41,5 +42,5 @@ private:
     std::function<bool(const Step&)> isSelectedCallback = nullptr;
     enum class MuteMode { muted, unmuted };
     MuteMode muteMode = MuteMode::unmuted;
-    int initialNumNotes = 1;
+    int initialNumNotes = 1 + std::rand() % 4;
 };

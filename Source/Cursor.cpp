@@ -26,12 +26,12 @@ void Cursor::selectSequence(Sequence* seq)
             return isNoteSelected(note);
         }
         );
-        selectStep(sequence->steps[0].get(), 0);
+        selectStep(0);
         selectNote(0);
     }
 };
 
-void Cursor::selectStep(Step* s, size_t sIndex)
+void Cursor::selectStep(size_t sIndex)
 {
     selectedStepIndex = sIndex;
 };
@@ -52,7 +52,11 @@ void Cursor::selectNote(size_t nIndex)
 
 bool Cursor::isStepSelected(const Step& step) const
 {
-    //TODO check for bounds
+    if (selectedStepIndex < 0 || selectedStepIndex >= sequence->steps.size()) {
+        juce::Logger::writeToLog("Step index out of bounds");
+        return false;
+    }
+    
     Step* selectedStep = sequence->steps[selectedStepIndex].get();
     
     if (selectedStep == nullptr)
@@ -63,7 +67,15 @@ bool Cursor::isStepSelected(const Step& step) const
 
 bool Cursor::isNoteSelected(const Note& note) const
 {
-    //TODO check for bounds
+    if (selectedStepIndex < 0 || selectedStepIndex >= sequence->steps.size()) {
+        juce::Logger::writeToLog("Step index out of bounds");
+        return false;
+    }
+    if (selectedNoteIndex < 0 || selectedNoteIndex >= sequence->steps[selectedStepIndex]->notes.size()) {
+        juce::Logger::writeToLog("Note index out of bounds");
+        return false;
+    }
+    
     Note* selectedNote = sequence->steps[selectedStepIndex].get()->notes[selectedNoteIndex].get();
     
     if (selectedNote == nullptr)
@@ -72,23 +84,26 @@ bool Cursor::isNoteSelected(const Note& note) const
     return selectedNote == &note;
 }
 
-bool Cursor::isStepVisuallySelected(const Step& step) const
-{
-    if (selectedStep == nullptr)
-        return false;
-    
-    return selectedStep == &step;
-}
+//bool Cursor::isStepVisuallySelected(const Step& step) const
+//{
+//    if (selectedStep == nullptr)
+//        return false;
+//    
+//    return selectedStep == &step;
+//}
 
 void Cursor::moveLeft()
 {
     if (sequence == nullptr)
         return;
     
-    if (selectedStepIndex > 0)
+    // Only shift left if we won't go below 0
+    if (selectedStepIndex > 0) {
         selectedStepIndex--;
-        selectedStep = sequence->steps[selectedStepIndex].get();
-        juce::Logger::writeToLog("selected note: " + juce::String(selectedNoteIndex));
+        
+        // Reset note index to 0 of the next Step
+        selectedNoteIndex = 0;
+    }
 };
 
 void Cursor::moveRight()
@@ -96,9 +111,13 @@ void Cursor::moveRight()
     if (sequence == nullptr)
         return;
     
-    if (selectedStepIndex < sequence->steps.size() - 1)
+    // Only shift right if we won't go out of bounds
+    if (selectedStepIndex < sequence->steps.size() - 1) {
         selectedStepIndex++;
-        selectedStep = sequence->steps[selectedStepIndex].get();
+        
+        // Reset note index to 0 of the next Step
+        selectedNoteIndex = 0;
+    }
 };
 
 void Cursor::moveDown()
@@ -106,6 +125,13 @@ void Cursor::moveDown()
     if (sequence == nullptr)
         return;
     
+    if (selectedStepIndex < 0 || selectedStepIndex >= sequence->steps.size()) {
+        juce::Logger::writeToLog("Step index out of bounds");
+        return;
+    }
+    
+    Step* selectedStep = sequence->steps[selectedStepIndex].get();
+
     if (selectedStep == nullptr)
         return;
     
@@ -117,6 +143,14 @@ void Cursor::moveUp()
     if (sequence == nullptr)
         return;
     
+    
+    if (selectedStepIndex < 0 || selectedStepIndex >= sequence->steps.size()) {
+        juce::Logger::writeToLog("Step index out of bounds");
+        return;
+    }
+    
+    Step* selectedStep = sequence->steps[selectedStepIndex].get();
+
     if (selectedStep == nullptr)
         return;
     
@@ -129,7 +163,7 @@ void Cursor::jumpToStart()
         return;
     
     selectedStepIndex = 0;
-    selectedStep = sequence->steps[selectedStepIndex].get();
+    selectedNoteIndex = 0;
 }
 
 void Cursor::jumpToEnd()
@@ -137,8 +171,8 @@ void Cursor::jumpToEnd()
     if (sequence == nullptr)
         return;
     
-    selectedStepIndex = sequence->steps.size();
-    selectedStep = sequence->steps[selectedStepIndex - 1].get();
+    selectedStepIndex = sequence->steps.size() - 1;
+    selectedNoteIndex = 0;
 }
 
 void Cursor::enableNormalMode()
@@ -197,4 +231,31 @@ size_t Cursor::getStepIndex()
 size_t Cursor::getNoteIndex()
 {
     return selectedNoteIndex;
+}
+
+void Cursor::nextNoteInStep()
+{
+    size_t numNotes = sequence->steps[selectedStepIndex]->notes.size();
+
+    if (selectedNoteIndex >= numNotes - 1) {
+        selectedNoteIndex = 0;
+    } else {
+        ++selectedNoteIndex;
+    }
+    
+    juce::Logger::writeToLog("num notes: " + juce::String(numNotes));
+    juce::Logger::writeToLog("note index: " + juce::String(selectedNoteIndex));
+}
+
+void Cursor::prevNoteInStep()
+{
+    size_t numNotes = sequence->steps[selectedStepIndex]->notes.size();
+
+    if (selectedNoteIndex <= 0) {
+        selectedNoteIndex = numNotes - 1;
+    } else {
+        --selectedNoteIndex;
+    }
+    
+    juce::Logger::writeToLog("note index: " + juce::String(selectedNoteIndex));
 }
