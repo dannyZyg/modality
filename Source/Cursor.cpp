@@ -109,7 +109,7 @@ void Cursor::moveDown()
     if (selectedStep == nullptr)
         return;
     
-    selectedStep->stepDown(selectedNoteIndex);
+    selectedStep->selectedNoteDown(selectedNoteIndex);
 }
 
 void Cursor::moveUp()
@@ -120,7 +120,7 @@ void Cursor::moveUp()
     if (selectedStep == nullptr)
         return;
     
-    selectedStep->stepUp(selectedNoteIndex);
+    selectedStep->selectedNoteUp(selectedNoteIndex);
 }
 
 void Cursor::jumpToStart()

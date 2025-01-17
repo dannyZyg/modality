@@ -2,7 +2,7 @@
   ==============================================================================
 
     NoteComponent.cpp
-    Created: 17 Jan 2025 1:28:05pm
+    Created: 17 Jan 2025 1:50:00pm
     Author:  Danny Keig
 
   ==============================================================================
@@ -12,12 +12,7 @@
 #include "NoteComponent.h"
 
 //==============================================================================
-NoteComponent::NoteComponent()
-{
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
-
-}
+NoteComponent::NoteComponent(const Note& n) : note(n) {}
 
 NoteComponent::~NoteComponent()
 {
@@ -25,22 +20,35 @@ NoteComponent::~NoteComponent()
 
 void NoteComponent::paint (juce::Graphics& g)
 {
-    /* This demo code just fills the component's background and
-       draws some placeholder text to get you started.
+    float timeInSeconds = juce::Time::getMillisecondCounterHiRes() / 500.0f;
+    float sineValue = std::sin(timeInSeconds * juce::MathConstants<float>::pi); // Oscillates between -1 and 1
 
-       You should replace everything in this method with your own
-       drawing code..
-    */
+    // Map sineValue to a 0 to 1 range
+    float blendFactor = (sineValue + 1.0f) * 0.5f;
+    // Interpolate between black and light grey
+    juce::Colour blink = juce::Colours::black.interpolatedWith(juce::Colours::lightgrey, blendFactor);
+    
+    
+    bool isSelected = true;
+    juce::Path path = createPath();
 
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
-
-    g.setColour (juce::Colours::grey);
-    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
-
-    g.setColour (juce::Colours::white);
-    g.setFont (juce::FontOptions (14.0f));
-    g.drawText ("NoteComponent", getLocalBounds(),
-                juce::Justification::centred, true);   // draw some placeholder text
+    if (isSelected && note.isSelected()) {
+        g.setColour (blink);
+        g.fillPath(path);
+        g.setColour (juce::Colours::black);
+        g.strokePath(path, juce::PathStrokeType(1.0f));
+    // TODO: fix visual select
+    } else if (isSelected) {
+        g.setColour (juce::Colours::yellow);
+        g.strokePath(path, juce::PathStrokeType(1.0f));
+        g.setColour (juce::Colours::black);
+        g.fillPath (path);
+    } else {
+        g.setColour (juce::Colours::white);
+        g.fillPath(path);
+        g.setColour (juce::Colours::black);
+        g.strokePath(path, juce::PathStrokeType(1.0f));
+    }
 }
 
 void NoteComponent::resized()
@@ -48,4 +56,22 @@ void NoteComponent::resized()
     // This method is where you should set the bounds of any child
     // components that your component contains..
 
+}
+
+void NoteComponent::setSizeAndPos(int range)
+{
+    float stepSize = getHeight() / range;
+    pos.x = getWidth() / 2;
+    pos.y = (getHeight() / 2) - (stepSize / 2) + (stepSize * note.degree);
+    shapeHeight = stepSize;
+}
+
+juce::Path NoteComponent::createPath()
+{
+    juce::Path path;
+    path.startNewSubPath (juce::Point<float> (pos.x, pos.y));
+    path.lineTo (juce::Point<float> (pos.x + shapeHeight, pos.y + shapeHeight / 2));
+    path.lineTo (juce::Point<float> (pos.x, pos.y + shapeHeight));
+    path.closeSubPath();
+    return path;
 }

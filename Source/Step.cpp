@@ -16,22 +16,28 @@
 //==============================================================================
 Step::Step()
 {
-    addNote();
+    for (int i = 0; i < initialNumNotes; i++) {
+        addNote();
+    }
 }
 
 Step::~Step()
 {
 }
 
-void Step::stepUp(size_t nIndex) {
-    --notes[nIndex]->degree;
-    playNote();
-}  // Move up the y axis
+void Step::selectedNoteUp(size_t nIndex) {
+    // Move up the y axis
+    auto& n = notes[nIndex];
+    n->degree--;
+    playNote(n->degree);
+}
 
-void Step::stepDown(size_t nIndex) {
-    ++notes[nIndex]->degree;
-    playNote();
-}  // Move down the y axis
+void Step::selectedNoteDown(size_t nIndex) {
+    // Move down the y axis
+    auto& n = notes[nIndex];
+    n->degree++;
+    playNote(n->degree);
+}
 
 bool Step::isSelected() const {
     return isSelectedCallback ? isSelectedCallback(*this) : false;
@@ -53,7 +59,7 @@ void Step::toggleMute()
 
 void Step::addNote()
 {
-    notes.emplace_back(std::make_unique<Note>(stepValue + 3));
+    notes.emplace_back(std::make_unique<Note>(0));
     std::cout << "adding note" << std::endl;
 }
 
@@ -68,9 +74,9 @@ void Step::removeNote(int noteIndex)
     }
 }
 
-void Step::playNote()
+void Step::playNote(int degree)
 {
-    auto message = juce::MidiMessage::noteOn (1, 64 - stepValue, (juce::uint8) 100);
+    auto message = juce::MidiMessage::noteOn (1, 64 - degree, (juce::uint8) 100);
     auto messageOff = juce::MidiMessage::noteOff (message.getChannel(), message.getNoteNumber());
     messageOff.setTimeStamp (message.getTimeStamp() + 0.1);
     

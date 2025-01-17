@@ -11,6 +11,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "NoteComponent.h"
 #include "Step.h"
 
 //==============================================================================
@@ -26,7 +27,6 @@ public:
     void resized() override;
 
     void setSizeAndPos(int range);
-    juce::Path createPath(juce::Point<float> p);
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StepComponent)
@@ -34,6 +34,8 @@ private:
     int shapeHeight = 30;
 
     const Step& step;
+    
+    std::vector<std::unique_ptr<NoteComponent>> noteComponents;
 
 
 };

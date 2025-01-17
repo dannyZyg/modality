@@ -23,8 +23,6 @@ public:
     bool isSelected() const;
     void setIsSelectedCallback(std::function<bool(const Note&)> callback);
 
-    // TODO move to a NoteComponent class
-    juce::Point<float> pos{0, 0};
 private:
     std::function<bool(const Note&)> isSelectedCallback = nullptr;
 
