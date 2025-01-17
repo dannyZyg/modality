@@ -21,6 +21,14 @@ public:
 
     int lengthBeats = 4;
     int stepsPerBeat = 4;
+    
+    Step& getStep(size_t index);
+    
+    size_t getNumNotesInStep(size_t stepIndex);
+    
+    size_t nextNoteIndexInStep(size_t stepIndex, size_t noteIndex);
+    size_t prevNoteIndexInStep(size_t stepIndex, size_t noteIndex);
+
 private:
     
 };

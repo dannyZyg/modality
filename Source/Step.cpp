@@ -25,6 +25,16 @@ Step::~Step()
 {
 }
 
+Note& Step::getNote(size_t index)
+{
+    if (index >= notes.size()) {
+        std::string m = "Note index out of bounds: " + std::to_string(index);
+        juce::Logger::writeToLog(m);
+        throw std::out_of_range(m);
+    }
+    return *notes[index];
+}
+
 void Step::selectedNoteUp(size_t nIndex) {
     // Move up the y axis
     auto& n = notes[nIndex];

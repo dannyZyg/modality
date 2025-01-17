@@ -38,6 +38,8 @@ public:
     void removeNote(int noteIndex);
     std::vector<std::unique_ptr<Note>> notes;
     
+    Note& getNote(size_t index);
+    
 private:
     std::function<bool(const Step&)> isSelectedCallback = nullptr;
     enum class MuteMode { muted, unmuted };
