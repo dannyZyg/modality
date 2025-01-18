@@ -39,9 +39,9 @@ public:
     void moveUp();
     void toggleStepMute();
     void addNote();
+    void removeNote();
     void nextNoteInStep();
     void prevNoteInStep();
-    void removeNote();
     void enableNormalMode();
     void enableVisualMode();
     Mode getMode();

@@ -17,16 +17,20 @@
 //==============================================================================
 /*
 */
-class StepComponent  : public juce::Component
+class StepComponent  : public juce::Component,
+                       public juce::ChangeListener
 {
 public:
-    StepComponent(const Step& s);
+    StepComponent(Step& s);
     ~StepComponent() override;
 
     void paint (juce::Graphics&) override;
     void resized() override;
 
     void setSizeAndPos(int range);
+    void syncWithStep();
+    
+    void changeListenerCallback(juce::ChangeBroadcaster* source) override;
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StepComponent)

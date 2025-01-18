@@ -71,16 +71,19 @@ void Step::addNote()
 {
     notes.emplace_back(std::make_unique<Note>(0));
     std::cout << "adding note" << std::endl;
+    sendChangeMessage();
 }
 
-void Step::removeNote(int noteIndex)
+void Step::removeNote(size_t noteIndex)
 {
-    if (noteIndex >= 0 && noteIndex < notes.size()) {
-        // Remove the element safely
+    //TODO: do we want to allow no note to exist?
+    if (notes.size() == 1)
+        return;
+    
+    if (noteIndex < notes.size()) {
         std::cout << "removing note" << std::endl;
         notes.erase(notes.begin() + noteIndex);
-    } else {
-        std::cerr << "Index out of range!" << std::endl;
+        sendChangeMessage();
     }
 }
 

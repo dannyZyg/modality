@@ -18,7 +18,7 @@
 //==============================================================================
 /*
 */
-class Step  : public juce::Component
+class Step  : public juce::ChangeBroadcaster
 {
 public:
     Step();
@@ -36,7 +36,7 @@ public:
     void setIsSelectedCallback(std::function<bool(const Step&)> callback);
 
     void addNote();
-    void removeNote(int noteIndex);
+    void removeNote(size_t noteIndex);
     std::vector<std::unique_ptr<Note>> notes;
     
     Note& getNote(size_t index);

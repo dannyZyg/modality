@@ -158,12 +158,14 @@ constexpr const char* Cursor::modeToString(Mode m) throw()
 
 void Cursor::addNote()
 {
-    sequence->steps[selectedStepIndex]->addNote();
+    Step& step = sequence->getStep(selectedStepIndex);
+    step.addNote();
 }
 
 void Cursor::removeNote()
 {
-    sequence->steps[selectedStepIndex]->removeNote(0);
+    Step& step = sequence->getStep(selectedStepIndex);
+    step.removeNote(selectedNoteIndex);
 }
 
 size_t Cursor::getStepIndex()

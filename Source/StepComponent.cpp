@@ -13,21 +13,32 @@
 #include "StepComponent.h"
 
 //==============================================================================
-StepComponent::StepComponent(const Step& s) : step(s)
+StepComponent::StepComponent(Step& s) : step(s)
 {
-    for (size_t i = s.notes.size(); i-- > 0; ) {
-        auto note = s.notes[i].get();
+    s.addChangeListener(this);
+    syncWithStep();
+}
+
+StepComponent::~StepComponent()
+{
+}
+
+void StepComponent::syncWithStep() {
+    juce::Logger::writeToLog("sync with Step called!");
+    noteComponents.clear(); // Clear old components
+    
+    // TODO: Fix this so that z index ordering is not based on vector index
+    for (size_t i = step.notes.size(); i-- > 0; ) {
+        auto note = step.notes[i].get();
         if (note) {
             auto noteComponent = std::make_unique<NoteComponent>(*note);
             addAndMakeVisible(noteComponent.get());
             noteComponents.emplace_back(std::move(noteComponent));
         }
     }
+    repaint();
 }
 
-StepComponent::~StepComponent()
-{
-}
 
 void StepComponent::paint (juce::Graphics& g)
 {
@@ -84,11 +95,12 @@ void StepComponent::paint (juce::Graphics& g)
     
     //TODO fix this so that pos x belongs to the step component (notes will share x, mostly)
     float x = noteComponents[0]->pos.x;
-
-    g.setColour (juce::Colours::black);
-    juce::Line<float> line (juce::Point<float> (x, maxY), juce::Point<float> (x, minY));
-    g.drawLine (line, 1.0f);
-
+    
+    if (noteComponents.size() > 0) {
+        g.setColour (juce::Colours::black);
+        juce::Line<float> line (juce::Point<float> (x, maxY), juce::Point<float> (x, minY));
+        g.drawLine (line, 1.0f);
+    }
 }
 
 void StepComponent::resized()
@@ -107,6 +119,13 @@ void StepComponent::setSizeAndPos(int range)
 {
     for (const auto& noteComponent: noteComponents) {
         noteComponent->setSizeAndPos(range);
+    }
+}
+
+void StepComponent::changeListenerCallback(juce::ChangeBroadcaster* source)
+{
+    if (source == &step) {
+        syncWithStep();
     }
 }
 
