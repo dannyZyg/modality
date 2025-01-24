@@ -61,7 +61,7 @@ size_t Sequence::prevNoteIndexInStep(size_t stepIndex , size_t noteIndex)
     // find the prev note index for the step, wrapping to the last index if we are at 0
     size_t numNotes = getNumNotesInStep(stepIndex);
 
-    if (noteIndex <= 0) {
+    if (noteIndex >= 1) {
         return noteIndex - 1;
     } else {
         return numNotes - 1;
