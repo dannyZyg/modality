@@ -11,7 +11,7 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "Note.h"
+#include "Data/Note.h"
 
 //==============================================================================
 /*
@@ -24,14 +24,14 @@ public:
 
     void paint (juce::Graphics&) override;
     void resized() override;
-    
-    
+
+
     const Note& note;
-    
+
     void setSizeAndPos(int range);
     juce::Path createPath();
-    
-    juce::Point<float> pos{0, 0};
+
+    juce::Point<float> pos{500, 500};
     int shapeHeight = 30;
 
 

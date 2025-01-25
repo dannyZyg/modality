@@ -10,10 +10,10 @@
 
 #pragma once
 
-#include "StepComponent.h"
-#include "Cursor.h"
-#include "Sequence.h"
 #include <JuceHeader.h>
+#include "Data/Cursor.h"
+#include "Data/Sequence.h"
+#include "Components/StepComponent.h"
 
 //==============================================================================
 /*
@@ -27,7 +27,6 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
     void update();
-    void resizeSteps();
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SequenceComponent)
@@ -41,5 +40,9 @@ private:
     std::vector<std::unique_ptr<StepComponent>> stepComponents;
 
     int visibleRange = 30;
+
+    juce::Point<float> calculateStepPositions(size_t index, float blockSize);
+
+    int calculateNoteComponentVerticalBounds();
 
 };

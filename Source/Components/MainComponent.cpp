@@ -9,7 +9,7 @@ MainComponent::MainComponent() : sequenceComponent(sequence, cursor)
     setFramesPerSecond (60); // This sets the frequency of the update calls.
     setWantsKeyboardFocus(true);
     addAndMakeVisible(sequenceComponent);
-    
+
     cursor.selectSequence(&sequence);
 }
 
@@ -31,10 +31,10 @@ void MainComponent::paint (juce::Graphics& g)
     grabKeyboardFocus();
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (juce::Colours::white);
-    
+
     g.setFont (20.0f);
     g.setColour(juce::Colours::black);
-    
+
     g.drawText (keyText, 20, getHeight() - 50, 200, 40, juce::Justification::bottomLeft, true);
     g.drawText (cursor.getModeName(), getWidth() - 250, getHeight() - 50, 200, 40, juce::Justification::bottomRight, true);
     g.drawLine(0, getHeight()/2, getWidth(), getHeight()/2);
@@ -42,17 +42,13 @@ void MainComponent::paint (juce::Graphics& g)
 
 void MainComponent::resized()
 {
-    // This is called when the MainContentComponent is resized.
-    // If you add any child components, this is where you should
-    // update their positions.
     sequenceComponent.setBounds(50, 50, getWidth() - 100, getHeight() - 100);
-    sequenceComponent.resizeSteps();
 }
 
 bool MainComponent::keyPressed (const juce::KeyPress& key)
 {
     keyText = "Key: " + key.getTextDescription();
-    
+
     // Handle key presses here
     if (key == juce::KeyPress::spaceKey)
     {
@@ -60,25 +56,25 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
         cursor.moveRight();
         return true; // Indicate that the event was handled
     }
-    
+
     if (key.getTextCharacter() == 'h')
     {
         cursor.moveLeft();
         return true; // Indicate that the event was handled
     }
-    
+
     if (key.getTextCharacter() == 'l')
     {
         cursor.moveRight();
         return true; // Indicate that the event was handled
     }
-    
+
     if (key.getTextCharacter() == 'j')
     {
         cursor.moveDown();
         return true;
     }
-    
+
     if (key.getTextCharacter() == 'k')
     {
         cursor.moveUp();
@@ -90,19 +86,19 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
         cursor.jumpToStart();
         return true;
     }
-    
+
     if (key.getTextCharacter() == '$')
     {
         cursor.jumpToEnd();
         return true;
     }
-    
+
     if (key.getTextCharacter() == 'v')
     {
         cursor.enableVisualMode();
         return true;
     }
-    
+
     if (key.getTextCharacter() == 'm')
     {
         cursor.enableVisualMode();
@@ -114,31 +110,31 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
         cursor.enableNormalMode();
         return true;
     }
-    
+
     if (key.getTextCharacter() == 'a')
     {
         cursor.addNote();
         return true;
     }
-    
+
     if (key.getTextCharacter() == 'r')
     {
         cursor.removeNote();
         return true;
     }
-    
+
     if (key.getTextCharacter() == 'n')
     {
         cursor.nextNoteInStep();
         return true;
     }
-    
+
     if (key.getTextCharacter() == 'N')
     {
         cursor.prevNoteInStep();
         return true;
     }
-    
+
     if (key.getTextCharacter() == 's')
     {
         cursor.previewStep();

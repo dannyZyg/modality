@@ -16,12 +16,12 @@ Sequence::Sequence()
         auto s = std::make_unique<Step>();
         steps.emplace_back(std::move(s));
     }
-};
+}
 
 void Sequence::setIsSelectedCallback(std::function<bool(const Step&)> stepCallback, std::function<bool(const Note&)> noteCallback) {
     for (auto& step : steps) {
         step->setIsSelectedCallback(stepCallback);
-        
+
         for (auto& note: step->notes) {
             note->setIsSelectedCallback(noteCallback);
         }
@@ -66,4 +66,22 @@ size_t Sequence::prevNoteIndexInStep(size_t stepIndex , size_t noteIndex)
     } else {
         return numNotes - 1;
     }
+}
+
+std::pair<int, int> Sequence::getUsedDegreeRange() const
+{
+    // Find the highest and lowest degrees of all the notes in all of the steps;
+    int min = 0;
+    int max = 0;
+    for (auto& step : steps) {
+        for (auto& note : step->notes) {
+            if (note->degree > max)
+                max = note->degree;
+
+            if (note->degree < min)
+                min = note->degree;
+        }
+    }
+
+    return {min, max};
 }

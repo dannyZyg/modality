@@ -11,8 +11,8 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "NoteComponent.h"
-#include "Step.h"
+#include "Components/NoteComponent.h"
+#include "Data/Step.h"
 
 //==============================================================================
 /*
@@ -27,10 +27,12 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
-    void setSizeAndPos(int range);
+    void setNoteComponentBounds(int height);
     void syncWithStep();
-    
+
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;
+
+    void calculateDegreeVisualRange();
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StepComponent)
@@ -38,8 +40,12 @@ private:
     int shapeHeight = 30;
 
     const Step& step;
-    
+
     std::vector<std::unique_ptr<NoteComponent>> noteComponents;
 
+    float maxDegreeYpos = 0.0;
+    float minDegreeYpos = 0.0;
+
+    float mapDegreeToVerticalPosition(int degree, int minDegree, int maxDegree);
 
 };

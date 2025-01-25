@@ -31,19 +31,21 @@ public:
     void setMidiOutput();
     void toggleMute();
     bool isVisuallySelected = false;
-    
+
     bool isSelected() const;
     void setIsSelectedCallback(std::function<bool(const Step&)> callback);
 
-    void addNote();
-    void removeNote(size_t noteIndex);
+    bool addNote();
+    bool removeNote(size_t noteIndex);
     std::vector<std::unique_ptr<Note>> notes;
-    
+
     Note& getNote(size_t index);
-    
+
 private:
+    const int MAX_POLYPHONY = 6;
     std::function<bool(const Step&)> isSelectedCallback = nullptr;
     enum class MuteMode { muted, unmuted };
     MuteMode muteMode = MuteMode::unmuted;
-    int initialNumNotes = 1 + std::rand() % 4;
+    //int initialNumNotes = 1 + std::rand() % 4;
+    int initialNumNotes = 1; // + std::rand() % 4;
 };

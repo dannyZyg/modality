@@ -7,7 +7,7 @@
 */
 
 #include <JuceHeader.h>
-#include "MainComponent.h"
+#include "Components/MainComponent.h"
 
 //==============================================================================
 class ModalityApplication  : public juce::JUCEApplication

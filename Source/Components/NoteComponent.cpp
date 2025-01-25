@@ -20,6 +20,9 @@ NoteComponent::~NoteComponent()
 
 void NoteComponent::paint (juce::Graphics& g)
 {
+    //g.setColour(Colours::purple);
+    //g.drawRect(getLocalBounds(), 1);
+
     float timeInSeconds = juce::Time::getMillisecondCounterHiRes() / 500.0f;
     float sineValue = std::sin(timeInSeconds * juce::MathConstants<float>::pi); // Oscillates between -1 and 1
 
@@ -27,7 +30,7 @@ void NoteComponent::paint (juce::Graphics& g)
     float blendFactor = (sineValue + 1.0f) * 0.5f;
     // Interpolate between black and light grey
     juce::Colour blink = juce::Colours::black.interpolatedWith(juce::Colours::lightgrey, blendFactor);
-    
+
     juce::Path path = createPath();
 
     if (note.isSelected()) {
@@ -66,10 +69,13 @@ void NoteComponent::setSizeAndPos(int range)
 
 juce::Path NoteComponent::createPath()
 {
+    float x = static_cast<float>(getWidth()) / 2;
+    float y = static_cast<float>(getHeight());
+
     juce::Path path;
-    path.startNewSubPath (juce::Point<float> (pos.x, pos.y));
-    path.lineTo (juce::Point<float> (pos.x + shapeHeight, pos.y + shapeHeight / 2));
-    path.lineTo (juce::Point<float> (pos.x, pos.y + shapeHeight));
+    path.startNewSubPath (juce::Point<float> (x, 0));
+    path.lineTo (juce::Point<float> (x + x, getHeight() / 2));
+    path.lineTo (juce::Point<float> (x, getHeight()));
     path.closeSubPath();
     return path;
 }

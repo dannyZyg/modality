@@ -1,10 +1,10 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "Step.h"
-#include "Cursor.h"
-#include "SequenceComponent.h"
-#include "Sequence.h"
+#include "Data/Sequence.h"
+#include "Data/Step.h"
+#include "Data/Cursor.h"
+#include "Components/SequenceComponent.h"
 
 //==============================================================================
 /*
@@ -24,7 +24,7 @@ public:
     //==============================================================================
     void paint (juce::Graphics& g) override;
     void resized() override;
-    
+
 
     bool keyPressed (const juce::KeyPress& key) override;
 
@@ -32,9 +32,9 @@ private:
     //==============================================================================
     // Your private member variables go here...
     juce::String keyText = "";
-    
+
     std::vector<std::unique_ptr<Step>> steps;
-    
+
     Sequence sequence;
     Cursor cursor;
     SequenceComponent sequenceComponent;

@@ -10,14 +10,14 @@
 
 #include "Cursor.h"
 
-Cursor::Cursor() {};
+Cursor::Cursor() {}
 
-Cursor::~Cursor() {};
+Cursor::~Cursor() {}
 
 void Cursor::selectSequence(Sequence* seq)
 {
     sequence = seq;
-    
+
     // Pass through the callback for individual steps to use to see if they are active
     if (sequence) {
         sequence->setIsSelectedCallback([this](const Step& step) {
@@ -29,17 +29,17 @@ void Cursor::selectSequence(Sequence* seq)
         selectStep(0);
         selectNote(0);
     }
-};
+}
 
 void Cursor::selectStep(size_t sIndex)
 {
     selectedStepIndex = sIndex;
-};
+}
 
 void Cursor::selectNote(size_t nIndex)
 {
     selectedNoteIndex = nIndex;
-};
+}
 
 bool Cursor::isStepSelected(const Step& step) const
 {
@@ -58,35 +58,35 @@ void Cursor::moveLeft()
 {
     if (sequence == nullptr)
         return;
-    
+
     // Only shift left if we won't go below 0
     if (selectedStepIndex > 0) {
         selectedStepIndex--;
-        
+
         // Reset note index to 0 of the next Step
         selectedNoteIndex = 0;
     }
-};
+}
 
 void Cursor::moveRight()
 {
     if (sequence == nullptr)
         return;
-    
+
     // Only shift right if we won't go out of bounds
     if (selectedStepIndex < sequence->steps.size() - 1) {
         selectedStepIndex++;
-        
+
         // Reset note index to 0 of the next Step
         selectedNoteIndex = 0;
     }
-};
+}
 
 void Cursor::moveDown()
 {
     if (sequence == nullptr)
         return;
-    
+
     Step& selectedStep = sequence->getStep(selectedStepIndex);
     selectedStep.selectedNoteDown(selectedNoteIndex);
 }
@@ -95,7 +95,7 @@ void Cursor::moveUp()
 {
     if (sequence == nullptr)
         return;
-    
+
     Step& selectedStep = sequence->getStep(selectedStepIndex);
     selectedStep.selectedNoteUp(selectedNoteIndex);
 }
@@ -104,7 +104,7 @@ void Cursor::jumpToStart()
 {
     if (sequence == nullptr)
         return;
-    
+
     selectedStepIndex = 0;
     selectedNoteIndex = 0;
 }
@@ -113,7 +113,7 @@ void Cursor::jumpToEnd()
 {
     if (sequence == nullptr)
         return;
-    
+
     selectedStepIndex = sequence->steps.size() - 1;
     selectedNoteIndex = 0;
 }
@@ -121,30 +121,30 @@ void Cursor::jumpToEnd()
 void Cursor::enableNormalMode()
 {
     mode = Mode::normal;
-};
+}
 
 void Cursor::enableVisualMode()
 {
     mode = Mode::visual;
-};
+}
 
 void Cursor::toggleStepMute()
 {
     if (sequence == nullptr)
         return;
-    
+
     sequence->steps[selectedStepIndex]->toggleMute();
-};
+}
 
 Mode Cursor::getMode()
 {
     return mode;
-};
+}
 
 juce::String Cursor::getModeName()
 {
     return modeToString(mode);
-};
+}
 
 constexpr const char* Cursor::modeToString(Mode m) throw()
 {
@@ -154,18 +154,24 @@ constexpr const char* Cursor::modeToString(Mode m) throw()
         case Mode::visual: return "Visual Mode";
         default: throw std::invalid_argument("Unimplemented item");
     }
-};
+}
 
 void Cursor::addNote()
 {
     Step& step = sequence->getStep(selectedStepIndex);
-    step.addNote();
+    bool wasAdded = step.addNote();
+
+    if (wasAdded)
+        ++selectedNoteIndex;
 }
 
 void Cursor::removeNote()
 {
     Step& step = sequence->getStep(selectedStepIndex);
-    step.removeNote(selectedNoteIndex);
+    bool wasRemoved = step.removeNote(selectedNoteIndex);
+
+    if (wasRemoved)
+        --selectedNoteIndex;
 }
 
 size_t Cursor::getStepIndex()
