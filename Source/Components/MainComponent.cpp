@@ -1,7 +1,7 @@
 #include "MainComponent.h"
 
 //==============================================================================
-MainComponent::MainComponent() : sequenceComponent(sequence, cursor)
+MainComponent::MainComponent() : sequenceComponent(cursor)
 {
     // Make sure you set the size of the component after
     // you add any child components.
@@ -10,7 +10,6 @@ MainComponent::MainComponent() : sequenceComponent(sequence, cursor)
     setWantsKeyboardFocus(true);
     addAndMakeVisible(sequenceComponent);
 
-    cursor.selectSequence(&sequence);
 }
 
 MainComponent::~MainComponent()

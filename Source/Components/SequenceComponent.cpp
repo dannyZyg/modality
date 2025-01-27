@@ -12,10 +12,11 @@
 #include "SequenceComponent.h"
 
 //==============================================================================
-SequenceComponent::SequenceComponent(const Sequence& s, const Cursor& c)
-    : sequence(s), cursor(c)
+SequenceComponent::SequenceComponent(const Cursor& c)
+    : cursor(c)
 {
-    for (auto& step : s.steps) {
+    auto& seq = cursor.getSequence(0);
+    for (auto& step : seq.steps) {
         auto stepComponent = std::make_unique<StepComponent>(*step);
         addAndMakeVisible(stepComponent.get());
         stepComponents.emplace_back(std::move(stepComponent));
@@ -55,7 +56,7 @@ void SequenceComponent::resized()
 
     fb.performLayout(getLocalBounds());
 
-    auto usedDegreeRange = sequence.getUsedDegreeRange();
+    //auto usedDegreeRange = cursor.getSequence(0).getUsedDegreeRange();
     int verticalBounds = calculateNoteComponentVerticalBounds();
 
     for (size_t i = 0; i < stepComponents.size(); i++) {
@@ -73,7 +74,7 @@ void SequenceComponent::update()
     /*     stepComponents[i]->setNoteComponentBounds(visibleRange); */
     /* } */
 
-    auto usedDegreeRange = sequence.getUsedDegreeRange();
+    //auto usedDegreeRange = cursor.getSequence(0).getUsedDegreeRange();
     int verticalBounds = calculateNoteComponentVerticalBounds();
 
     for (size_t i = 0; i < stepComponents.size(); i++) {
@@ -97,7 +98,7 @@ int SequenceComponent::calculateNoteComponentVerticalBounds()
   // Using the range from the lowest degree used to the highest degree used
   // calculate the vertical height each note component can use.
   int defaultRange = 24;  // -12 to 12 as an example
-  auto degreeRange = sequence.getUsedDegreeRange();
+  auto degreeRange = cursor.getSequence(0).getUsedDegreeRange();
   int absRange = std::abs(degreeRange.second - degreeRange.first);
 
   int higherDegreeRange = std::max(absRange, defaultRange);

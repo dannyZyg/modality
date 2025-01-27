@@ -50,6 +50,10 @@ void StepComponent::paint (juce::Graphics& g)
     // Interpolate between black and light grey
     juce::Colour blink = juce::Colours::black.interpolatedWith(juce::Colours::lightgrey, blendFactor);
 
+    if (step.isSelected()) {
+        g.setColour(Colours::green);
+        g.drawRect(getLocalBounds(), 1);
+    }
 
     if(step.notes.size() == 0) {
         juce::PathStrokeType strokeType(0.5f); // Stroke width of 3.0 pixels

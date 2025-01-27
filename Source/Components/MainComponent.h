@@ -33,9 +33,6 @@ private:
     // Your private member variables go here...
     juce::String keyText = "";
 
-    std::vector<std::unique_ptr<Step>> steps;
-
-    Sequence sequence;
     Cursor cursor;
     SequenceComponent sequenceComponent;
 

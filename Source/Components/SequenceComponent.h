@@ -21,7 +21,7 @@
 class SequenceComponent  : public juce::Component
 {
 public:
-    SequenceComponent(const Sequence& s, const Cursor& c);
+    SequenceComponent(const Cursor& c);
     ~SequenceComponent() override;
 
     void paint (juce::Graphics&) override;
@@ -34,7 +34,6 @@ private:
     void drawSequence();
     void drawCursor();
 
-    const Sequence& sequence;
     const Cursor& cursor;
 
     std::vector<std::unique_ptr<StepComponent>> stepComponents;

@@ -13,15 +13,16 @@
 #include <JuceHeader.h>
 #include <cstdlib>
 #include "Note.h"
+#include "Data/Selectable.h"
 
 
 //==============================================================================
 /*
 */
-class Step  : public juce::ChangeBroadcaster
+class Step  : public juce::ChangeBroadcaster, public Selectable<Step>
 {
 public:
-    Step();
+    using Selectable<Step>::Selectable;
     ~Step();
 
     void selectedNoteUp(size_t nIndex);
@@ -32,18 +33,15 @@ public:
     void toggleMute();
     bool isVisuallySelected = false;
 
-    bool isSelected() const;
-    void setIsSelectedCallback(std::function<bool(const Step&)> callback);
-
-    bool addNote();
+    bool addNote(std::function<bool(const Note&)> isSelectedCallback);
     bool removeNote(size_t noteIndex);
+
     std::vector<std::unique_ptr<Note>> notes;
 
     Note& getNote(size_t index);
 
 private:
     const int MAX_POLYPHONY = 6;
-    std::function<bool(const Step&)> isSelectedCallback = nullptr;
     enum class MuteMode { muted, unmuted };
     MuteMode muteMode = MuteMode::unmuted;
     //int initialNumNotes = 1 + std::rand() % 4;

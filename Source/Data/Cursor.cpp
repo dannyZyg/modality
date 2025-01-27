@@ -10,25 +10,35 @@
 
 #include "Cursor.h"
 
-Cursor::Cursor() {}
+Cursor::Cursor() {
+  createSequence();
+  selectSequence(0);
+}
 
 Cursor::~Cursor() {}
 
-void Cursor::selectSequence(Sequence* seq)
+void Cursor::createSequence()
 {
-    sequence = seq;
+    auto sequence = std::make_unique<Sequence>([this](const Sequence& s) { return isSequenceSelected(s); });
 
-    // Pass through the callback for individual steps to use to see if they are active
-    if (sequence) {
-        sequence->setIsSelectedCallback([this](const Step& step) {
-            return isStepSelected(step);
-        },[this](const Note& note) {
-            return isNoteSelected(note);
-        }
-        );
-        selectStep(0);
-        selectNote(0);
+    for (int i = 0; i < sequence->lengthBeats * sequence->stepsPerBeat; ++i) {
+        auto step = std::make_unique<Step>([this](const Step& s) { return isStepSelected(s); });
+
+        step->addNote([this](const Note& note) { return isNoteSelected(note); });
+
+        // We must wait until we have finished modifying the step (adding notes) before adding this to the seq
+        // otherwise we are trying to modify something that is no longer available in this scope
+        sequence->steps.emplace_back(std::move(step));
     }
+
+    sequences.emplace_back(std::move(sequence));
+}
+
+void Cursor::selectSequence(size_t index)
+{
+    selectedSeqIndex = index;
+    selectStep(0);
+    selectNote(0);
 }
 
 void Cursor::selectStep(size_t sIndex)
@@ -41,24 +51,35 @@ void Cursor::selectNote(size_t nIndex)
     selectedNoteIndex = nIndex;
 }
 
+bool Cursor::isSequenceSelected(const Sequence& otherSequence) const
+{
+    Sequence& selectedSequence = getSelectedSequence();
+    return &selectedSequence == &otherSequence;
+}
+
 bool Cursor::isStepSelected(const Step& step) const
 {
-    Step& selectedStep = sequence->getStep(selectedStepIndex);
-    return &selectedStep == &step;
+    return &getSelectedSequence().getStep(selectedStepIndex) == &step;
 }
 
 bool Cursor::isNoteSelected(const Note& note) const
 {
-    Step& selectedStep = sequence->getStep(selectedStepIndex);
-    Note& selectedNote = selectedStep.getNote(selectedNoteIndex);
-    return &selectedNote == &note;
+    Step& selectedStep = getSelectedSequence().getStep(selectedStepIndex);
+    bool isSelected = &note == &selectedStep.getNote(selectedNoteIndex);
+
+    // Debug logging
+    if (!isSelected) {
+        DBG("Note not selected - Current step: " +
+            String(selectedStepIndex) +
+            " Current note: " + String(selectedNoteIndex));
+    }
+
+    return isSelected;
 }
+
 
 void Cursor::moveLeft()
 {
-    if (sequence == nullptr)
-        return;
-
     // Only shift left if we won't go below 0
     if (selectedStepIndex > 0) {
         selectedStepIndex--;
@@ -70,11 +91,8 @@ void Cursor::moveLeft()
 
 void Cursor::moveRight()
 {
-    if (sequence == nullptr)
-        return;
-
     // Only shift right if we won't go out of bounds
-    if (selectedStepIndex < sequence->steps.size() - 1) {
+    if (selectedStepIndex < getSelectedSequence().steps.size() - 1) {
         selectedStepIndex++;
 
         // Reset note index to 0 of the next Step
@@ -84,37 +102,25 @@ void Cursor::moveRight()
 
 void Cursor::moveDown()
 {
-    if (sequence == nullptr)
-        return;
-
-    Step& selectedStep = sequence->getStep(selectedStepIndex);
+    Step& selectedStep = getSelectedSequence().getStep(selectedStepIndex);
     selectedStep.selectedNoteDown(selectedNoteIndex);
 }
 
 void Cursor::moveUp()
 {
-    if (sequence == nullptr)
-        return;
-
-    Step& selectedStep = sequence->getStep(selectedStepIndex);
+    Step& selectedStep = getSelectedSequence().getStep(selectedStepIndex);
     selectedStep.selectedNoteUp(selectedNoteIndex);
 }
 
 void Cursor::jumpToStart()
 {
-    if (sequence == nullptr)
-        return;
-
     selectedStepIndex = 0;
     selectedNoteIndex = 0;
 }
 
 void Cursor::jumpToEnd()
 {
-    if (sequence == nullptr)
-        return;
-
-    selectedStepIndex = sequence->steps.size() - 1;
+    selectedStepIndex = getSelectedSequence().steps.size() - 1;
     selectedNoteIndex = 0;
 }
 
@@ -130,10 +136,7 @@ void Cursor::enableVisualMode()
 
 void Cursor::toggleStepMute()
 {
-    if (sequence == nullptr)
-        return;
-
-    sequence->steps[selectedStepIndex]->toggleMute();
+    getSelectedSequence().steps[selectedStepIndex]->toggleMute();
 }
 
 Mode Cursor::getMode()
@@ -158,16 +161,20 @@ constexpr const char* Cursor::modeToString(Mode m) throw()
 
 void Cursor::addNote()
 {
-    Step& step = sequence->getStep(selectedStepIndex);
-    bool wasAdded = step.addNote();
+    Step& step = getSelectedSequence().getStep(selectedStepIndex);
+    bool wasAdded = step.addNote(
+        [this](const Note& note) { return isNoteSelected(note); }
+    );
 
     if (wasAdded)
         ++selectedNoteIndex;
+
+    juce::Logger::writeToLog("selectedNoteIndex is: " + juce::String(selectedNoteIndex));
 }
 
 void Cursor::removeNote()
 {
-    Step& step = sequence->getStep(selectedStepIndex);
+    Step& step = getSelectedSequence().getStep(selectedStepIndex);
     bool wasRemoved = step.removeNote(selectedNoteIndex);
 
     if (wasRemoved)
@@ -186,22 +193,39 @@ size_t Cursor::getNoteIndex()
 
 void Cursor::nextNoteInStep()
 {
-    selectedNoteIndex = sequence->nextNoteIndexInStep(selectedStepIndex, selectedNoteIndex);
+    size_t n = getSelectedSequence().nextNoteIndexInStep(selectedStepIndex, selectedNoteIndex);
+    juce::Logger::writeToLog("Next note is: " + juce::String(n));
+    selectedNoteIndex = getSelectedSequence().nextNoteIndexInStep(selectedStepIndex, selectedNoteIndex);
 }
 
 void Cursor::prevNoteInStep()
 {
-    selectedNoteIndex = sequence->prevNoteIndexInStep(selectedStepIndex, selectedNoteIndex);
+    selectedNoteIndex = getSelectedSequence().prevNoteIndexInStep(selectedStepIndex, selectedNoteIndex);
 }
 
 void Cursor::previewNote()
 {
-    Step& step = sequence->getStep(selectedStepIndex);
+    Step& step = getSelectedSequence().getStep(selectedStepIndex);
     //step.playNote(step);
 }
 
 void Cursor::previewStep()
 {
-    Step& step = sequence->getStep(selectedStepIndex);
+    Step& step = getSelectedSequence().getStep(selectedStepIndex);
     step.playStep();
+}
+
+Sequence& Cursor::getSequence(size_t index) const
+{
+    if (index >= sequences.size()) {
+        std::string m = "Seq index out of bounds: " + std::to_string(index);
+        juce::Logger::writeToLog(m);
+        throw std::out_of_range(m);
+    }
+    return *sequences[index];
+}
+
+Sequence& Cursor::getSelectedSequence() const
+{
+    return getSequence(selectedSeqIndex);
 }

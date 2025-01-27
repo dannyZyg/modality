@@ -10,20 +10,16 @@
 
 
 #include <JuceHeader.h>
+#include "Data/Selectable.h"
 #pragma once
 
-class Note
+class Note : public Selectable<Note>
 {
 public:
-    Note();
-    Note(int deg);
+    using Selectable<Note>::Selectable;
     ~Note();
     int degree = 0;
 
-    bool isSelected() const;
-    void setIsSelectedCallback(std::function<bool(const Note&)> callback);
-
 private:
-    std::function<bool(const Note&)> isSelectedCallback = nullptr;
 
 };

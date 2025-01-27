@@ -14,12 +14,6 @@
 #include "Step.h"
 
 //==============================================================================
-Step::Step()
-{
-    for (int i = 0; i < initialNumNotes; i++) {
-        addNote();
-    }
-}
 
 Step::~Step()
 {
@@ -49,15 +43,6 @@ void Step::selectedNoteDown(size_t nIndex) {
     playNote(n->degree);
 }
 
-bool Step::isSelected() const {
-    return isSelectedCallback ? isSelectedCallback(*this) : false;
-}
-
-void Step::setIsSelectedCallback(std::function<bool (const Step &)> callback)
-{
-    isSelectedCallback = callback;
-}
-
 void Step::toggleMute()
 {
     if (muteMode == MuteMode::muted)
@@ -67,15 +52,11 @@ void Step::toggleMute()
         muteMode = MuteMode::muted;
 }
 
-bool Step::addNote()
+bool Step::addNote(std::function<bool(const Note&)> callback)
 {
-    if (notes.size() < MAX_POLYPHONY) {
-      notes.emplace_back(std::make_unique<Note>(0));
-      sendChangeMessage();
-      return true;
-    }
-
-    return false;
+    auto note = std::make_unique<Note>(callback);
+    notes.emplace_back(std::move(note));
+    return true;
 }
 
 bool Step::removeNote(size_t noteIndex)

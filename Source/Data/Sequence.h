@@ -9,15 +9,15 @@
 */
 
 #include "Data/Step.h"
+#include "Data/Selectable.h"
 #pragma once
 
-class Sequence
+class Sequence : public Selectable<Sequence>
 {
 public:
-    Sequence();
-    std::vector<std::unique_ptr<Step>> steps;
+    using Selectable<Sequence>::Selectable;
 
-    void setIsSelectedCallback(std::function<bool(const Step&)>, std::function<bool(const Note&)>);
+    std::vector<std::unique_ptr<Step>> steps;
 
     int lengthBeats = 4;
     int stepsPerBeat = 4;
