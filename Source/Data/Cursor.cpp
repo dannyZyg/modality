@@ -64,17 +64,7 @@ bool Cursor::isStepSelected(const Step& step) const
 
 bool Cursor::isNoteSelected(const Note& note) const
 {
-    Step& selectedStep = getSelectedSequence().getStep(selectedStepIndex);
-    bool isSelected = &note == &selectedStep.getNote(selectedNoteIndex);
-
-    // Debug logging
-    if (!isSelected) {
-        DBG("Note not selected - Current step: " +
-            String(selectedStepIndex) +
-            " Current note: " + String(selectedNoteIndex));
-    }
-
-    return isSelected;
+    return &note == &getSelectedSequence().getStep(selectedStepIndex).getNote(selectedNoteIndex);
 }
 
 
@@ -162,12 +152,9 @@ constexpr const char* Cursor::modeToString(Mode m) throw()
 void Cursor::addNote()
 {
     Step& step = getSelectedSequence().getStep(selectedStepIndex);
-    bool wasAdded = step.addNote(
+    selectedNoteIndex = step.addNote(
         [this](const Note& note) { return isNoteSelected(note); }
     );
-
-    if (wasAdded)
-        ++selectedNoteIndex;
 
     juce::Logger::writeToLog("selectedNoteIndex is: " + juce::String(selectedNoteIndex));
 }
@@ -175,10 +162,7 @@ void Cursor::addNote()
 void Cursor::removeNote()
 {
     Step& step = getSelectedSequence().getStep(selectedStepIndex);
-    bool wasRemoved = step.removeNote(selectedNoteIndex);
-
-    if (wasRemoved)
-        --selectedNoteIndex;
+    selectedNoteIndex = step.removeNote(selectedNoteIndex);
 }
 
 size_t Cursor::getStepIndex()

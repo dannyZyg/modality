@@ -52,22 +52,39 @@ void Step::toggleMute()
         muteMode = MuteMode::muted;
 }
 
-bool Step::addNote(std::function<bool(const Note&)> callback)
+size_t Step::addNote(std::function<bool(const Note&)> callback)
 {
     auto note = std::make_unique<Note>(callback);
     notes.emplace_back(std::move(note));
-    return true;
+    // Tell Step component to update
+    sendChangeMessage();
+    return notes.size() - 1;
 }
 
-bool Step::removeNote(size_t noteIndex)
+size_t Step::removeNote(size_t noteIndex)
 {
-    if (noteIndex > 0 && noteIndex < notes.size()) {
-        notes.erase(notes.begin() + noteIndex);
+    size_t newNoteIndex = noteIndex;
+
+    if (notes.size() > 1) {
+        juce::Logger::writeToLog("size is: " + juce::String(notes.size()));
+
+        // If we are looking at note index 0, remove from the end;
+        if (noteIndex == 0) {
+            notes.erase(notes.begin() + 1);
+            newNoteIndex = noteIndex;
+        }
+
+        // Remove the selected note if it is not note 0
+        else {
+            notes.erase(notes.begin() + noteIndex);
+            newNoteIndex = noteIndex - 1;
+        }
+
+        // Tell Step component to update
         sendChangeMessage();
-        return true;
     }
 
-    return false;
+    return newNoteIndex;
 }
 
 void Step::playNote(int degree)

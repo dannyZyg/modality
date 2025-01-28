@@ -39,8 +39,6 @@ void StepComponent::syncWithStep() {
 
 void StepComponent::paint (juce::Graphics& g)
 {
-    //g.setColour(Colours::green);
-    //g.drawRect(getLocalBounds(), 1);
 
     float timeInSeconds = juce::Time::getMillisecondCounterHiRes() / 500.0f;
     float sineValue = std::sin(timeInSeconds * juce::MathConstants<float>::pi); // Oscillates between -1 and 1
