@@ -18,8 +18,14 @@ class Note : public Selectable<Note>
 public:
     using Selectable<Note>::Selectable;
     ~Note();
-    int degree = 0;
+
+    int getDegree() const;
+    int getOctave() const;
+    void shiftDegreeUp();
+    void shiftDegreeDown();
 
 private:
+    int degree = 0;
+    int octave = 0;
 
 };

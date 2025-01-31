@@ -24,7 +24,6 @@ StepComponent::~StepComponent()
 }
 
 void StepComponent::syncWithStep() {
-    juce::Logger::writeToLog("sync with Step called!");
     noteComponents.clear(); // Clear old components
 
     // TODO: Fix this so that z index ordering is not based on vector index
@@ -130,7 +129,7 @@ void StepComponent::setNoteComponentBounds(int height)
     maxDegreeYpos = getHeight() / 2;
 
     for (const auto& noteComponent: noteComponents) {
-        int degree = noteComponent->note.degree;
+        int degree = noteComponent->note.getDegree();
 
         float mappedPosition = mapDegreeToVerticalPosition(degree, min, max);
 

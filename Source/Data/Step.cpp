@@ -32,15 +32,15 @@ Note& Step::getNote(size_t index)
 void Step::selectedNoteUp(size_t nIndex) {
     // Move down one degree up pitch
     auto& n = notes[nIndex];
-    n->degree++;
-    playNote(n->degree);
+    n->shiftDegreeUp();
+    playNote(n->getDegree());
 }
 
 void Step::selectedNoteDown(size_t nIndex) {
     // Move down one degree in pitch
     auto& n = notes[nIndex];
-    n->degree--;
-    playNote(n->degree);
+    n->shiftDegreeDown();
+    playNote(n->getDegree());
 }
 
 void Step::toggleMute()
@@ -89,7 +89,7 @@ size_t Step::removeNote(size_t noteIndex)
 
 void Step::playNote(int degree)
 {
-    auto message = juce::MidiMessage::noteOn (1, 64 - degree, (juce::uint8) 100);
+    auto message = juce::MidiMessage::noteOn (1, 64 + degree, (juce::uint8) 100);
     auto messageOff = juce::MidiMessage::noteOff (message.getChannel(), message.getNoteNumber());
     messageOff.setTimeStamp (message.getTimeStamp() + 0.1);
 
@@ -104,9 +104,8 @@ void Step::playNote(int degree)
 
 void Step::playStep()
 {
-
     for (auto& n : notes) {
-        playNote(n->degree);
+        playNote(n->getDegree());
     }
 }
 

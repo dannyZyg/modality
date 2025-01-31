@@ -57,11 +57,11 @@ std::pair<int, int> Sequence::getUsedDegreeRange() const
     int max = 0;
     for (auto& step : steps) {
         for (auto& note : step->notes) {
-            if (note->degree > max)
-                max = note->degree;
+            if (note->getDegree() > max)
+                max = note->getDegree();
 
-            if (note->degree < min)
-                min = note->degree;
+            if (note->getDegree() < min)
+                min = note->getDegree();
         }
     }
 

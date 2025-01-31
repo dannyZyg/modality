@@ -63,7 +63,7 @@ void NoteComponent::setSizeAndPos(int range)
 {
     float stepSize = getHeight() / range;
     pos.x = getWidth() / 2;
-    pos.y = (getHeight() / 2) - (stepSize / 2) + (stepSize * note.degree);
+    pos.y = (getHeight() / 2) - (stepSize / 2) + (stepSize * note.getDegree());
     shapeHeight = stepSize;
 }
 
