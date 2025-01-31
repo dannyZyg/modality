@@ -38,12 +38,6 @@ void NoteComponent::paint (juce::Graphics& g)
         g.fillPath(path);
         g.setColour (juce::Colours::black);
         g.strokePath(path, juce::PathStrokeType(1.0f));
-    // TODO: fix visual select
-    } else if (false) {
-        g.setColour (juce::Colours::yellow);
-        g.strokePath(path, juce::PathStrokeType(1.0f));
-        g.setColour (juce::Colours::black);
-        g.fillPath (path);
     } else {
         g.setColour (juce::Colours::white);
         g.fillPath(path);
