@@ -18,7 +18,7 @@ MainComponent::MainComponent() : sequenceComponent(cursor)
     startButton.addListener(this);
     stopButton.addListener(this);
 
-    // Initialize audio
+    // Initialise audio
     deviceManager.initialise(0, 2, nullptr, true);
     deviceManager.addAudioCallback(this); // Register audio callback
 
@@ -29,14 +29,14 @@ MainComponent::MainComponent() : sequenceComponent(cursor)
         auto deviceInfo = midiOutputs[0];
         midiOutput = juce::MidiOutput::openDevice(deviceInfo.identifier);
         if (midiOutput)
-            DBG("MIDI output initialized: " << deviceInfo.name);
+            DBG("MIDI output initialised: " << deviceInfo.name);
     }
 
     // Create and set up silent source
     silentSource = std::make_unique<SilentPositionableSource>();
     transportSource.setSource(silentSource.get(), 0, nullptr, sampleRate);
 
-    initialiseMidiClip();
+    baseMidiClip = cursor.extractMidiSequence(0);
 }
 
 MainComponent::~MainComponent()
@@ -101,12 +101,14 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
     if (key.getTextCharacter() == 'j')
     {
         cursor.moveDown();
+        baseMidiClip = cursor.extractMidiSequence(0);
         return true;
     }
 
     if (key.getTextCharacter() == 'k')
     {
         cursor.moveUp();
+        baseMidiClip = cursor.extractMidiSequence(0);
         return true;
     }
 
@@ -193,9 +195,13 @@ void MainComponent::buttonClicked(juce::Button* button)
             for (int channel = 1; channel <= 16; ++channel)
                 midiOutput->sendMessageNow(juce::MidiMessage::allNotesOff(channel));
         }
-
+        // Reset everything
         transportSource.setPosition(0.0);
-        lastProcessedTime = 0.0;
+        lastProcessedTime = 0.0;  // Important for first note
+        nextClipStartTime = midiClipDuration;
+        // Reset midiClip to initial state
+        midiClip = baseMidiClip;
+
         transportSource.start();
         DBG("Transport Started");
     }
@@ -212,16 +218,31 @@ void MainComponent::buttonClicked(juce::Button* button)
     }
 }
 
-// === Create a Simple Pattern of 16th Notes ===
-void MainComponent::initialiseMidiClip()
+void MainComponent::extendMidiClip(double currentTime)
 {
-    midiClip.clear();
-    double beatDuration = 60.0 / 120.0 / 4.0; // 16th note at 120 BPM
-
-    for (int i = 0; i < 16; ++i)  // 1 bar of 16th notes
+    // If we're getting close to the end of our current notes
+    if (currentTime >= nextClipStartTime - 0.5) // Look ahead by 0.5 seconds
     {
-        double time = i * beatDuration;
-        midiClip.emplace_back(time, 60 + (i % 4), 100, beatDuration * 0.9); // C4-D4-E4-F4 cycle
+        // Add another iteration of the pattern
+        std::vector<Sequence::MidiNote> nextIteration;
+        for (const auto& note : baseMidiClip)
+        {
+            // Create a new note with updated timestamp
+            nextIteration.emplace_back(
+                note.time + nextClipStartTime,
+                note.noteNumber,
+                note.velocity,
+                note.duration
+            );
+        }
+
+        // Add new notes to midiClip
+        midiClip.insert(midiClip.end(), nextIteration.begin(), nextIteration.end());
+
+        // Update next clip start time
+        nextClipStartTime += midiClipDuration;
+
+        DBG("Extended clip. Next start time: " << nextClipStartTime);
     }
 }
 
@@ -232,7 +253,7 @@ void MainComponent::audioDeviceIOCallbackWithContext(const float* const* inputCh
                                                    int numSamples,
                                                    const AudioIODeviceCallbackContext& context)
 {
-    // Clear output buffer
+    // Clear output buffer (fill output channels with silence)
     for (int channel = 0; channel < numOutputChannels; ++channel)
         if (outputChannelData[channel] != nullptr)
             std::fill_n(outputChannelData[channel], numSamples, 0.0f);
@@ -244,41 +265,29 @@ void MainComponent::audioDeviceIOCallbackWithContext(const float* const* inputCh
     if (!transportSource.isPlaying() || !midiOutput)
         return;
 
-    double currentPosition = std::fmod(transportSource.getCurrentPosition(), clipLength);
+    double currentPosition = transportSource.getCurrentPosition();
 
-    // Debug output every 100ms or so
-    static int debugCounter = 0;
-    if (++debugCounter >= 50)
-    {
-        DBG("Current Position: " << currentPosition);
-        debugCounter = 0;
-    }
+    // Extend the MIDI clip if needed
+    extendMidiClip(currentPosition);
 
     // Process each note
     for (const auto& note : midiClip)
     {
-        // If we've moved past this note's position since last buffer
-        if (currentPosition >= note.time && lastProcessedTime < note.time)
+        // For notes that should play in this buffer:
+        // 1. Regular case: note time is between last and current position
+        // 2. First buffer case: note time is less than current position and we haven't processed anything yet
+        if ((currentPosition >= note.time && lastProcessedTime < note.time) ||
+            (lastProcessedTime == 0.0 && note.time <= currentPosition && note.time < 0.02)) // 20ms threshold
         {
             // Note on
             midiOutput->sendMessageNow(juce::MidiMessage::noteOn(1, note.noteNumber, (uint8)note.velocity));
-            DBG("Note ON: " << note.noteNumber << " at time: " << currentPosition);
 
             // Schedule note off
             midiOutput->sendMessageNow(juce::MidiMessage::noteOff(1, note.noteNumber));
         }
     }
 
-    // Handle loop point
-    if (currentPosition < lastProcessedTime)
-    {
-        lastProcessedTime = 0.0;
-        DBG("Loop point hit");
-    }
-    else
-    {
-        lastProcessedTime = currentPosition;
-    }
+    lastProcessedTime = currentPosition;
 }
 
 
@@ -296,4 +305,14 @@ void MainComponent::audioDeviceAboutToStart(juce::AudioIODevice* device)
 void MainComponent::audioDeviceStopped()
 {
     transportSource.releaseResources();
+}
+
+juce::String MainComponent::notesToString(const std::vector<Sequence::MidiNote>& notes)
+{
+    juce::String result;
+    for (const auto& note : notes)
+    {
+        result += juce::String(note.noteNumber) + " ";
+    }
+    return result;
 }

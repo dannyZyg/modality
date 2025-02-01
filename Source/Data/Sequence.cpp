@@ -67,3 +67,24 @@ std::pair<int, int> Sequence::getUsedDegreeRange() const
 
     return {min, max};
 }
+
+std::vector<Sequence::MidiNote> Sequence::extractMidiNotes()
+{
+
+    std::vector<MidiNote> midiClip;
+
+    double beatDuration = 60.0 / 120.0 / 4.0; // 16th note at 120 BPM
+
+    for (size_t i = 0; i < lengthBeats * stepsPerBeat; ++i)  // 1 bar of 16th notes
+    {
+        double time = static_cast<double>(i) * beatDuration;
+
+        auto& step = steps[i];
+
+        for (auto& note : step->notes) {
+            midiClip.emplace_back(time, 64 + note->getDegree(), 100, beatDuration * 0.9);
+        }
+    }
+
+    return midiClip;
+}

@@ -213,3 +213,8 @@ Sequence& Cursor::getSelectedSequence() const
 {
     return getSequence(selectedSeqIndex);
 }
+
+std::vector<Sequence::MidiNote> Cursor::extractMidiSequence(size_t seqIndex)
+{
+  return getSequence(seqIndex).extractMidiNotes();
+}

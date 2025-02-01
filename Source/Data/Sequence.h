@@ -29,6 +29,20 @@ public:
 
     std::pair<int, int> getUsedDegreeRange() const;
 
+
+    // === Struct to Represent MIDI Notes ===
+    struct MidiNote
+    {
+        double time;    // Note start time (in seconds)
+        int noteNumber; // MIDI note number (0-127)
+        int velocity;   // Velocity (0-127)
+        double duration;// Duration in seconds
+
+        MidiNote(double t, int note, int vel, double dur)
+            : time(t), noteNumber(note), velocity(vel), duration(dur) {}
+    };
+
+  std::vector<MidiNote> extractMidiNotes();
 private:
 
 };

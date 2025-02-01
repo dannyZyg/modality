@@ -64,6 +64,8 @@ public:
     void previewNote();
     void previewStep();
 
+    std::vector<Sequence::MidiNote> extractMidiSequence(size_t seqIndex);
+
 private:
     Mode mode = Mode::normal;
 
