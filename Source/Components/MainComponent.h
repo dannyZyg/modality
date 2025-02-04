@@ -110,6 +110,9 @@ private:
     juce::String notesToString(const std::vector<Sequence::MidiNote>& notes);
     void extendMidiClip(double currentTime);
 
+    void start();
+    void stop();
+
     std::unique_ptr<SilentPositionableSource> silentSource;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)

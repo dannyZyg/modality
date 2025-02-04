@@ -2,8 +2,9 @@
 
 ## Modal stuff
 - [ ] add visual (multi) select
-- [ ] add yank/paste
+- [ ] add yank/paste/delete
 - [ ] repeat last action (action buffer)
+- [ ] undo (action buffer??)
 
 ## Step/Note Editing
 - [ ] invert notes (degrees go pos/neg)

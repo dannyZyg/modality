@@ -81,8 +81,12 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
     // Handle key presses here
     if (key == juce::KeyPress::spaceKey)
     {
-        cursor.previewStep();
-        cursor.moveRight();
+        if (transportSource.isPlaying()) {
+            stop();
+        } else {
+            start();
+        }
+
         return true; // Indicate that the event was handled
     }
 
@@ -172,50 +176,48 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
         return true;
     }
 
-    if (key.getTextCharacter() == 't')
-    {
-        return true;
-    }
-
-    if (key.getTextCharacter() == 'r')
-    {
-        return true;
-    }
-
     return false; // Pass unhandled keys to the base class
 }
 
 void MainComponent::buttonClicked(juce::Button* button)
 {
-    if (button == &startButton)
-    {
-        // Stop any currently playing notes
-        if (midiOutput)
-        {
-            for (int channel = 1; channel <= 16; ++channel)
-                midiOutput->sendMessageNow(juce::MidiMessage::allNotesOff(channel));
-        }
-        // Reset everything
-        transportSource.setPosition(0.0);
-        lastProcessedTime = 0.0;  // Important for first note
-        nextClipStartTime = midiClipDuration;
-        // Reset midiClip to initial state
-        midiClip = baseMidiClip;
+    if (button == &startButton) {
+        start();
+    } else if (button == &stopButton) {
+        stop();
+    }
+}
 
-        transportSource.start();
-        DBG("Transport Started");
-    }
-    else if (button == &stopButton)
+void MainComponent::start()
+{
+    // Stop any currently playing notes
+    if (midiOutput)
     {
-        transportSource.stop();
-        // Stop any currently playing notes
-        if (midiOutput)
-        {
-            for (int channel = 1; channel <= 16; ++channel)
-                midiOutput->sendMessageNow(juce::MidiMessage::allNotesOff(channel));
-        }
-        DBG("Transport Stopped");
+        for (int channel = 1; channel <= 16; ++channel)
+            midiOutput->sendMessageNow(juce::MidiMessage::allNotesOff(channel));
     }
+    // Reset everything
+    transportSource.setPosition(0.0);
+    lastProcessedTime = 0.0;  // Important for first note
+    nextClipStartTime = midiClipDuration;
+    // Reset midiClip to initial state
+    midiClip = baseMidiClip;
+
+    transportSource.start();
+    DBG("Transport Started");
+
+}
+
+void MainComponent::stop()
+{
+    transportSource.stop();
+    // Stop any currently playing notes
+    if (midiOutput)
+    {
+        for (int channel = 1; channel <= 16; ++channel)
+            midiOutput->sendMessageNow(juce::MidiMessage::allNotesOff(channel));
+    }
+    DBG("Transport Stopped");
 }
 
 void MainComponent::extendMidiClip(double currentTime)
