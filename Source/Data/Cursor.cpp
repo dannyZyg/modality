@@ -20,17 +20,6 @@ Cursor::~Cursor() {}
 void Cursor::createSequence()
 {
     auto sequence = std::make_unique<Sequence>([this](const Sequence& s) { return isSequenceSelected(s); });
-
-    for (int i = 0; i < sequence->lengthBeats * sequence->stepsPerBeat; ++i) {
-        auto step = std::make_unique<Step>([this](const Step& s) { return isStepSelected(s); });
-
-        step->addNote([this](const Note& note) { return isNoteSelected(note); });
-
-        // We must wait until we have finished modifying the step (adding notes) before adding this to the seq
-        // otherwise we are trying to modify something that is no longer available in this scope
-        sequence->steps.emplace_back(std::move(step));
-    }
-
     sequences.emplace_back(std::move(sequence));
 }
 
@@ -67,61 +56,159 @@ bool Cursor::isNoteSelected(const Note& note) const
     return &note == &getSelectedSequence().getStep(selectedStepIndex).getNote(selectedNoteIndex);
 }
 
+void Cursor::moveCursorSelection(Direction d)
+{
+    moveNotesInSelection(d);
+
+    switch(d)
+    {
+        case Direction::left:
+            visualSelection.moveSelection(timeline.getStepSize(), d);
+            moveLeft();
+            break;
+        case Direction::right:
+            visualSelection.moveSelection(timeline.getStepSize(), d);
+            moveRight();
+            break;
+        case Direction::up:
+            visualSelection.moveSelection(scale.getStepSize(), d);
+            moveUp();
+            break;
+        case Direction::down:
+            visualSelection.moveSelection(scale.getStepSize(), d);
+            moveDown();
+            break;
+        default: break;
+    }
+}
+
+void Cursor::moveNotesInSelection(Direction d)
+{
+    for (const Position& pos: getVisualSelectionPositions()) {
+        for (auto& note : getSelectedSequence().notes) {
+            if (Division::isEqual(pos.xTime.value, note->getStartTime())
+                && Division::isEqual(pos.yDegree.value, note->getDegree()))
+            {
+                switch (d)
+                {
+                    case Direction::left:
+                        note->shiftEarlier(timeline.getStepSize());
+                        break;
+                    case Direction::right:
+                        note->shiftLater(timeline.getStepSize());
+                        break;
+                    case Direction::up:
+                        note->shiftDegreeUp();
+                        break;
+                    case Direction::down:
+                        note->shiftDegreeDown();
+                        break;
+                    default: break;
+                }
+            }
+        }
+    }
+}
 
 void Cursor::moveLeft()
 {
-    // Only shift left if we won't go below 0
-    if (selectedStepIndex > 0) {
-        selectedStepIndex--;
+    cursorPosition.xTime = timeline.getPrevStep(cursorPosition.xTime);
 
-        // Reset note index to 0 of the next Step
-        selectedNoteIndex = 0;
+    if (isVisualLineMode()) {
+        visualSelection.addToSelection(cursorPosition);
+    }
+
+    if (isVisualBlockMode()) {
+        visualSelection.addToBlockSelection(cursorPosition);
     }
 }
 
 void Cursor::moveRight()
 {
-    // Only shift right if we won't go out of bounds
-    if (selectedStepIndex < getSelectedSequence().steps.size() - 1) {
-        selectedStepIndex++;
+    cursorPosition.xTime = timeline.getNextStep(cursorPosition.xTime);
 
-        // Reset note index to 0 of the next Step
-        selectedNoteIndex = 0;
+    if (isVisualLineMode()) {
+        visualSelection.addToSelection(cursorPosition);
+    }
+
+    if (isVisualBlockMode()) {
+        visualSelection.addToBlockSelection(cursorPosition);
     }
 }
 
 void Cursor::moveDown()
 {
-    Step& selectedStep = getSelectedSequence().getStep(selectedStepIndex);
-    selectedStep.selectedNoteDown(selectedNoteIndex);
+    cursorPosition.yDegree = scale.getLower(cursorPosition.yDegree);
+
+    if (isVisualLineMode()) {
+        visualSelection.addToSelection(cursorPosition);
+    }
+
+    if (isVisualBlockMode()) {
+        visualSelection.addToBlockSelection(cursorPosition);
+    }
 }
 
 void Cursor::moveUp()
 {
-    Step& selectedStep = getSelectedSequence().getStep(selectedStepIndex);
-    selectedStep.selectedNoteUp(selectedNoteIndex);
+    cursorPosition.yDegree = scale.getHigher(cursorPosition.yDegree);
+
+    if (isVisualLineMode()) {
+        visualSelection.addToSelection(cursorPosition);
+    }
+
+    if (isVisualBlockMode()) {
+        visualSelection.addToBlockSelection(cursorPosition);
+    }
 }
+
+
 
 void Cursor::jumpToStart()
 {
-    selectedStepIndex = 0;
-    selectedNoteIndex = 0;
+    cursorPosition.xTime.value = timeline.getLowerBound();
 }
 
 void Cursor::jumpToEnd()
 {
-    selectedStepIndex = getSelectedSequence().steps.size() - 1;
-    selectedNoteIndex = 0;
+    cursorPosition.xTime.value = timeline.getUpperBound() - timeline.getStepSize();
+}
+
+void Cursor::jumpForwardBeat()
+{
+    cursorPosition.xTime.value = timeline.getNextStep(cursorPosition.xTime.value, Division::quarter).value;
+}
+
+void Cursor::jumpBackBeat()
+{
+    cursorPosition.xTime.value = timeline.getPrevStep(cursorPosition.xTime.value, Division::quarter).value;
 }
 
 void Cursor::enableNormalMode()
 {
+    if (isVisualLineMode() || isVisualBlockMode()) {
+        visualSelection.clear();
+    }
+
     mode = Mode::normal;
 }
 
-void Cursor::enableVisualMode()
+void Cursor::enableVisualLineMode()
 {
-    mode = Mode::visual;
+    mode = Mode::visualLine;
+
+    visualSelection.addToVisualLineSelection(cursorPosition, Selection::VisualLineMode::vertical, timeline, scale);
+}
+
+void Cursor::enableVisualBlockMode()
+{
+    mode = Mode::visualBlock;
+    visualSelection.addToSelection(cursorPosition);
+}
+
+void Cursor::enableInsertMode()
+{
+    mode = Mode::insert;
 }
 
 void Cursor::toggleStepMute()
@@ -139,30 +226,16 @@ juce::String Cursor::getModeName()
     return modeToString(mode);
 }
 
-constexpr const char* Cursor::modeToString(Mode m) throw()
+constexpr const char* Cursor::modeToString(Mode m)
 {
     switch (m)
     {
         case Mode::normal: return "Normal Mode";
-        case Mode::visual: return "Visual Mode";
-        default: throw std::invalid_argument("Unimplemented item");
+        case Mode::visualBlock: return "Visual Block Mode";
+        case Mode::visualLine: return "Visual Line Mode";
+        case Mode::insert: return "Insert Mode";
+        default: return "Unkown Mode";
     }
-}
-
-void Cursor::addNote()
-{
-    Step& step = getSelectedSequence().getStep(selectedStepIndex);
-    selectedNoteIndex = step.addNote(
-        [this](const Note& note) { return isNoteSelected(note); }
-    );
-
-    juce::Logger::writeToLog("selectedNoteIndex is: " + juce::String(selectedNoteIndex));
-}
-
-void Cursor::removeNote()
-{
-    Step& step = getSelectedSequence().getStep(selectedStepIndex);
-    selectedNoteIndex = step.removeNote(selectedNoteIndex);
 }
 
 size_t Cursor::getStepIndex()
@@ -174,6 +247,16 @@ size_t Cursor::getNoteIndex()
 {
     return selectedNoteIndex;
 }
+
+/* void Cursor::nextNearestNote() */
+/* { */
+/**/
+/* } */
+/**/
+/* void Cursor::prevNearestNote() */
+/* { */
+/**/
+/* } */
 
 void Cursor::nextNoteInStep()
 {
@@ -216,5 +299,55 @@ Sequence& Cursor::getSelectedSequence() const
 
 std::vector<Sequence::MidiNote> Cursor::extractMidiSequence(size_t seqIndex)
 {
-  return getSequence(seqIndex).extractMidiNotes();
+  /* return getSequence(seqIndex).extractMidiNotes(); */
+
+    std::vector<Sequence::MidiNote> midiClip;
+
+    float tempo = 120.0;
+
+    for (auto& n : getSequence(seqIndex).notes) {
+        double time = timeline.convertBarPositionToSeconds(n->getStartTime(), tempo);
+
+        midiClip.emplace_back(time, 64 + n->getDegree(), 100, 1 * 0.9);
+    }
+    return midiClip;
+}
+
+void Cursor::insertNote()
+{
+    auto note = std::make_unique<Note>(cursorPosition.yDegree.value, cursorPosition.xTime.value, timeline.getStepSize());
+    getSelectedSequence().notes.emplace_back(std::move(note));
+}
+
+void Cursor::removeNotesAtCursor()
+{
+    double degMin = cursorPosition.yDegree.value;
+    double degMax = degMin;
+    double timeStart = cursorPosition.xTime.value;
+    double timeEnd = timeStart + timeline.getStepSize();
+
+    getSelectedSequence().removeNotes(timeStart, timeEnd, degMin, degMax);
+}
+
+juce::String Cursor::readableCursorPosition()
+{
+    return juce::String(cursorPosition.yDegree.value) + ":" + juce::String(cursorPosition.xTime.value);
+}
+
+bool Cursor::isInsertMode() const { return mode == Mode::insert; }
+bool Cursor::isNormalMode() const { return mode == Mode::normal; }
+bool Cursor::isVisualLineMode() const { return mode == Mode::visualLine; }
+bool Cursor::isVisualBlockMode() const { return mode == Mode::visualBlock; }
+
+void Cursor::increaseTimelineStepSize() { timeline.increaseStepSize(); }
+void Cursor::decreaseTimelineStepSize() { timeline.decreaseStepSize(); }
+
+const std::vector<Position>& Cursor::getVisualSelectionPositions() const
+{
+    return visualSelection.getPositions();
+}
+
+Position Cursor::getVisualSelectionOpposite()
+{
+    return visualSelection.getOppositeCorner(cursorPosition);
 }

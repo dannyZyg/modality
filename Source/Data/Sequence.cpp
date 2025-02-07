@@ -9,6 +9,7 @@
 */
 
 #include "Sequence.h"
+#include "juce_core/system/juce_PlatformDefs.h"
 
 Step& Sequence::getStep(size_t index)
 {
@@ -73,18 +74,51 @@ std::vector<Sequence::MidiNote> Sequence::extractMidiNotes()
 
     std::vector<MidiNote> midiClip;
 
-    double beatDuration = 60.0 / 120.0 / 4.0; // 16th note at 120 BPM
+    float tempo = 120.0;
 
-    for (size_t i = 0; i < lengthBeats * stepsPerBeat; ++i)  // 1 bar of 16th notes
-    {
-        double time = static_cast<double>(i) * beatDuration;
+    double secondsPerBeat = 60.0 / tempo;
 
-        auto& step = steps[i];
+    for (auto& n : notes) {
+        double beats = n->getStartTime() * 4;
+        double time = beats * secondsPerBeat;
+        DBG("time: " << time) ;
 
-        for (auto& note : step->notes) {
-            midiClip.emplace_back(time, 64 + note->getDegree(), 100, beatDuration * 0.9);
+        midiClip.emplace_back(time, 64 + n->getDegree(), 100, 1 * 0.9);
+    }
+    return midiClip;
+}
+
+// Create a reusable predicate
+auto Sequence::makeNotePredicate(double minTime, double maxTime, double minDegree, double maxDegree) {
+    return [=](const auto& note) {
+        return note->getStartTime() >= minTime && note->getStartTime() < maxTime &&
+               note->getDegree() >= minDegree && note->getDegree() <= maxDegree;
+    };
+}
+
+std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Sequence::findNotes(
+    double minTime, double maxTime,
+    double minDegree, double maxDegree) {
+
+    std::vector<std::reference_wrapper<std::unique_ptr<Note>>> result;
+    auto predicate = makeNotePredicate(minTime, maxTime, minDegree, maxDegree);
+
+    for (auto& note : notes) {
+        if (predicate(note)) {
+            result.push_back(std::ref(note));
         }
     }
 
-    return midiClip;
+    return result;
+}
+
+void Sequence::removeNotes(
+    double minTime, double maxTime,
+    double minDegree, double maxDegree) {
+
+    auto predicate = makeNotePredicate(minTime, maxTime, minDegree, maxDegree);
+    notes.erase(
+        std::remove_if(notes.begin(), notes.end(), predicate),
+        notes.end()
+    );
 }

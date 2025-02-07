@@ -4,6 +4,7 @@
 #include "Data/Cursor.h"
 #include "Data/Sequence.h"
 #include "Components/SequenceComponent.h"
+#include "Components/CursorComponent.h"
 
 //==============================================================================
 /*
@@ -52,6 +53,7 @@ private:
 
     Cursor cursor;
     SequenceComponent sequenceComponent;
+    CursorComponent cursorComponent;
 
 
     juce::AudioTransportSource transportSource;

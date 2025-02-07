@@ -11,7 +11,7 @@ protected:
 public:
     // Delete default constructor - We want to force the callback to be set on object creation
     // otherwise objects could find themselves in a state with no callback to check if they are selected!
-    Selectable() = delete;
+    //Selectable() = delete;
 
     // Constructor with callback
     explicit Selectable(std::function<bool(const T&)> callback)

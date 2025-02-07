@@ -28,6 +28,9 @@ public:
     void resized() override;
     void update();
 
+    juce::Path createNotePath(Note& n);
+
+
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SequenceComponent)
 

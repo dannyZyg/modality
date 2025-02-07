@@ -9,6 +9,7 @@
 */
 
 #include "Data/Step.h"
+#include "Data/Note.h"
 #include "Data/Selectable.h"
 #pragma once
 
@@ -42,7 +43,13 @@ public:
             : time(t), noteNumber(note), velocity(vel), duration(dur) {}
     };
 
-  std::vector<MidiNote> extractMidiNotes();
+    std::vector<MidiNote> extractMidiNotes();
+    std::vector<std::unique_ptr<Note>> notes;
+
+    std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotes(double minTime, double maxTime, double minDegree, double maxDegree);
+    void removeNotes(double minTime, double maxTime, double minDegree, double maxDegree);
+
 private:
+    auto makeNotePredicate(double minTime, double maxTime, double minDegree, double maxDegree);
 
 };

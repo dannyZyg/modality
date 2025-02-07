@@ -34,7 +34,6 @@ public:
     bool isVisuallySelected = false;
 
     size_t addNote(std::function<bool(const Note&)> isSelectedCallback);
-    size_t removeNote(size_t noteIndex);
 
     std::vector<std::unique_ptr<Note>> notes;
 

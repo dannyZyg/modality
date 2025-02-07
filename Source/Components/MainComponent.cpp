@@ -1,13 +1,15 @@
 #include "MainComponent.h"
+#include "juce_core/system/juce_PlatformDefs.h"
 
 //==============================================================================
-MainComponent::MainComponent() : sequenceComponent(cursor)
+MainComponent::MainComponent() : sequenceComponent(cursor), cursorComponent(cursor)
 {
     // Make sure you set the size of the component after
     // you add any child components.
     setSize (800, 600);
     setFramesPerSecond (60); // This sets the frequency of the update calls.
     setWantsKeyboardFocus(true);
+    addAndMakeVisible(cursorComponent);
     addAndMakeVisible(sequenceComponent);
 
     // Configure Transport UI
@@ -65,11 +67,14 @@ void MainComponent::paint (juce::Graphics& g)
     g.drawText (keyText, 20, getHeight() - 50, 200, 40, juce::Justification::bottomLeft, true);
     g.drawText (cursor.getModeName(), getWidth() - 250, getHeight() - 50, 200, 40, juce::Justification::bottomRight, true);
     g.drawLine(0, getHeight()/2, getWidth(), getHeight()/2);
+
+    g.drawText (cursor.readableCursorPosition(), getWidth() - 450, getHeight() - 50, 200, 40, juce::Justification::bottomRight, true);
 }
 
 void MainComponent::resized()
 {
     sequenceComponent.setBounds(50, 50, getWidth() - 100, getHeight() - 100);
+    cursorComponent.setBounds(50, 50, getWidth() - 100, getHeight() - 100);
     startButton.setBounds(10, 10, 100, 30);
     stopButton.setBounds(120, 10, 100, 30);
 }
@@ -116,6 +121,54 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
         return true;
     }
 
+    if (key.getTextCharacter() == 'H')
+    {
+        if (cursor.isVisualBlockMode() || cursor.isVisualLineMode()) {
+            cursor.moveCursorSelection(Direction::left);
+            baseMidiClip = cursor.extractMidiSequence(0);
+        }
+        return true;
+    }
+
+    if (key.getTextCharacter() == 'L')
+    {
+        if (cursor.isVisualBlockMode() || cursor.isVisualLineMode()) {
+            cursor.moveCursorSelection(Direction::right);
+            baseMidiClip = cursor.extractMidiSequence(0);
+        }
+        return true;
+    }
+
+    if (key.getTextCharacter() == 'J')
+    {
+        if (cursor.isVisualBlockMode() || cursor.isVisualLineMode()) {
+            cursor.moveCursorSelection(Direction::down);
+            baseMidiClip = cursor.extractMidiSequence(0);
+        }
+        return true;
+    }
+
+    if (key.getTextCharacter() == 'K')
+    {
+        if (cursor.isVisualBlockMode() || cursor.isVisualLineMode()) {
+            cursor.moveCursorSelection(Direction::up);
+            baseMidiClip = cursor.extractMidiSequence(0);
+        }
+        return true;
+    }
+
+    if (key.getTextCharacter() == 'd')
+    {
+        cursor.decreaseTimelineStepSize();
+        return true;
+    }
+
+    if (key.getTextCharacter() == 'f')
+    {
+        cursor.increaseTimelineStepSize();
+        return true;
+    }
+
     if (key.getTextCharacter() == '^')
     {
         cursor.jumpToStart();
@@ -128,15 +181,15 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
         return true;
     }
 
-    if (key.getTextCharacter() == 'v')
+    if (key.getTextCharacter() == 'w')
     {
-        cursor.enableVisualMode();
+        cursor.jumpForwardBeat();
         return true;
     }
 
-    if (key.getTextCharacter() == 'm')
+    if (key.getTextCharacter() == 'W')
     {
-        cursor.enableVisualMode();
+        cursor.jumpBackBeat();
         return true;
     }
 
@@ -146,15 +199,37 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
         return true;
     }
 
-    if (key.getTextCharacter() == 'a')
+    if (key.getTextCharacter() == 'i')
     {
-        cursor.addNote();
+        cursor.enableInsertMode();
         return true;
     }
 
-    if (key.getTextCharacter() == 'r')
+    if (key.getTextCharacter() == 'v')
     {
-        cursor.removeNote();
+        if (cursor.isVisualLineMode() || cursor.isVisualBlockMode()) {
+            cursor.enableNormalMode();
+        } else {
+            cursor.enableVisualBlockMode();
+        }
+        return true;
+    }
+
+    if (key.getTextCharacter() == 'V')
+    {
+        if (cursor.isVisualLineMode() || cursor.isVisualBlockMode()) {
+            cursor.enableNormalMode();
+        } else {
+            cursor.enableVisualLineMode();
+        }
+        return true;
+    }
+
+    if (key.getTextCharacter() == 'o')
+    {
+        if (cursor.isVisualBlockMode() || cursor.isVisualLineMode()) {
+            cursor.cursorPosition = cursor.getVisualSelectionOpposite();
+        }
         return true;
     }
 
@@ -173,6 +248,27 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
     if (key.getTextCharacter() == 's')
     {
         cursor.previewStep();
+        return true;
+    }
+
+    if (key.getTextCharacter() == '+')
+    {
+        return true;
+    }
+
+    if (key == juce::KeyPress::returnKey)
+    {
+        if (cursor.isInsertMode()) {
+            cursor.insertNote();
+            baseMidiClip = cursor.extractMidiSequence(0);
+            return true;
+        }
+    }
+
+    if (key.getTextCharacter() == 'x')
+    {
+        cursor.removeNotesAtCursor();
+        baseMidiClip = cursor.extractMidiSequence(0);
         return true;
     }
 
@@ -196,16 +292,22 @@ void MainComponent::start()
         for (int channel = 1; channel <= 16; ++channel)
             midiOutput->sendMessageNow(juce::MidiMessage::allNotesOff(channel));
     }
+
     // Reset everything
     transportSource.setPosition(0.0);
     lastProcessedTime = 0.0;  // Important for first note
     nextClipStartTime = midiClipDuration;
     // Reset midiClip to initial state
+    baseMidiClip = cursor.extractMidiSequence(0);
+
+
+    for (auto& m : baseMidiClip) {
+        DBG("MIDI at time: " << m.time <<  " , note: " << m.noteNumber);
+    }
     midiClip = baseMidiClip;
 
     transportSource.start();
     DBG("Transport Started");
-
 }
 
 void MainComponent::stop()
@@ -287,6 +389,14 @@ void MainComponent::audioDeviceIOCallbackWithContext(const float* const* inputCh
             // Schedule note off
             midiOutput->sendMessageNow(juce::MidiMessage::noteOff(1, note.noteNumber));
         }
+    }
+
+    // Debug output every 100ms or so
+    static int debugCounter = 0;
+    if (++debugCounter >= 50)
+    {
+        DBG("Current Position: " << currentPosition << " Notes in clip: " << midiClip.size());
+        debugCounter = 0;
     }
 
     lastProcessedTime = currentPosition;

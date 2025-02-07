@@ -10,22 +10,26 @@
 
 
 #include <JuceHeader.h>
-#include "Data/Selectable.h"
 #pragma once
 
-class Note : public Selectable<Note>
+class Note
 {
 public:
-    using Selectable<Note>::Selectable;
+    Note(double deg, double time, double dur);
     ~Note();
 
-    int getDegree() const;
-    int getOctave() const;
+    double getDegree() const;
+    double getOctave() const;
+    double getStartTime() const;
     void shiftDegreeUp();
     void shiftDegreeDown();
+    void shiftEarlier(double step);
+    void shiftLater(double step);
 
 private:
-    int degree = 0;
-    int octave = 0;
+    double degree = 0.0;
+    double startTime = 0.0;
+    double octave = 0;
+    double duration;
 
 };

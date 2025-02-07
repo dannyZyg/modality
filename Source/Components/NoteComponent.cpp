@@ -33,17 +33,22 @@ void NoteComponent::paint (juce::Graphics& g)
 
     juce::Path path = createPath();
 
-    if (note.isSelected()) {
-        g.setColour (blink);
-        g.fillPath(path);
-        g.setColour (juce::Colours::black);
-        g.strokePath(path, juce::PathStrokeType(1.0f));
-    } else {
-        g.setColour (juce::Colours::white);
-        g.fillPath(path);
-        g.setColour (juce::Colours::black);
-        g.strokePath(path, juce::PathStrokeType(1.0f));
-    }
+    /* if (note.isSelected()) { */
+    /*     g.setColour (blink); */
+    /*     g.fillPath(path); */
+    /*     g.setColour (juce::Colours::black); */
+    /*     g.strokePath(path, juce::PathStrokeType(1.0f)); */
+    /* } else { */
+    /*     g.setColour (juce::Colours::white); */
+    /*     g.fillPath(path); */
+    /*     g.setColour (juce::Colours::black); */
+    /*     g.strokePath(path, juce::PathStrokeType(1.0f)); */
+    /* } */
+
+    g.setColour (juce::Colours::white);
+    g.fillPath(path);
+    g.setColour (juce::Colours::black);
+    g.strokePath(path, juce::PathStrokeType(1.0f));
 }
 
 void NoteComponent::resized()

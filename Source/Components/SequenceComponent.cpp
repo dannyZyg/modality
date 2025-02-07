@@ -10,17 +10,18 @@
 
 #include <JuceHeader.h>
 #include "SequenceComponent.h"
+#include "CoordinateUtils.h"
 
 //==============================================================================
 SequenceComponent::SequenceComponent(const Cursor& c)
     : cursor(c)
 {
-    auto& seq = cursor.getSequence(0);
-    for (auto& step : seq.steps) {
-        auto stepComponent = std::make_unique<StepComponent>(*step);
-        addAndMakeVisible(stepComponent.get());
-        stepComponents.emplace_back(std::move(stepComponent));
-    }
+    /* auto& seq = cursor.getSequence(0); */
+    /* for (auto& step : seq.steps) { */
+    /*     auto stepComponent = std::make_unique<StepComponent>(*step); */
+    /*     addAndMakeVisible(stepComponent.get()); */
+    /*     stepComponents.emplace_back(std::move(stepComponent)); */
+    /* } */
 }
 
 SequenceComponent::~SequenceComponent()
@@ -39,29 +40,40 @@ void SequenceComponent::paint (juce::Graphics& g)
     g.setColour (juce::Colours::grey);
     g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
 
+    for (auto& note : cursor.getSelectedSequence().notes) {
+
+        auto tri = CoordinateUtils::getTriangleAtPoint(*note, getWidth(), getHeight(), cursor.timeline, cursor.scale);
+
+        g.setColour (juce::Colours::orange);
+        g.fillPath(tri);
+        g.setColour (juce::Colours::black);
+        g.strokePath(tri, juce::PathStrokeType(1.0f));
+        /* g.drawRect(rect, 2.0f); */
+        /* g.fillRect(rect); */
+
+    }
+
+}
+
+juce::Path SequenceComponent::createNotePath(Note& n)
+{
+
+
+    auto point = CoordinateUtils::musicToScreen(n, getWidth(), getHeight(), cursor.timeline, cursor.scale);
+
+    float x = point.x + 25;
+    float y = point.y;
+
+    juce::Path path;
+    path.startNewSubPath (juce::Point<float> (x, y));
+    path.lineTo (juce::Point<float> (x + x, 25));
+    path.lineTo (juce::Point<float> (x, 25));
+    path.closeSubPath();
+    return path;
 }
 
 void SequenceComponent::resized()
 {
-    // This method is where you should set the bounds of any child
-    // components that your component contains..
-    FlexBox fb;
-    fb.flexDirection = FlexBox::Direction::row;
-    fb.justifyContent = FlexBox::JustifyContent::spaceBetween;
-
-    for (auto& component : stepComponents)
-    {
-        fb.items.add(FlexItem(*component).withFlex(1.0f));
-    }
-
-    fb.performLayout(getLocalBounds());
-
-    //auto usedDegreeRange = cursor.getSequence(0).getUsedDegreeRange();
-    int verticalBounds = calculateNoteComponentVerticalBounds();
-
-    for (size_t i = 0; i < stepComponents.size(); i++) {
-        stepComponents[i]->setNoteComponentBounds(verticalBounds);
-    }
 }
 
 //==============================================================================

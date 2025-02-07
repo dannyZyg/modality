@@ -11,24 +11,20 @@
 #include "Note.h"
 
 
-Note::~Note()
-{
+Note::Note(double deg, double time, double dur) : degree(deg), startTime(time), duration(dur) {}
 
-}
+Note::~Note() { }
 
-int Note::getDegree() const { return degree; }
+double Note::getDegree() const { return degree; }
 
-int Note::getOctave() const { return octave; }
+double Note::getOctave() const { return octave; }
 
-void Note::shiftDegreeUp()
-{
-    degree++;
-}
+double Note::getStartTime() const { return startTime; }
 
-void Note::shiftDegreeDown()
-{
-    juce::Logger::writeToLog("Deg was: " + juce::String(degree));
+void Note::shiftDegreeUp() { degree++; }
 
-    degree--;
-    juce::Logger::writeToLog("Deg  is: " + juce::String(degree));
-}
+void Note::shiftDegreeDown() { degree--; }
+
+void Note::shiftEarlier(double step) { startTime-= step; }
+
+void Note::shiftLater(double step) { startTime+= step; }
