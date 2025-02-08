@@ -178,12 +178,12 @@ void Cursor::jumpToEnd()
 
 void Cursor::jumpForwardBeat()
 {
-    cursorPosition.xTime.value = timeline.getNextStep(cursorPosition.xTime.value, Division::quarter).value;
+    cursorPosition.xTime.value = timeline.getNextStep(cursorPosition.xTime.value, Division::whole).value;
 }
 
 void Cursor::jumpBackBeat()
 {
-    cursorPosition.xTime.value = timeline.getPrevStep(cursorPosition.xTime.value, Division::quarter).value;
+    cursorPosition.xTime.value = timeline.getPrevStep(cursorPosition.xTime.value, Division::whole).value;
 }
 
 void Cursor::enableNormalMode()
