@@ -85,7 +85,7 @@ public:
     const double size() const;
     const double sizeAtCurrentStepSize() const;
 private:
-    double stepSize = Division::whole;
+    double stepSize = Division::quarter;
     double value;
     double lowerBound;
     double upperBound;

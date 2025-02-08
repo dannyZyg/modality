@@ -101,7 +101,7 @@ void StatusBarComponent::paint (juce::Graphics& g)
     playPath.closeSubPath();
 
     // Position it after the mode text
-    g.setColour(juce::Colours::darkmagenta);
+    g.setColour(juce::Colours::lightseagreen);
     auto playBounds = juce::Rectangle<float>(
         pieRect.getRight() + iconSize,
         (static_cast<float>(height) - iconSize) / 2,  // Center vertically

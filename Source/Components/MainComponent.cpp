@@ -55,14 +55,8 @@ void MainComponent::paint (juce::Graphics& g)
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (juce::Colours::whitesmoke);
 
-    g.setFont (20.0f);
     g.setColour(juce::Colours::black);
-
-    g.drawText (keyText, 20, getHeight() - 50, 200, 40, juce::Justification::bottomLeft, true);
-    g.drawText (cursor.getModeName(), getWidth() - 250, getHeight() - 50, 200, 40, juce::Justification::bottomRight, true);
     g.drawLine(0, getHeight()/2, getWidth(), getHeight()/2);
-
-    g.drawText (cursor.readableCursorPosition(), getWidth() - 450, getHeight() - 50, 200, 40, juce::Justification::bottomRight, true);
 }
 
 void MainComponent::resized()
