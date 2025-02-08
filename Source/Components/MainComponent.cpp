@@ -64,7 +64,7 @@ void MainComponent::paint (juce::Graphics& g)
 {
     grabKeyboardFocus();
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (juce::Colours::white);
+    g.fillAll (juce::Colours::whitesmoke);
 
     g.setFont (20.0f);
     g.setColour(juce::Colours::black);

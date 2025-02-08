@@ -1,7 +1,6 @@
-
 #include <JuceHeader.h>
 #include "Components/StatusBarComponent.h"
-#include "juce_core/system/juce_PlatformDefs.h"
+#include "AppColours.h"
 
 //==============================================================================
 
@@ -18,6 +17,9 @@ StatusBarComponent::~StatusBarComponent()
 void StatusBarComponent::paint (juce::Graphics& g)
 {
     auto bounds = getLocalBounds();
+    const int padding = 20;
+    const int textWidth = 50;
+    const int height = bounds.getHeight();
 
     // Draw background
     g.setColour(juce::Colours::lightgrey);
@@ -27,41 +29,32 @@ void StatusBarComponent::paint (juce::Graphics& g)
     g.setColour(juce::Colours::grey);
     g.drawHorizontalLine(0, 0.0f, static_cast<float>(bounds.getWidth()));
 
-    // Draw text
     g.setColour(juce::Colours::black);
     g.setFont(14.0f);
 
-    // Draw MODE
-
-    // Calculate the width needed for the text
-    const int leftPadding = 15;  // Pixels from left edge
-    const int rightPadding = 15; // Padding after text
-    g.setFont(14.0f);
-    int textWidth = 50;
-
-    if (cursor.isNormalMode()) g.setColour(juce::Colours::pink);
-    if (cursor.isVisualBlockMode()) g.setColour(juce::Colours::lightcyan);
-    if (cursor.isVisualLineMode()) g.setColour(juce::Colours::lightsalmon);
-    if (cursor.isInsertMode()) g.setColour(juce::Colours::lightgreen);
-
-    juce::Rectangle<int> textBackground(0, 0, leftPadding + textWidth + rightPadding, bounds.getHeight());
-    g.fillRect(textBackground);
-
-    // Draw light border around the text background
-    g.setColour(juce::Colours::black.withAlpha(0.3f));  // Semi-transparent black
-    g.drawRect(textBackground, 1);  // 1 pixel border width
-
-    // Draw text
+    // Mode section (left side)
+    juce::Rectangle<int> modeBox(0, 0, padding * 2 + textWidth, height);
+    g.setColour(AppColours::getCursorColour(cursor.getMode()));
+    g.fillRect(modeBox);
+    g.setColour(juce::Colours::black.withAlpha(0.3f));
+    g.drawRect(modeBox, 1);
     g.setColour(juce::Colours::black);
-    auto textBounds = bounds.withTrimmedLeft(leftPadding);
-    g.drawText(cursor.getModeName(), textBounds,
-              juce::Justification::centredLeft, true);
+    g.drawText(cursor.getModeName(), modeBox.withTrimmedLeft(padding), juce::Justification::centredLeft, true);
+
+    // Cursor position section (right side)
+    juce::Rectangle<int> cursorBox(getWidth() - (padding * 2 + textWidth), 0, padding * 2 + textWidth, height);
+    g.setColour(AppColours::getCursorColour(cursor.getMode()));
+    g.fillRect(cursorBox);
+    g.setColour(juce::Colours::black.withAlpha(0.3f));
+    g.drawRect(cursorBox, 1);
+    g.setColour(juce::Colours::black);
+    g.drawText(cursor.readableCursorPosition(), cursorBox, juce::Justification::centred);
 
     // Draw pie chart rectangle
     const int pieSize = bounds.getHeight() - 8;  // Leave 4px padding top and bottom
     const int pieMargin = 8;  // Space between text background and pie
     juce::Rectangle<int> pieBackground(
-        textBackground.getRight() + pieMargin,
+        modeBox.getRight() + pieMargin,
         (bounds.getHeight() - pieSize) / 2,
         pieSize,
         pieSize
@@ -84,7 +77,7 @@ void StatusBarComponent::paint (juce::Graphics& g)
     setPiePercentage(static_cast<float>(cursor.timeline.getStepSize()));
 
     // Draw filled portion
-    g.setColour(juce::Colours::lightpink);
+    g.setColour(AppColours::getCursorColour(cursor.getMode()));
 
     float startAngle = 0.0f;
     float endAngle = startAngle + (piePercentage * juce::MathConstants<float>::twoPi);
@@ -114,10 +107,7 @@ void StatusBarComponent::resized()
     }
 }
 
-
-
-void StatusBarComponent::setPiePercentage(float percentage)
-{
+void StatusBarComponent::setPiePercentage(float percentage) {
     // Ensure percentage is between 0 and 1
     piePercentage = juce::jlimit(0.0f, 1.0f, percentage);
     repaint();

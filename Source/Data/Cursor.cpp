@@ -218,7 +218,7 @@ void Cursor::toggleStepMute()
     getSelectedSequence().steps[selectedStepIndex]->toggleMute();
 }
 
-Mode Cursor::getMode()
+const Mode Cursor::getMode() const
 {
     return mode;
 }
@@ -342,9 +342,9 @@ void Cursor::removeNotesAtCursor()
     getSelectedSequence().removeNotes(timeStart, timeEnd, degMin, degMax);
 }
 
-juce::String Cursor::readableCursorPosition()
+const juce::String Cursor::readableCursorPosition() const
 {
-    return juce::String(cursorPosition.yDegree.value) + ":" + juce::String(cursorPosition.xTime.value);
+    return juce::String(cursorPosition.yDegree.value) + " :: " + juce::String(cursorPosition.xTime.value);
 }
 
 bool Cursor::isInsertMode() const { return mode == Mode::insert; }

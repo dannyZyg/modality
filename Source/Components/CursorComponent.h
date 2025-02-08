@@ -19,6 +19,8 @@ public:
     void resized() override;
     void update();
 
+    /* juce::Colour getColour(Mode m); */
+
 private:
     const Cursor& cursor;
 

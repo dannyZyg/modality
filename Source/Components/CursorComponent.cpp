@@ -1,6 +1,7 @@
 #include <JuceHeader.h>
 #include "CursorComponent.h"
 #include "Components/CoordinateUtils.h"
+#include "AppColours.h"
 
 //==============================================================================
 CursorComponent::CursorComponent(const Cursor& c)
@@ -15,14 +16,6 @@ CursorComponent::~CursorComponent()
 
 void CursorComponent::paint (juce::Graphics& g)
 {
-    /* This demo code just fills the component's background and
-       draws some placeholder text to get you started.
-
-       You should replace everything in this method with your own
-       drawing code..
-    */
-
-
 
     float timeInSeconds = juce::Time::getMillisecondCounterHiRes() / 500.0f;
     float sineValue = std::sin(timeInSeconds * juce::MathConstants<float>::pi); // Oscillates between -1 and 1
@@ -30,9 +23,7 @@ void CursorComponent::paint (juce::Graphics& g)
     // Map sineValue to a 0 to 1 range
     float blendFactor = (sineValue + 1.0f) * 0.5f;
     // Interpolate between black and light grey
-    juce::Colour blink = juce::Colours::pink.interpolatedWith(juce::Colours::lightgrey, blendFactor);
-
-
+    juce::Colour blink = AppColours::getCursorColour(cursor.getMode()).interpolatedWith(juce::Colours::lightgrey, blendFactor);
 
     /* g.drawRect (getLocalBounds(), 1);   // draw an outline around the component */
 
@@ -62,8 +53,8 @@ void CursorComponent::paint (juce::Graphics& g)
 
 
     if (cursor.isNormalMode()) {
-        g.setColour (juce::Colours::pink);
-        g.drawRect(rect, 2.0f);
+        g.setColour (AppColours::getCursorColour(cursor.getMode()));
+        g.drawRect(rect, 3.0f);
     } else if (cursor.isInsertMode()) {
         g.setColour(blink);
         g.fillRect(rect);
@@ -71,7 +62,7 @@ void CursorComponent::paint (juce::Graphics& g)
 
 
     if (cursor.isVisualLineMode() || cursor.isVisualBlockMode()) {
-        g.setColour(juce::Colours::lightblue);
+        g.setColour(AppColours::getCursorColour(cursor.getMode()));
 
         for (const auto& pos : cursor.getVisualSelectionPositions()) {
             // Get rectangle for cursor
@@ -83,7 +74,7 @@ void CursorComponent::paint (juce::Graphics& g)
             g.fillRect(rect);
         }
 
-        g.setColour (juce::Colours::lightcoral);
+        g.setColour (juce::Colours::darkcyan);
         g.drawRect(rect, 2.0f);
     }
 

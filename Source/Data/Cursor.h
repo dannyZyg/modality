@@ -277,7 +277,7 @@ public:
     void enableVisualLineMode();
     void enableVisualBlockMode();
     void enableInsertMode();
-    Mode getMode();
+    const Mode getMode() const;
     const juce::String getModeName() const;
     constexpr const char* modeToString(Mode m) const;
 
@@ -307,7 +307,7 @@ public:
     void insertNote();
     void removeNotesAtCursor();
 
-    juce::String readableCursorPosition();
+    const juce::String readableCursorPosition() const;
 
     bool isNormalMode() const;
     bool isVisualLineMode() const;
@@ -326,9 +326,6 @@ public:
     Position getVisualSelectionOpposite();
 
     void addModifier();
-
-
-
 
 private:
     std::mt19937 randomGenerator;
