@@ -10,12 +10,12 @@ public:
 
 class Division {
 public:
-    static constexpr double whole = 4.0;
-    static constexpr double half = 2.0;
-    static constexpr double quarter = 1.0;
-    static constexpr double eighth = 0.5;
-    static constexpr double sixteenth = 0.25;
-    static constexpr double thirtysecond = 0.125;
+    static constexpr double whole = 1.0;
+    static constexpr double half = 0.5;
+    static constexpr double quarter = 0.25;
+    static constexpr double eighth = 0.125;
+    static constexpr double sixteenth = 0.0625;
+    static constexpr double thirtysecond = 0.03125;
 
     // Triplets
     static constexpr double quarterTriplet = quarter * 2.0/3.0;
@@ -85,7 +85,7 @@ public:
     const double size() const;
     const double sizeAtCurrentStepSize() const;
 private:
-    double stepSize = Division::quarter;
+    double stepSize = Division::whole;
     double value;
     double lowerBound;
     double upperBound;

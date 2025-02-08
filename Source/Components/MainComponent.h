@@ -13,8 +13,7 @@
     your controls and content.
 */
 class MainComponent  : public juce::AnimatedAppComponent,
-                       public juce::AudioIODeviceCallback, // Handles audio manually
-                       public juce::Button::Listener
+                       public juce::AudioIODeviceCallback // Handles audio manually
 {
 public:
     //==============================================================================
@@ -30,8 +29,6 @@ public:
 
 
     bool keyPressed (const juce::KeyPress& key) override;
-
-    void buttonClicked(juce::Button* button) override;
 
     virtual void audioDeviceIOCallbackWithContext (const float* const* inputChannelData,
                                                    int numInputChannels,
@@ -63,8 +60,6 @@ private:
     double sampleRate = 44100.0;
     double lastProcessedTime = 0;
     const double clipLength = 1.0; // 1 second loop (4 beats @ 120 BPM)
-
-    juce::TextButton startButton, stopButton;
 
     // Add a custom source that doesn't produce audio
     class SilentPositionableSource : public juce::PositionableAudioSource

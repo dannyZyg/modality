@@ -13,17 +13,6 @@ MainComponent::MainComponent() : sequenceComponent(cursor), cursorComponent(curs
     addAndMakeVisible(sequenceComponent);
     addAndMakeVisible(statusBarComponent);
 
-
-
-
-    // Configure Transport UI
-    addAndMakeVisible(startButton);
-    addAndMakeVisible(stopButton);
-    startButton.setButtonText("Start");
-    stopButton.setButtonText("Stop");
-    startButton.addListener(this);
-    stopButton.addListener(this);
-
     // Initialise audio
     deviceManager.initialise(0, 2, nullptr, true);
     deviceManager.addAudioCallback(this); // Register audio callback
@@ -80,8 +69,6 @@ void MainComponent::resized()
 {
     sequenceComponent.setBounds(50, 50, getWidth() - 100, getHeight() - 100);
     cursorComponent.setBounds(50, 50, getWidth() - 100, getHeight() - 100);
-    startButton.setBounds(10, 10, 100, 30);
-    stopButton.setBounds(120, 10, 100, 30);
     statusBarComponent.resized();
 }
 
@@ -283,15 +270,6 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
     }
 
     return false; // Pass unhandled keys to the base class
-}
-
-void MainComponent::buttonClicked(juce::Button* button)
-{
-    if (button == &startButton) {
-        start();
-    } else if (button == &stopButton) {
-        stop();
-    }
 }
 
 void MainComponent::start()

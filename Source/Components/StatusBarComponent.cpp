@@ -90,9 +90,25 @@ void StatusBarComponent::paint (juce::Graphics& g)
     g.setColour(juce::Colours::black.withAlpha(0.3f));
     g.drawEllipse(pieRect, 1.0f);
 
-    // Draw percentage text in the middle
-    g.setColour(juce::Colours::black);
-    g.setFont(pieRect.getHeight() * 0.4f);  // Font size relative to circle size
+    // After drawing mode text, add play icon
+    const float iconSize = static_cast<float>(height) * 0.6f;
+
+    // Create a triangle path for play icon
+    juce::Path playPath;
+    playPath.startNewSubPath(0, 0);
+    playPath.lineTo(iconSize, iconSize/2);
+    playPath.lineTo(0, iconSize);
+    playPath.closeSubPath();
+
+    // Position it after the mode text
+    g.setColour(juce::Colours::darkmagenta);
+    auto playBounds = juce::Rectangle<float>(
+        pieRect.getRight() + iconSize,
+        (static_cast<float>(height) - iconSize) / 2,  // Center vertically
+        iconSize,
+        iconSize
+    );
+    g.fillPath(playPath, playPath.getTransformToScaleToFit(playBounds, true));
 }
 
 void StatusBarComponent::resized()
