@@ -9,6 +9,7 @@
 */
 
 # include <JuceHeader.h>
+# include <random>
 # include "Step.h"
 # include "Note.h"
 # include "Sequence.h"
@@ -277,8 +278,8 @@ public:
     void enableVisualBlockMode();
     void enableInsertMode();
     Mode getMode();
-    juce::String getModeName();
-    constexpr const char* modeToString(Mode m);
+    const juce::String getModeName() const;
+    constexpr const char* modeToString(Mode m) const;
 
     bool isSequenceSelected(const Sequence& seq) const;
     bool isStepSelected(const Step& step) const;
@@ -324,7 +325,14 @@ public:
     const std::vector<Position>& getVisualSelectionPositions() const;
     Position getVisualSelectionOpposite();
 
+    void addModifier();
+
+
+
+
 private:
+    std::mt19937 randomGenerator;
+
     Mode mode = Mode::normal;
 
     std::vector<std::unique_ptr<Sequence>> sequences;
@@ -339,4 +347,5 @@ private:
 
     Selection visualSelection;
 
+    std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesAtPosition(Position& p, Timeline& t, Scale& s);
 };

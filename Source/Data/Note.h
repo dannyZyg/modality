@@ -10,6 +10,7 @@
 
 
 #include <JuceHeader.h>
+#include "Modifier.h"
 #pragma once
 
 class Note
@@ -26,10 +27,17 @@ public:
     void shiftEarlier(double step);
     void shiftLater(double step);
 
+    void addModifier(Modifier m);
+    std::optional<Modifier> getModifier(ModifierType type);
+
+    bool hasAnyModifier();
+
 private:
     double degree = 0.0;
     double startTime = 0.0;
     double octave = 0;
     double duration;
+
+    std::unordered_set<Modifier> modifiers;
 
 };

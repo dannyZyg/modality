@@ -9,7 +9,7 @@
 ## Step/Note Editing
 - [ ] invert notes (degrees go pos/neg)
 - [ ] transform notes (e.g. ramp from lowest to highest selection)(ramp up, ramp down, linear, exponential)
-- [ ] turn off steps/notes (or mute?)
+- [x] turn off steps/notes (or mute?)
 - [ ] edit velocity
 - [ ] edit duration
 - [ ] nudge micro timing of steps

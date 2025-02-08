@@ -2,7 +2,7 @@
 #include "juce_core/system/juce_PlatformDefs.h"
 
 //==============================================================================
-MainComponent::MainComponent() : sequenceComponent(cursor), cursorComponent(cursor)
+MainComponent::MainComponent() : sequenceComponent(cursor), cursorComponent(cursor), statusBarComponent(cursor)
 {
     // Make sure you set the size of the component after
     // you add any child components.
@@ -11,6 +11,10 @@ MainComponent::MainComponent() : sequenceComponent(cursor), cursorComponent(curs
     setWantsKeyboardFocus(true);
     addAndMakeVisible(cursorComponent);
     addAndMakeVisible(sequenceComponent);
+    addAndMakeVisible(statusBarComponent);
+
+
+
 
     // Configure Transport UI
     addAndMakeVisible(startButton);
@@ -38,7 +42,8 @@ MainComponent::MainComponent() : sequenceComponent(cursor), cursorComponent(curs
     silentSource = std::make_unique<SilentPositionableSource>();
     transportSource.setSource(silentSource.get(), 0, nullptr, sampleRate);
 
-    baseMidiClip = cursor.extractMidiSequence(0);
+    // Make sure all children components have size set
+    resized();
 }
 
 MainComponent::~MainComponent()
@@ -77,6 +82,7 @@ void MainComponent::resized()
     cursorComponent.setBounds(50, 50, getWidth() - 100, getHeight() - 100);
     startButton.setBounds(10, 10, 100, 30);
     stopButton.setBounds(120, 10, 100, 30);
+    statusBarComponent.resized();
 }
 
 bool MainComponent::keyPressed (const juce::KeyPress& key)
@@ -260,7 +266,6 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
     {
         if (cursor.isInsertMode()) {
             cursor.insertNote();
-            baseMidiClip = cursor.extractMidiSequence(0);
             return true;
         }
     }
@@ -268,7 +273,12 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
     if (key.getTextCharacter() == 'x')
     {
         cursor.removeNotesAtCursor();
-        baseMidiClip = cursor.extractMidiSequence(0);
+        return true;
+    }
+
+    if (key.getTextCharacter() == 'm')
+    {
+        cursor.addModifier();
         return true;
     }
 
@@ -324,6 +334,9 @@ void MainComponent::stop()
 
 void MainComponent::extendMidiClip(double currentTime)
 {
+    // Update the sequence (this will incorporate modifiers?)
+    baseMidiClip = cursor.extractMidiSequence(0);
+
     // If we're getting close to the end of our current notes
     if (currentTime >= nextClipStartTime - 0.5) // Look ahead by 0.5 seconds
     {

@@ -9,8 +9,10 @@
 */
 
 #include "Cursor.h"
+#include "juce_core/system/juce_PlatformDefs.h"
 
-Cursor::Cursor() {
+Cursor::Cursor() : randomGenerator(std::random_device()()) {
+
   createSequence();
   selectSequence(0);
 }
@@ -221,20 +223,20 @@ Mode Cursor::getMode()
     return mode;
 }
 
-juce::String Cursor::getModeName()
+const juce::String Cursor::getModeName() const
 {
     return modeToString(mode);
 }
 
-constexpr const char* Cursor::modeToString(Mode m)
+constexpr const char* Cursor::modeToString(Mode m) const
 {
     switch (m)
     {
-        case Mode::normal: return "Normal Mode";
-        case Mode::visualBlock: return "Visual Block Mode";
-        case Mode::visualLine: return "Visual Line Mode";
-        case Mode::insert: return "Insert Mode";
-        default: return "Unkown Mode";
+        case Mode::normal: return "NORMAL";
+        case Mode::visualBlock: return "V-BLOCK";
+        case Mode::visualLine: return "V-LINE";
+        case Mode::insert: return "INSERT";
+        default: return "UNKOWN";
     }
 }
 
@@ -299,13 +301,24 @@ Sequence& Cursor::getSelectedSequence() const
 
 std::vector<Sequence::MidiNote> Cursor::extractMidiSequence(size_t seqIndex)
 {
-  /* return getSequence(seqIndex).extractMidiNotes(); */
-
     std::vector<Sequence::MidiNote> midiClip;
 
     float tempo = 120.0;
 
     for (auto& n : getSequence(seqIndex).notes) {
+        auto mod = n->getModifier(ModifierType::randomTrigger);
+
+
+        if (mod) {
+            auto probability = mod->getModifierValue("percentChanceTriggerValue");
+            std::bernoulli_distribution d(any_cast<double>(probability));
+            /* DBG("PRobability: " << any_cast<double>(probability)); */
+            /* DBG("MOD Exists"); */
+            if (d(randomGenerator)) {
+                /* DBG("YES"); */
+            }
+        }
+
         double time = timeline.convertBarPositionToSeconds(n->getStartTime(), tempo);
 
         midiClip.emplace_back(time, 64 + n->getDegree(), 100, 1 * 0.9);
@@ -350,4 +363,29 @@ const std::vector<Position>& Cursor::getVisualSelectionPositions() const
 Position Cursor::getVisualSelectionOpposite()
 {
     return visualSelection.getOppositeCorner(cursorPosition);
+}
+
+std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesAtPosition(Position& p, Timeline& t, Scale& s)
+{
+    auto minTime = p.xTime.value;
+    auto maxTime = p.xTime.value + t.getStepSize();
+    auto minDegree = p.yDegree.value;
+    auto maxDegree = p.yDegree.value + s.getStepSize();
+
+    return getSelectedSequence().findNotes(minTime, maxTime, minDegree, maxDegree);
+}
+
+
+void Cursor::addModifier()
+{
+    DBG("Adding modifier");
+    auto notes = getSelectedSequence().findNotes(cursorPosition.xTime.value, cursorPosition.xTime.value + 0.25, 0, 10);
+
+    Modifier m = Modifier{ModifierType::randomTrigger};
+
+    m.setModifierValue("percentChanceTriggerValue", 0.5);
+
+    for (auto& note : notes) {
+        (*note.get()).addModifier(m);
+    }
 }

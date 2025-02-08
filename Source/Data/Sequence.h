@@ -8,10 +8,10 @@
   ==============================================================================
 */
 
+#pragma once
 #include "Data/Step.h"
 #include "Data/Note.h"
 #include "Data/Selectable.h"
-#pragma once
 
 class Sequence : public Selectable<Sequence>
 {

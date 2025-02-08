@@ -44,15 +44,18 @@ void SequenceComponent::paint (juce::Graphics& g)
 
         auto tri = CoordinateUtils::getTriangleAtPoint(*note, getWidth(), getHeight(), cursor.timeline, cursor.scale);
 
-        g.setColour (juce::Colours::orange);
+        if (note->hasAnyModifier()) {
+            g.setColour (juce::Colours::orange);
+        } else {
+            g.setColour (juce::Colours::lightgrey);
+        }
+
         g.fillPath(tri);
         g.setColour (juce::Colours::black);
         g.strokePath(tri, juce::PathStrokeType(1.0f));
         /* g.drawRect(rect, 2.0f); */
         /* g.fillRect(rect); */
-
     }
-
 }
 
 juce::Path SequenceComponent::createNotePath(Note& n)
@@ -92,7 +95,6 @@ void SequenceComponent::update()
     for (size_t i = 0; i < stepComponents.size(); i++) {
         stepComponents[i]->setNoteComponentBounds(verticalBounds);
     }
-
 }
 
 

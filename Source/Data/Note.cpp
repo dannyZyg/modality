@@ -28,3 +28,19 @@ void Note::shiftDegreeDown() { degree--; }
 void Note::shiftEarlier(double step) { startTime-= step; }
 
 void Note::shiftLater(double step) { startTime+= step; }
+
+void Note::addModifier(Modifier m)
+{
+    modifiers.insert(m);
+}
+
+std::optional<Modifier> Note::getModifier(ModifierType type) {
+    for (const Modifier& mod : modifiers) {
+        if (mod.getType() == type) {  // Assuming you can access type or have a getter
+            return mod;
+        }
+    }
+    return std::nullopt;
+}
+
+bool Note::hasAnyModifier() { return modifiers.size() > 0; }

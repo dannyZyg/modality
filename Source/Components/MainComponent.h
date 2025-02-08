@@ -1,6 +1,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "Components/StatusBarComponent.h"
 #include "Data/Cursor.h"
 #include "Data/Sequence.h"
 #include "Components/SequenceComponent.h"
@@ -52,9 +53,10 @@ private:
     juce::String keyText = "";
 
     Cursor cursor;
+
     SequenceComponent sequenceComponent;
     CursorComponent cursorComponent;
-
+    StatusBarComponent statusBarComponent;
 
     juce::AudioTransportSource transportSource;
     std::vector<Sequence::MidiNote> midiClip;
