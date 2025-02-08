@@ -21,20 +21,14 @@ Cursor::~Cursor() {}
 
 void Cursor::createSequence()
 {
-    auto sequence = std::make_unique<Sequence>([this](const Sequence& s) { return isSequenceSelected(s); });
+    auto sequence = std::make_unique<Sequence>();
     sequences.emplace_back(std::move(sequence));
 }
 
 void Cursor::selectSequence(size_t index)
 {
     selectedSeqIndex = index;
-    selectStep(0);
     selectNote(0);
-}
-
-void Cursor::selectStep(size_t sIndex)
-{
-    selectedStepIndex = sIndex;
 }
 
 void Cursor::selectNote(size_t nIndex)
@@ -46,16 +40,6 @@ bool Cursor::isSequenceSelected(const Sequence& otherSequence) const
 {
     Sequence& selectedSequence = getSelectedSequence();
     return &selectedSequence == &otherSequence;
-}
-
-bool Cursor::isStepSelected(const Step& step) const
-{
-    return &getSelectedSequence().getStep(selectedStepIndex) == &step;
-}
-
-bool Cursor::isNoteSelected(const Note& note) const
-{
-    return &note == &getSelectedSequence().getStep(selectedStepIndex).getNote(selectedNoteIndex);
 }
 
 void Cursor::moveCursorSelection(Direction d)
@@ -164,8 +148,6 @@ void Cursor::moveUp()
     }
 }
 
-
-
 void Cursor::jumpToStart()
 {
     cursorPosition.xTime.value = timeline.getLowerBound();
@@ -213,11 +195,6 @@ void Cursor::enableInsertMode()
     mode = Mode::insert;
 }
 
-void Cursor::toggleStepMute()
-{
-    getSelectedSequence().steps[selectedStepIndex]->toggleMute();
-}
-
 const Mode Cursor::getMode() const
 {
     return mode;
@@ -260,28 +237,13 @@ size_t Cursor::getNoteIndex()
 /**/
 /* } */
 
-void Cursor::nextNoteInStep()
-{
-    size_t n = getSelectedSequence().nextNoteIndexInStep(selectedStepIndex, selectedNoteIndex);
-    juce::Logger::writeToLog("Next note is: " + juce::String(n));
-    selectedNoteIndex = getSelectedSequence().nextNoteIndexInStep(selectedStepIndex, selectedNoteIndex);
-}
-
-void Cursor::prevNoteInStep()
-{
-    selectedNoteIndex = getSelectedSequence().prevNoteIndexInStep(selectedStepIndex, selectedNoteIndex);
-}
 
 void Cursor::previewNote()
 {
-    Step& step = getSelectedSequence().getStep(selectedStepIndex);
-    //step.playNote(step);
 }
 
 void Cursor::previewStep()
 {
-    Step& step = getSelectedSequence().getStep(selectedStepIndex);
-    step.playStep();
 }
 
 Sequence& Cursor::getSequence(size_t index) const

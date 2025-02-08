@@ -9,27 +9,16 @@
 */
 
 #pragma once
-#include "Data/Step.h"
 #include "Data/Note.h"
-#include "Data/Selectable.h"
 
-class Sequence : public Selectable<Sequence>
+class Sequence
 {
 public:
-    using Selectable<Sequence>::Selectable;
 
-    std::vector<std::unique_ptr<Step>> steps;
+    Sequence();
+    ~Sequence();
 
     int lengthBeats = 4;
-    int stepsPerBeat = 4;
-
-    Step& getStep(size_t index);
-    size_t getNumNotesInStep(size_t stepIndex);
-    size_t nextNoteIndexInStep(size_t stepIndex, size_t noteIndex);
-    size_t prevNoteIndexInStep(size_t stepIndex, size_t noteIndex);
-
-    std::pair<int, int> getUsedDegreeRange() const;
-
 
     // === Struct to Represent MIDI Notes ===
     struct MidiNote

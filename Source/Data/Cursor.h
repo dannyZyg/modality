@@ -10,7 +10,6 @@
 
 # include <JuceHeader.h>
 # include <random>
-# include "Step.h"
 # include "Note.h"
 # include "Sequence.h"
 # include "Data/Timeline.h"
@@ -269,10 +268,7 @@ public:
     void moveCursorSelection(Direction d);
     void moveNotesInSelection(Direction d);
 
-    void toggleStepMute();
     void removeNote();
-    void nextNoteInStep();
-    void prevNoteInStep();
     void enableNormalMode();
     void enableVisualLineMode();
     void enableVisualBlockMode();
@@ -282,14 +278,8 @@ public:
     constexpr const char* modeToString(Mode m) const;
 
     bool isSequenceSelected(const Sequence& seq) const;
-    bool isStepSelected(const Step& step) const;
-    bool isNoteSelected(const Note& note) const;
-    bool isStepVisuallySelected(const Step& step) const;
-
-    SelectionDetails getSelectionDetails(const Step& step) const;
     size_t getStepIndex();
     size_t getNoteIndex();
-    Step& getCurrentStep();
 
     Sequence& getSequence(size_t index) const;
     Sequence& getSelectedSequence() const;
@@ -339,7 +329,6 @@ private:
     size_t selectedNoteIndex = 0;
 
     void selectSequence(size_t sIndex);
-    void selectStep(size_t sIndex);
     void selectNote(size_t nIndex);
 
     Selection visualSelection;

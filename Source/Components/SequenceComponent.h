@@ -13,7 +13,6 @@
 #include <JuceHeader.h>
 #include "Data/Cursor.h"
 #include "Data/Sequence.h"
-#include "Components/StepComponent.h"
 
 //==============================================================================
 /*
@@ -38,8 +37,6 @@ private:
     void drawCursor();
 
     const Cursor& cursor;
-
-    std::vector<std::unique_ptr<StepComponent>> stepComponents;
 
     int visibleRange = 30;
 

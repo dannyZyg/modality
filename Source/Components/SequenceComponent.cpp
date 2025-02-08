@@ -58,23 +58,6 @@ void SequenceComponent::paint (juce::Graphics& g)
     }
 }
 
-juce::Path SequenceComponent::createNotePath(Note& n)
-{
-
-
-    auto point = CoordinateUtils::musicToScreen(n, getWidth(), getHeight(), cursor.timeline, cursor.scale);
-
-    float x = point.x + 25;
-    float y = point.y;
-
-    juce::Path path;
-    path.startNewSubPath (juce::Point<float> (x, y));
-    path.lineTo (juce::Point<float> (x + x, 25));
-    path.lineTo (juce::Point<float> (x, 25));
-    path.closeSubPath();
-    return path;
-}
-
 void SequenceComponent::resized()
 {
 }
@@ -82,40 +65,4 @@ void SequenceComponent::resized()
 //==============================================================================
 void SequenceComponent::update()
 {
-    // This function is called at the frequency specified by the setFramesPerSecond() call
-    // in the constructor. You can use it to update counters, animate values, etc.
-
-    /* for (size_t i = 0; i < stepComponents.size(); i++) { */
-    /*     stepComponents[i]->setNoteComponentBounds(visibleRange); */
-    /* } */
-
-    //auto usedDegreeRange = cursor.getSequence(0).getUsedDegreeRange();
-    int verticalBounds = calculateNoteComponentVerticalBounds();
-
-    for (size_t i = 0; i < stepComponents.size(); i++) {
-        stepComponents[i]->setNoteComponentBounds(verticalBounds);
-    }
-}
-
-
-juce::Point<float> SequenceComponent::calculateStepPositions(size_t index, float blockSize)
-{
-    /* for (size_t i = 0; i < stepComponents.size(); i++) { */
-    /*     stepComponents[i]->setSizeAndPos(visibleRange); */
-    /* } */
-
-    return juce::Point<float>{1.0, 1.0};
-}
-
-int SequenceComponent::calculateNoteComponentVerticalBounds()
-{
-  // Using the range from the lowest degree used to the highest degree used
-  // calculate the vertical height each note component can use.
-  int defaultRange = 24;  // -12 to 12 as an example
-  auto degreeRange = cursor.getSequence(0).getUsedDegreeRange();
-  int absRange = std::abs(degreeRange.second - degreeRange.first);
-
-  int higherDegreeRange = std::max(absRange, defaultRange);
-
-  return getHeight() / higherDegreeRange;
 }

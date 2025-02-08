@@ -222,13 +222,11 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
 
     if (key.getTextCharacter() == 'n')
     {
-        cursor.nextNoteInStep();
         return true;
     }
 
     if (key.getTextCharacter() == 'N')
     {
-        cursor.prevNoteInStep();
         return true;
     }
 
