@@ -105,7 +105,7 @@ void Cursor::moveLeft()
     }
 
     if (isVisualBlockMode()) {
-        visualSelection.addToBlockSelection(cursorPosition);
+        visualSelection.addToVisualBlockSelection(cursorPosition);
     }
 }
 
@@ -118,7 +118,7 @@ void Cursor::moveRight()
     }
 
     if (isVisualBlockMode()) {
-        visualSelection.addToBlockSelection(cursorPosition);
+        visualSelection.addToVisualBlockSelection(cursorPosition);
     }
 }
 
@@ -131,7 +131,7 @@ void Cursor::moveDown()
     }
 
     if (isVisualBlockMode()) {
-        visualSelection.addToBlockSelection(cursorPosition);
+        visualSelection.addToVisualBlockSelection(cursorPosition);
     }
 }
 
@@ -144,7 +144,7 @@ void Cursor::moveUp()
     }
 
     if (isVisualBlockMode()) {
-        visualSelection.addToBlockSelection(cursorPosition);
+        visualSelection.addToVisualBlockSelection(cursorPosition);
     }
 }
 
@@ -187,7 +187,7 @@ void Cursor::enableVisualLineMode()
 void Cursor::enableVisualBlockMode()
 {
     mode = Mode::visualBlock;
-    visualSelection.addToSelection(cursorPosition);
+    visualSelection.addToVisualBlockSelection(cursorPosition);
 }
 
 void Cursor::enableInsertMode()
