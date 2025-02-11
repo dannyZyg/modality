@@ -79,8 +79,8 @@ public:
     void increaseStepSize();
     void decreaseStepSize();
 
-    // Converts bar position to seconds based on tempo
     double convertBarPositionToSeconds(double barPosition, double tempo);
+    double convertDivisionToSeconds(double division, double tempo);
 
     const double size() const;
     const double sizeAtCurrentStepSize() const;

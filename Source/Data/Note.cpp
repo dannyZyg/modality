@@ -17,6 +17,8 @@ Note::~Note() { }
 
 double Note::getDegree() const { return degree; }
 
+double Note::getDuration() const { return duration; }
+
 double Note::getOctave() const { return octave; }
 
 double Note::getStartTime() const { return startTime; }

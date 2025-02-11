@@ -6,6 +6,17 @@
 #include "Data/Sequence.h"
 #include "Components/SequenceComponent.h"
 #include "Components/CursorComponent.h"
+#include <queue>
+
+// Add to your class header
+struct ScheduledMidiEvent {
+    double timestamp;
+    juce::MidiMessage message;
+    bool operator>(const ScheduledMidiEvent& other) const {
+        return timestamp > other.timestamp;
+    }
+};
+
 
 //==============================================================================
 /*
@@ -56,7 +67,6 @@ private:
     StatusBarComponent statusBarComponent;
 
     juce::AudioTransportSource transportSource;
-    std::vector<Sequence::MidiNote> midiClip;
     double sampleRate = 44100.0;
     double lastProcessedTime = 0;
     const double clipLength = 1.0; // 1 second loop (4 beats @ 120 BPM)
@@ -103,11 +113,17 @@ private:
         double sampleRate = 44100.0;
     };
 
+    std::priority_queue<ScheduledMidiEvent,
+                       std::vector<ScheduledMidiEvent>,
+                       std::greater<ScheduledMidiEvent>> midiEventQueue;
+
+    double nextPatternStartTime = 0.0;
+    const double lookAheadTime = 2.0; // Schedule 2 seconds ahead
+    void scheduleNextPattern(double startTime);
+
     double midiClipDuration = 2.0; // Duration of one iteration of the clip
-    std::vector<Sequence::MidiNote> baseMidiClip; // Store the original pattern
     double nextClipStartTime = 0.0; // Track when to add next iteration
     juce::String notesToString(const std::vector<Sequence::MidiNote>& notes);
-    void extendMidiClip(double currentTime);
 
     void start();
     void stop();

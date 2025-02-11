@@ -17,7 +17,7 @@
 # include "Data/Selection.h"
 #pragma once
 
-enum class Mode { normal, visualLine, visualBlock, insert };
+enum class Mode { normal, visualLine, visualBlock, insert, noteEdit };
 
 class Cursor
 {

@@ -59,6 +59,15 @@ double Timeline::convertBarPositionToSeconds(double barPosition, double tempo)
     return secondsPerBeat * barPosition;
 }
 
+double Timeline::convertDivisionToSeconds(double division, double tempo)
+{
+    const double MIN_IN_SECONDS = 60.0;
+    double secondsPerBeat = MIN_IN_SECONDS / tempo;
+
+    // Assuming 4/4 time and quarter note = 1 beat
+    return secondsPerBeat * division;
+}
+
 void Timeline::increaseStepSize()
 {
     stepSize = Division::getNextLarger(stepSize);

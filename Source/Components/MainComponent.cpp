@@ -38,6 +38,7 @@ MainComponent::MainComponent() : sequenceComponent(cursor), cursorComponent(curs
 MainComponent::~MainComponent()
 {
     transportSource.setSource(nullptr);
+    stop();
 }
 
 //==============================================================================
@@ -97,14 +98,12 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
     if (key.getTextCharacter() == 'j')
     {
         cursor.moveDown();
-        baseMidiClip = cursor.extractMidiSequence(0);
         return true;
     }
 
     if (key.getTextCharacter() == 'k')
     {
         cursor.moveUp();
-        baseMidiClip = cursor.extractMidiSequence(0);
         return true;
     }
 
@@ -112,7 +111,6 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
     {
         if (cursor.isVisualBlockMode() || cursor.isVisualLineMode()) {
             cursor.moveCursorSelection(Direction::left);
-            baseMidiClip = cursor.extractMidiSequence(0);
         }
         return true;
     }
@@ -121,7 +119,6 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
     {
         if (cursor.isVisualBlockMode() || cursor.isVisualLineMode()) {
             cursor.moveCursorSelection(Direction::right);
-            baseMidiClip = cursor.extractMidiSequence(0);
         }
         return true;
     }
@@ -130,7 +127,6 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
     {
         if (cursor.isVisualBlockMode() || cursor.isVisualLineMode()) {
             cursor.moveCursorSelection(Direction::down);
-            baseMidiClip = cursor.extractMidiSequence(0);
         }
         return true;
     }
@@ -139,7 +135,6 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
     {
         if (cursor.isVisualBlockMode() || cursor.isVisualLineMode()) {
             cursor.moveCursorSelection(Direction::up);
-            baseMidiClip = cursor.extractMidiSequence(0);
         }
         return true;
     }
@@ -280,24 +275,60 @@ void MainComponent::start()
 
     // Reset everything
     transportSource.setPosition(0.0);
-    lastProcessedTime = 0.0;  // Important for first note
-    nextClipStartTime = midiClipDuration;
-    // Reset midiClip to initial state
-    baseMidiClip = cursor.extractMidiSequence(0);
+    lastProcessedTime = 0.0;
+    nextPatternStartTime = 0.0;
 
+    // Clear the queue
+    midiEventQueue = {}; // Create a new empty queue
 
-    for (auto& m : baseMidiClip) {
-        DBG("MIDI at time: " << m.time <<  " , note: " << m.noteNumber);
-    }
-    midiClip = baseMidiClip;
+    // Schedule initial pattern
+    scheduleNextPattern(0.0);
 
     transportSource.start();
     DBG("Transport Started");
 }
 
+void MainComponent::scheduleNextPattern(double startTime)
+{
+    // Get fresh pattern from cursor
+    auto pattern = cursor.extractMidiSequence(0);
+
+    // Schedule all notes in the pattern
+    for (const auto& note : pattern)
+    {
+        double noteStartTime = startTime + note.startTime;
+        double noteEndTime = noteStartTime + note.duration;
+        DBG("note duration: " << note.duration);
+
+        DBG("start time s: " << noteStartTime);
+        DBG("end   time s: " << noteEndTime);
+
+
+        // Schedule note-on
+        midiEventQueue.push(ScheduledMidiEvent{
+            noteStartTime,
+            juce::MidiMessage::noteOn(1, note.noteNumber, (uint8)note.velocity)
+        });
+
+        // Schedule note-off
+        midiEventQueue.push(ScheduledMidiEvent{
+            noteEndTime,
+            juce::MidiMessage::noteOff(1, note.noteNumber)
+        });
+    }
+
+    nextPatternStartTime = startTime + midiClipDuration;
+    DBG("Scheduled pattern starting at: " << startTime
+        << " Next pattern at: " << nextPatternStartTime);
+}
+
 void MainComponent::stop()
 {
     transportSource.stop();
+
+    // Clear the event queue
+    midiEventQueue = {};
+
     // Stop any currently playing notes
     if (midiOutput)
     {
@@ -307,37 +338,6 @@ void MainComponent::stop()
     DBG("Transport Stopped");
 }
 
-void MainComponent::extendMidiClip(double currentTime)
-{
-    // Update the sequence (this will incorporate modifiers?)
-    baseMidiClip = cursor.extractMidiSequence(0);
-
-    // If we're getting close to the end of our current notes
-    if (currentTime >= nextClipStartTime - 0.5) // Look ahead by 0.5 seconds
-    {
-        // Add another iteration of the pattern
-        std::vector<Sequence::MidiNote> nextIteration;
-        for (const auto& note : baseMidiClip)
-        {
-            // Create a new note with updated timestamp
-            nextIteration.emplace_back(
-                note.time + nextClipStartTime,
-                note.noteNumber,
-                note.velocity,
-                note.duration
-            );
-        }
-
-        // Add new notes to midiClip
-        midiClip.insert(midiClip.end(), nextIteration.begin(), nextIteration.end());
-
-        // Update next clip start time
-        nextClipStartTime += midiClipDuration;
-
-        DBG("Extended clip. Next start time: " << nextClipStartTime);
-    }
-}
-
 void MainComponent::audioDeviceIOCallbackWithContext(const float* const* inputChannelData,
                                                    int numInputChannels,
                                                    float* const* outputChannelData,
@@ -345,7 +345,7 @@ void MainComponent::audioDeviceIOCallbackWithContext(const float* const* inputCh
                                                    int numSamples,
                                                    const AudioIODeviceCallbackContext& context)
 {
-    // Clear output buffer (fill output channels with silence)
+    // Clear output buffer
     for (int channel = 0; channel < numOutputChannels; ++channel)
         if (outputChannelData[channel] != nullptr)
             std::fill_n(outputChannelData[channel], numSamples, 0.0f);
@@ -358,38 +358,25 @@ void MainComponent::audioDeviceIOCallbackWithContext(const float* const* inputCh
         return;
 
     double currentPosition = transportSource.getCurrentPosition();
+    double bufferEndTime = currentPosition + (numSamples / sampleRate);
 
-    // Extend the MIDI clip if needed
-    extendMidiClip(currentPosition);
-
-    // Process each note
-    for (const auto& note : midiClip)
+    // Schedule next pattern if needed
+    if (currentPosition >= nextPatternStartTime - lookAheadTime)
     {
-        // For notes that should play in this buffer:
-        // 1. Regular case: note time is between last and current position
-        // 2. First buffer case: note time is less than current position and we haven't processed anything yet
-        if ((currentPosition >= note.time && lastProcessedTime < note.time) ||
-            (lastProcessedTime == 0.0 && note.time <= currentPosition && note.time < 0.02)) // 20ms threshold
-        {
-            // Note on
-            midiOutput->sendMessageNow(juce::MidiMessage::noteOn(1, note.noteNumber, (uint8)note.velocity));
-
-            // Schedule note off
-            midiOutput->sendMessageNow(juce::MidiMessage::noteOff(1, note.noteNumber));
-        }
+        scheduleNextPattern(nextPatternStartTime);
     }
 
-    // Debug output every 100ms or so
-    static int debugCounter = 0;
-    if (++debugCounter >= 50)
+    // Process all events that should occur in this buffer
+    while (!midiEventQueue.empty() &&
+           midiEventQueue.top().timestamp <= bufferEndTime)
     {
-        DBG("Current Position: " << currentPosition << " Notes in clip: " << midiClip.size());
-        debugCounter = 0;
+        const auto& event = midiEventQueue.top();
+        midiOutput->sendMessageNow(event.message);
+        midiEventQueue.pop();
     }
 
     lastProcessedTime = currentPosition;
 }
-
 
 void MainComponent::audioDeviceAboutToStart(juce::AudioIODevice* device)
 {

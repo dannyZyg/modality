@@ -12,7 +12,6 @@
 
 #include <JuceHeader.h>
 #include "Data/Cursor.h"
-#include "Data/Sequence.h"
 
 //==============================================================================
 /*

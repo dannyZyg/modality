@@ -9,7 +9,6 @@
 */
 
 #include "Sequence.h"
-#include "juce_core/system/juce_PlatformDefs.h"
 
 Sequence::Sequence()
 {
@@ -19,25 +18,6 @@ Sequence::Sequence()
 Sequence::~Sequence()
 {
 
-}
-
-std::vector<Sequence::MidiNote> Sequence::extractMidiNotes()
-{
-
-    std::vector<MidiNote> midiClip;
-
-    float tempo = 120.0;
-
-    double secondsPerBeat = 60.0 / tempo;
-
-    for (auto& n : notes) {
-        double beats = n->getStartTime() * 4;
-        double time = beats * secondsPerBeat;
-        DBG("time: " << time) ;
-
-        midiClip.emplace_back(time, 64 + n->getDegree(), 100, 1 * 0.9);
-    }
-    return midiClip;
 }
 
 // Create a reusable predicate

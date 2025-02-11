@@ -10,7 +10,8 @@
 
 
 #include <JuceHeader.h>
-#include "Modifier.h"
+#include "Data/Modifier.h"
+#include "Data/Timeline.h"
 #pragma once
 
 class Note
@@ -20,6 +21,7 @@ public:
     ~Note();
 
     double getDegree() const;
+    double getDuration() const;
     double getOctave() const;
     double getStartTime() const;
     void shiftDegreeUp();
@@ -36,7 +38,7 @@ private:
     double degree = 0.0;
     double startTime = 0.0;
     double octave = 0;
-    double duration;
+    double duration = Division::sixteenth;
 
     std::unordered_set<Modifier> modifiers;
 

@@ -212,6 +212,7 @@ constexpr const char* Cursor::modeToString(Mode m) const
         case Mode::visualBlock: return "V-BLOCK";
         case Mode::visualLine: return "V-LINE";
         case Mode::insert: return "INSERT";
+        case Mode::noteEdit: return "NOTE-EDIT";
         default: return "UNKOWN";
     }
 }
@@ -280,9 +281,10 @@ std::vector<Sequence::MidiNote> Cursor::extractMidiSequence(size_t seqIndex)
             }
         }
 
-        double time = timeline.convertBarPositionToSeconds(n->getStartTime(), tempo);
+        double startTime = timeline.convertBarPositionToSeconds(n->getStartTime(), tempo);
+        double duration = timeline.convertDivisionToSeconds(n->getDuration(), tempo);
 
-        midiClip.emplace_back(time, 64 + n->getDegree(), 100, 1 * 0.9);
+        midiClip.emplace_back(startTime, 64 + n->getDegree(), 100, duration);
     }
     return midiClip;
 }
