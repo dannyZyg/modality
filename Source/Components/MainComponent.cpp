@@ -197,7 +197,7 @@ void MainComponent::audioDeviceStopped()
     transportSource.releaseResources();
 }
 
-juce::String MainComponent::notesToString(const std::vector<Sequence::MidiNote>& notes)
+juce::String MainComponent::notesToString(const std::vector<MidiNote>& notes)
 {
     juce::String result;
     for (const auto& note : notes)

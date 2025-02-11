@@ -12,7 +12,21 @@
 #include <JuceHeader.h>
 #include "Data/Modifier.h"
 #include "Data/Timeline.h"
+#include "Data/Scale.h"
+#include <random>
 #pragma once
+
+// === Struct to Represent MIDI Notes ===
+struct MidiNote
+{
+    double startTime;    // Note start time (in seconds)
+    int noteNumber; // MIDI note number (0-127)
+    int velocity;   // Velocity (0-127)
+    double duration;// Duration in seconds
+
+    MidiNote(double t, int note, int vel, double dur)
+        : startTime(t), noteNumber(note), velocity(vel), duration(dur) {}
+};
 
 class Note
 {
@@ -33,6 +47,7 @@ public:
     std::optional<Modifier> getModifier(ModifierType type);
 
     bool hasAnyModifier();
+    std::optional<MidiNote> asMidiNote(Timeline t, Scale s, double tempo);
 
 private:
     double degree = 0.0;
@@ -41,5 +56,6 @@ private:
     double duration = Division::sixteenth;
 
     std::unordered_set<Modifier> modifiers;
+    std::mt19937 randomGenerator;
 
 };

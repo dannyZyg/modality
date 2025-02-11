@@ -3,7 +3,6 @@
 #include <JuceHeader.h>
 #include "Components/StatusBarComponent.h"
 #include "Data/Cursor.h"
-#include "Data/Sequence.h"
 #include "Components/SequenceComponent.h"
 #include "Components/CursorComponent.h"
 #include <queue>
@@ -123,7 +122,7 @@ private:
 
     double midiClipDuration = 2.0; // Duration of one iteration of the clip
     double nextClipStartTime = 0.0; // Track when to add next iteration
-    juce::String notesToString(const std::vector<Sequence::MidiNote>& notes);
+    juce::String notesToString(const std::vector<MidiNote>& notes);
 
     void start();
     void stop();

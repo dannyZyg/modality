@@ -46,3 +46,25 @@ std::optional<Modifier> Note::getModifier(ModifierType type) {
 }
 
 bool Note::hasAnyModifier() { return modifiers.size() > 0; }
+
+std::optional<MidiNote> Note::asMidiNote(Timeline t, Scale s, double tempo)
+{
+    double start = t.convertBarPositionToSeconds(getStartTime(), tempo);
+    double dur = t.convertDivisionToSeconds(getDuration(), tempo);
+    auto midi = MidiNote(start, 64 + getDegree(), 100, dur);
+
+    auto mod = getModifier(ModifierType::randomTrigger);
+
+    if (mod) {
+        auto probability = mod->getModifierValue("percentChanceTriggerValue");
+        std::bernoulli_distribution d(any_cast<double>(probability));
+
+        if (d(randomGenerator)) {
+            return midi;
+        } else {
+            return std::nullopt;
+        }
+    }
+
+    return midi;
+}

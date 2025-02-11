@@ -261,30 +261,18 @@ Sequence& Cursor::getSelectedSequence() const
     return getSequence(selectedSeqIndex);
 }
 
-std::vector<Sequence::MidiNote> Cursor::extractMidiSequence(size_t seqIndex)
+std::vector<MidiNote> Cursor::extractMidiSequence(size_t seqIndex)
 {
-    std::vector<Sequence::MidiNote> midiClip;
+    std::vector<MidiNote> midiClip;
 
     float tempo = 120.0;
 
     for (auto& n : getSequence(seqIndex).notes) {
-        auto mod = n->getModifier(ModifierType::randomTrigger);
+        auto midi = n->asMidiNote(timeline, scale, tempo);
 
-
-        if (mod) {
-            auto probability = mod->getModifierValue("percentChanceTriggerValue");
-            std::bernoulli_distribution d(any_cast<double>(probability));
-            /* DBG("PRobability: " << any_cast<double>(probability)); */
-            /* DBG("MOD Exists"); */
-            if (d(randomGenerator)) {
-                /* DBG("YES"); */
-            }
+        if (midi) {
+            midiClip.emplace_back(*midi);
         }
-
-        double startTime = timeline.convertBarPositionToSeconds(n->getStartTime(), tempo);
-        double duration = timeline.convertDivisionToSeconds(n->getDuration(), tempo);
-
-        midiClip.emplace_back(startTime, 64 + n->getDegree(), 100, duration);
     }
     return midiClip;
 }
