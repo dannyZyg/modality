@@ -214,8 +214,13 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
 
     if (key.getTextCharacter() == 'o')
     {
-        if (cursor.isVisualBlockMode() || cursor.isVisualLineMode()) {
+        if (cursor.isVisualBlockMode()) {
             cursor.cursorPosition = cursor.getVisualSelectionOpposite();
+        } else if (cursor.isVisualLineMode()) {
+
+            DBG("TOGGLE");
+            cursor.toggleLineMode();
+            //cursor.cursorPosition = cursor.getVisualSelectionOpposite();
         }
         return true;
     }

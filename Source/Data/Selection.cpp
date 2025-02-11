@@ -8,21 +8,51 @@ void Selection::clear() {
     positions.clear();
 }
 
-void Selection::addToVisualLineSelection(Position p, VisualLineMode m, Timeline t, Scale s)
+void Selection::toggleLineMode()
 {
-    if (m == VisualLineMode::horizontal) {
-        // Add all time positions from 0 to the end, at the smallest interval (a whole row)
-        for (auto i = t.getLowerBound(); i < t.size() - 1; ++i) {
-            auto time = i * t.getSmallestStepSize();
-            positions.emplace_back(Position{TimePoint{time}, Degree{p.yDegree.value}});
-        }
+    if (lineMode == VisualLineMode:: vertical) {
+        lineMode = VisualLineMode::horizontal;
+    } else if (lineMode == VisualLineMode::horizontal) {
+        lineMode = VisualLineMode::vertical;
     }
 
-    if (m == VisualLineMode::vertical) {
-        // Add all degree positions from the lowest to the highest, at the smallest interval (a whole column)
-        for (auto i = s.getLowerBound(); i < s.size() - 1; ++i) {
-            auto deg = i * s.getSmallestStepSize();
-            positions.emplace_back(Position{TimePoint{p.xTime.value}, Degree{deg}});
+}
+
+void Selection::addToVisualLineSelection(Position p, Timeline t, Scale s) {
+    // If this is the first position, it becomes both cursor and anchor
+    if (positions.empty()) {
+        anchor = p;
+    }
+
+    // Clear existing selection
+    positions.clear();
+
+    if (lineMode == VisualLineMode::horizontal) {
+        // Get the range of rows to fill (between anchor and cursor)
+        double minDegree = std::min(anchor.yDegree.value, p.yDegree.value);
+        double maxDegree = std::max(anchor.yDegree.value, p.yDegree.value);
+
+        // For each row in the range...
+        for (double d = minDegree; d <= maxDegree; d += s.getSmallestStepSize()) {
+            // Fill the entire row
+            for (auto i = t.getLowerBound(); i < t.size() - 1; ++i) {
+                auto time = i * t.getSmallestStepSize();
+                positions.emplace_back(Position{TimePoint{time}, Degree{d}});
+            }
+        }
+    }
+    else if (lineMode == VisualLineMode::vertical) {
+        // Get the range of columns to fill (between anchor and cursor)
+        double minTime = std::min(anchor.xTime.value, p.xTime.value);
+        double maxTime = std::max(anchor.xTime.value, p.xTime.value);
+
+        // For each column in the range...
+        for (double time = minTime; time <= maxTime; time += t.getSmallestStepSize()) {
+            // Fill the entire column
+            for (auto i = s.getLowerBound(); i < s.size() - 1; ++i) {
+                auto deg = i * s.getSmallestStepSize();
+                positions.emplace_back(Position{TimePoint{time}, Degree{deg}});
+            }
         }
     }
 }

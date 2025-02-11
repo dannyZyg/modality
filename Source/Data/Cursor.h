@@ -83,6 +83,7 @@ public:
     void increaseTimelineStepSize();
     void decreaseTimelineStepSize();
 
+    void toggleLineMode();
 
     const std::vector<Position>& getVisualSelectionPositions() const;
     Position getVisualSelectionOpposite();

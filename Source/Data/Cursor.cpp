@@ -101,7 +101,7 @@ void Cursor::moveLeft()
     cursorPosition.xTime = timeline.getPrevStep(cursorPosition.xTime);
 
     if (isVisualLineMode()) {
-        visualSelection.addToSelection(cursorPosition);
+        visualSelection.addToVisualLineSelection(cursorPosition, timeline, scale);
     }
 
     if (isVisualBlockMode()) {
@@ -114,7 +114,7 @@ void Cursor::moveRight()
     cursorPosition.xTime = timeline.getNextStep(cursorPosition.xTime);
 
     if (isVisualLineMode()) {
-        visualSelection.addToSelection(cursorPosition);
+        visualSelection.addToVisualLineSelection(cursorPosition, timeline, scale);
     }
 
     if (isVisualBlockMode()) {
@@ -127,7 +127,7 @@ void Cursor::moveDown()
     cursorPosition.yDegree = scale.getLower(cursorPosition.yDegree);
 
     if (isVisualLineMode()) {
-        visualSelection.addToSelection(cursorPosition);
+        visualSelection.addToVisualLineSelection(cursorPosition, timeline, scale);
     }
 
     if (isVisualBlockMode()) {
@@ -140,7 +140,7 @@ void Cursor::moveUp()
     cursorPosition.yDegree = scale.getHigher(cursorPosition.yDegree);
 
     if (isVisualLineMode()) {
-        visualSelection.addToSelection(cursorPosition);
+        visualSelection.addToVisualLineSelection(cursorPosition, timeline, scale);
     }
 
     if (isVisualBlockMode()) {
@@ -180,8 +180,7 @@ void Cursor::enableNormalMode()
 void Cursor::enableVisualLineMode()
 {
     mode = Mode::visualLine;
-
-    visualSelection.addToVisualLineSelection(cursorPosition, Selection::VisualLineMode::vertical, timeline, scale);
+    visualSelection.addToVisualLineSelection(cursorPosition, timeline, scale);
 }
 
 void Cursor::enableVisualBlockMode()
@@ -321,6 +320,8 @@ const std::vector<Position>& Cursor::getVisualSelectionPositions() const
 {
     return visualSelection.getPositions();
 }
+
+void Cursor::toggleLineMode() { visualSelection.toggleLineMode(); }
 
 Position Cursor::getVisualSelectionOpposite()
 {

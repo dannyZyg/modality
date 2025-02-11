@@ -19,9 +19,8 @@ public:
 
     void clear();
 
-    void addToVisualLineSelection(Position p, VisualLineMode m, Timeline t, Scale s);
+    void addToVisualLineSelection(Position p, Timeline t, Scale s);
     void addToVisualBlockSelection(Position p);
-    void removeFromBlockSelection(Position p);
     void addToSelection(Position p);
     void removeFromSelection(Position p);
 
@@ -34,8 +33,11 @@ public:
 
     void moveSelection(double step, Direction d);
 
+    void toggleLineMode();
+
 private:
     std::vector<Position> positions;
     Position anchor;
+    VisualLineMode lineMode = VisualLineMode::vertical;
 };
 
