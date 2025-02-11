@@ -118,7 +118,7 @@ private:
                        std::greater<ScheduledMidiEvent>> midiEventQueue;
 
     double nextPatternStartTime = 0.0;
-    const double lookAheadTime = 2.0; // Schedule 2 seconds ahead
+    const double lookAheadTime = 0.025;
     void scheduleNextPattern(double startTime);
 
     double midiClipDuration = 2.0; // Duration of one iteration of the clip

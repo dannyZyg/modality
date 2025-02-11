@@ -67,6 +67,146 @@ void MainComponent::resized()
     statusBarComponent.resized();
 }
 
+void MainComponent::start()
+{
+    // Stop any currently playing notes
+    if (midiOutput)
+    {
+        for (int channel = 1; channel <= 16; ++channel)
+            midiOutput->sendMessageNow(juce::MidiMessage::allNotesOff(channel));
+    }
+
+    // Reset everything
+    transportSource.setPosition(0.0);
+    lastProcessedTime = 0.0;
+    nextPatternStartTime = 0.0;
+
+    // Clear the queue
+    midiEventQueue = {}; // Create a new empty queue
+
+    // Schedule initial pattern
+    scheduleNextPattern(0.0);
+
+    transportSource.start();
+    DBG("Transport Started");
+}
+
+void MainComponent::scheduleNextPattern(double startTime)
+{
+    // Get fresh pattern from cursor
+    auto pattern = cursor.extractMidiSequence(0);
+
+    // Schedule all notes in the pattern
+    for (const auto& note : pattern)
+    {
+        double noteStartTime = startTime + note.startTime;
+        double noteEndTime = noteStartTime + note.duration;
+        DBG("note duration: " << note.duration);
+
+        DBG("start time s: " << noteStartTime);
+        DBG("end   time s: " << noteEndTime);
+
+
+        // Schedule note-on
+        midiEventQueue.push(ScheduledMidiEvent{
+            noteStartTime,
+            juce::MidiMessage::noteOn(1, note.noteNumber, (uint8)note.velocity)
+        });
+
+        // Schedule note-off
+        midiEventQueue.push(ScheduledMidiEvent{
+            noteEndTime,
+            juce::MidiMessage::noteOff(1, note.noteNumber)
+        });
+    }
+
+    nextPatternStartTime = startTime + midiClipDuration;
+    DBG("Scheduled pattern starting at: " << startTime
+        << " Next pattern at: " << nextPatternStartTime);
+}
+
+void MainComponent::stop()
+{
+    transportSource.stop();
+
+    // Clear the event queue
+    midiEventQueue = {};
+
+    // Stop any currently playing notes
+    if (midiOutput)
+    {
+        for (int channel = 1; channel <= 16; ++channel)
+            midiOutput->sendMessageNow(juce::MidiMessage::allNotesOff(channel));
+    }
+    DBG("Transport Stopped");
+}
+
+void MainComponent::audioDeviceIOCallbackWithContext(const float* const* inputChannelData,
+                                                   int numInputChannels,
+                                                   float* const* outputChannelData,
+                                                   int numOutputChannels,
+                                                   int numSamples,
+                                                   const AudioIODeviceCallbackContext& context)
+{
+    // Clear output buffer
+    for (int channel = 0; channel < numOutputChannels; ++channel)
+        if (outputChannelData[channel] != nullptr)
+            std::fill_n(outputChannelData[channel], numSamples, 0.0f);
+
+    // Update transport
+    juce::AudioBuffer<float> tempBuffer(outputChannelData, numOutputChannels, numSamples);
+    transportSource.getNextAudioBlock(juce::AudioSourceChannelInfo(tempBuffer));
+
+    if (!transportSource.isPlaying() || !midiOutput)
+        return;
+
+    double currentPosition = transportSource.getCurrentPosition();
+    double bufferEndTime = currentPosition + (numSamples / sampleRate);
+
+    // Schedule next pattern if needed
+    if (currentPosition >= nextPatternStartTime - lookAheadTime)
+    {
+        scheduleNextPattern(nextPatternStartTime);
+    }
+
+    // Process all events that should occur in this buffer
+    while (!midiEventQueue.empty() &&
+           midiEventQueue.top().timestamp <= bufferEndTime)
+    {
+        const auto& event = midiEventQueue.top();
+        midiOutput->sendMessageNow(event.message);
+        midiEventQueue.pop();
+    }
+
+    lastProcessedTime = currentPosition;
+}
+
+void MainComponent::audioDeviceAboutToStart(juce::AudioIODevice* device)
+{
+    DBG("Audio Device About to Start");
+    DBG("Device name: " << device->getName());
+    DBG("Sample rate: " << device->getCurrentSampleRate());
+
+    sampleRate = device->getCurrentSampleRate();
+    transportSource.prepareToPlay(512, sampleRate);
+    DBG("prepare to play!");
+}
+
+void MainComponent::audioDeviceStopped()
+{
+    transportSource.releaseResources();
+}
+
+juce::String MainComponent::notesToString(const std::vector<Sequence::MidiNote>& notes)
+{
+    juce::String result;
+    for (const auto& note : notes)
+    {
+        result += juce::String(note.noteNumber) + " ";
+    }
+    return result;
+}
+
 bool MainComponent::keyPressed (const juce::KeyPress& key)
 {
     keyText = "Key: " + key.getTextDescription();
@@ -264,142 +404,3 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
     return false; // Pass unhandled keys to the base class
 }
 
-void MainComponent::start()
-{
-    // Stop any currently playing notes
-    if (midiOutput)
-    {
-        for (int channel = 1; channel <= 16; ++channel)
-            midiOutput->sendMessageNow(juce::MidiMessage::allNotesOff(channel));
-    }
-
-    // Reset everything
-    transportSource.setPosition(0.0);
-    lastProcessedTime = 0.0;
-    nextPatternStartTime = 0.0;
-
-    // Clear the queue
-    midiEventQueue = {}; // Create a new empty queue
-
-    // Schedule initial pattern
-    scheduleNextPattern(0.0);
-
-    transportSource.start();
-    DBG("Transport Started");
-}
-
-void MainComponent::scheduleNextPattern(double startTime)
-{
-    // Get fresh pattern from cursor
-    auto pattern = cursor.extractMidiSequence(0);
-
-    // Schedule all notes in the pattern
-    for (const auto& note : pattern)
-    {
-        double noteStartTime = startTime + note.startTime;
-        double noteEndTime = noteStartTime + note.duration;
-        DBG("note duration: " << note.duration);
-
-        DBG("start time s: " << noteStartTime);
-        DBG("end   time s: " << noteEndTime);
-
-
-        // Schedule note-on
-        midiEventQueue.push(ScheduledMidiEvent{
-            noteStartTime,
-            juce::MidiMessage::noteOn(1, note.noteNumber, (uint8)note.velocity)
-        });
-
-        // Schedule note-off
-        midiEventQueue.push(ScheduledMidiEvent{
-            noteEndTime,
-            juce::MidiMessage::noteOff(1, note.noteNumber)
-        });
-    }
-
-    nextPatternStartTime = startTime + midiClipDuration;
-    DBG("Scheduled pattern starting at: " << startTime
-        << " Next pattern at: " << nextPatternStartTime);
-}
-
-void MainComponent::stop()
-{
-    transportSource.stop();
-
-    // Clear the event queue
-    midiEventQueue = {};
-
-    // Stop any currently playing notes
-    if (midiOutput)
-    {
-        for (int channel = 1; channel <= 16; ++channel)
-            midiOutput->sendMessageNow(juce::MidiMessage::allNotesOff(channel));
-    }
-    DBG("Transport Stopped");
-}
-
-void MainComponent::audioDeviceIOCallbackWithContext(const float* const* inputChannelData,
-                                                   int numInputChannels,
-                                                   float* const* outputChannelData,
-                                                   int numOutputChannels,
-                                                   int numSamples,
-                                                   const AudioIODeviceCallbackContext& context)
-{
-    // Clear output buffer
-    for (int channel = 0; channel < numOutputChannels; ++channel)
-        if (outputChannelData[channel] != nullptr)
-            std::fill_n(outputChannelData[channel], numSamples, 0.0f);
-
-    // Update transport
-    juce::AudioBuffer<float> tempBuffer(outputChannelData, numOutputChannels, numSamples);
-    transportSource.getNextAudioBlock(juce::AudioSourceChannelInfo(tempBuffer));
-
-    if (!transportSource.isPlaying() || !midiOutput)
-        return;
-
-    double currentPosition = transportSource.getCurrentPosition();
-    double bufferEndTime = currentPosition + (numSamples / sampleRate);
-
-    // Schedule next pattern if needed
-    if (currentPosition >= nextPatternStartTime - lookAheadTime)
-    {
-        scheduleNextPattern(nextPatternStartTime);
-    }
-
-    // Process all events that should occur in this buffer
-    while (!midiEventQueue.empty() &&
-           midiEventQueue.top().timestamp <= bufferEndTime)
-    {
-        const auto& event = midiEventQueue.top();
-        midiOutput->sendMessageNow(event.message);
-        midiEventQueue.pop();
-    }
-
-    lastProcessedTime = currentPosition;
-}
-
-void MainComponent::audioDeviceAboutToStart(juce::AudioIODevice* device)
-{
-    DBG("Audio Device About to Start");
-    DBG("Device name: " << device->getName());
-    DBG("Sample rate: " << device->getCurrentSampleRate());
-
-    sampleRate = device->getCurrentSampleRate();
-    transportSource.prepareToPlay(512, sampleRate);
-    DBG("prepare to play!");
-}
-
-void MainComponent::audioDeviceStopped()
-{
-    transportSource.releaseResources();
-}
-
-juce::String MainComponent::notesToString(const std::vector<Sequence::MidiNote>& notes)
-{
-    juce::String result;
-    for (const auto& note : notes)
-    {
-        result += juce::String(note.noteNumber) + " ";
-    }
-    return result;
-}
