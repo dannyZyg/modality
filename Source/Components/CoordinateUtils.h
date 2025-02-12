@@ -20,22 +20,26 @@ public:
     }
 
     static float getStepHeight(float screenHeight, const Scale& scale) {
-        float totalDegreeRange = scale.getUpperBound() - scale.getLowerBound();
-        return (scale.stepSize / totalDegreeRange) * screenHeight;
+        double totalDegreeRange = scale.getUpperBound() - scale.getLowerBound();
+        return static_cast<float>((scale.stepSize / totalDegreeRange) * screenHeight);
     }
 
     // Convert musical time to screen X coordinate
     static float timeToScreenX(double timePos, double screenWidth, const Timeline& timeline) {
-        return (timePos - timeline.getLowerBound()) /
-               (timeline.getUpperBound() - timeline.getLowerBound()) * screenWidth;
+        return static_cast<float>((timePos - timeline.getLowerBound()) /
+               (timeline.getUpperBound() - timeline.getLowerBound()) * screenWidth);
     }
 
     // Convert musical degree to screen Y coordinate
     static float degreeToScreenY(double degree, float screenHeight, const Scale& scale) {
-        // Note: Y is inverted in screen coordinates (0 at top)
-        float normalizedDegree = (degree - scale.getLowerBound()) /
-                                (scale.getUpperBound() - scale.getLowerBound());
-        return screenHeight * (1.0 - normalizedDegree);
+        // Calculate height of each position
+        double positionHeight = screenHeight / scale.size();
+
+        // Convert degree to position index (24 to 0), where 12 maps to index 0
+        double positionIndex = scale.getUpperBound() - degree;
+
+        // Return y coordinate
+        return static_cast<float>(positionIndex * positionHeight);
     }
 
     // Convert musical coordinates to screen coordinates

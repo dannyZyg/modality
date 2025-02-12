@@ -31,12 +31,12 @@ double Scale::getSmallestStepSize()
     return stepSize;
 }
 
-double Scale::getStepSize()
+double Scale::getStepSize() const
 {
     return stepSize;
 }
 
-double Scale::size()
+double Scale::size() const
 {
     return (getUpperBound() - getLowerBound()) + 1;
 }

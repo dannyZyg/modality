@@ -24,7 +24,7 @@ MainComponent::MainComponent() : sequenceComponent(cursor), cursorComponent(curs
         auto deviceInfo = midiOutputs[0];
         midiOutput = juce::MidiOutput::openDevice(deviceInfo.identifier);
         if (midiOutput)
-            DBG("MIDI output initialised: " << deviceInfo.name);
+            juce::Logger::writeToLog("MIDI output initialised: " + deviceInfo.name);
     }
 
     // Create and set up silent source
@@ -56,8 +56,6 @@ void MainComponent::paint (juce::Graphics& g)
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (juce::Colours::whitesmoke);
 
-    g.setColour(juce::Colours::black);
-    g.drawLine(0, getHeight()/2, getWidth(), getHeight()/2);
 }
 
 void MainComponent::resized()
@@ -81,14 +79,14 @@ void MainComponent::start()
     lastProcessedTime = 0.0;
     nextPatternStartTime = 0.0;
 
-    // Clear the queue
+    // Clear the queue-
     midiEventQueue = {}; // Create a new empty queue
 
     // Schedule initial pattern
     scheduleNextPattern(0.0);
 
     transportSource.start();
-    DBG("Transport Started");
+    juce::Logger::writeToLog("Transport Started");
 }
 
 void MainComponent::scheduleNextPattern(double startTime)
@@ -101,11 +99,6 @@ void MainComponent::scheduleNextPattern(double startTime)
     {
         double noteStartTime = startTime + note.startTime;
         double noteEndTime = noteStartTime + note.duration;
-        DBG("note duration: " << note.duration);
-
-        DBG("start time s: " << noteStartTime);
-        DBG("end   time s: " << noteEndTime);
-
 
         // Schedule note-on
         midiEventQueue.push(ScheduledMidiEvent{
@@ -138,15 +131,15 @@ void MainComponent::stop()
         for (int channel = 1; channel <= 16; ++channel)
             midiOutput->sendMessageNow(juce::MidiMessage::allNotesOff(channel));
     }
-    DBG("Transport Stopped");
+    juce::Logger::writeToLog("Transport Stopped");
 }
 
-void MainComponent::audioDeviceIOCallbackWithContext(const float* const* inputChannelData,
-                                                   int numInputChannels,
+void MainComponent::audioDeviceIOCallbackWithContext([[maybe_unused]] const float* const* inputChannelData,
+                                                   [[maybe_unused]] int numInputChannels,
                                                    float* const* outputChannelData,
                                                    int numOutputChannels,
                                                    int numSamples,
-                                                   const AudioIODeviceCallbackContext& context)
+                                                   [[maybe_unused]] const AudioIODeviceCallbackContext& context)
 {
     // Clear output buffer
     for (int channel = 0; channel < numOutputChannels; ++channel)
@@ -183,13 +176,12 @@ void MainComponent::audioDeviceIOCallbackWithContext(const float* const* inputCh
 
 void MainComponent::audioDeviceAboutToStart(juce::AudioIODevice* device)
 {
-    DBG("Audio Device About to Start");
-    DBG("Device name: " << device->getName());
-    DBG("Sample rate: " << device->getCurrentSampleRate());
+    juce::Logger::writeToLog("Audio Device About to Start");
+    juce::Logger::writeToLog("Device name: " + device->getName());
+    juce::Logger::writeToLog("Sample rate: " + juce::String(device->getCurrentSampleRate()));
 
     sampleRate = device->getCurrentSampleRate();
     transportSource.prepareToPlay(512, sampleRate);
-    DBG("prepare to play!");
 }
 
 void MainComponent::audioDeviceStopped()
@@ -353,7 +345,6 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
             cursor.cursorPosition = cursor.getVisualSelectionOpposite();
         } else if (cursor.isVisualLineMode()) {
 
-            DBG("TOGGLE");
             cursor.toggleLineMode();
             //cursor.cursorPosition = cursor.getVisualSelectionOpposite();
         }

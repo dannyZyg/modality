@@ -25,8 +25,8 @@ public:
     double getSmallestStepSize();
 
     double stepSize = 1.0;
-    double getStepSize();
-    double size();
+    double getStepSize() const;
+    double size() const;
 private:
     double lowerBound;
     double upperBound;

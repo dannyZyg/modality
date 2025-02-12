@@ -1,5 +1,5 @@
 #include <JuceHeader.h>
-#include "CursorComponent.h"
+#include "Components/CursorComponent.h"
 #include "Components/CoordinateUtils.h"
 #include "AppColours.h"
 
@@ -16,41 +16,28 @@ CursorComponent::~CursorComponent()
 
 void CursorComponent::paint (juce::Graphics& g)
 {
+    float width = static_cast<float>(getWidth());
+    float height = static_cast<float>(getHeight());
 
-    float timeInSeconds = juce::Time::getMillisecondCounterHiRes() / 500.0f;
-    float sineValue = std::sin(timeInSeconds * juce::MathConstants<float>::pi); // Oscillates between -1 and 1
+    double timeInSeconds = juce::Time::getMillisecondCounterHiRes() / 500.0f;
+    double sineValue = std::sin(timeInSeconds * juce::MathConstants<float>::pi); // Oscillates between -1 and 1
 
     // Map sineValue to a 0 to 1 range
-    float blendFactor = (sineValue + 1.0f) * 0.5f;
+    float blendFactor = static_cast<float>((sineValue + 1.0f) * 0.5f);
     // Interpolate between black and light grey
     juce::Colour blink = AppColours::getCursorColour(cursor.getMode()).interpolatedWith(juce::Colours::lightgrey, blendFactor);
 
-    /* g.drawRect (getLocalBounds(), 1);   // draw an outline around the component */
+    auto x = CoordinateUtils::timeToScreenX(0.0, width, cursor.timeline);
+    auto y = CoordinateUtils::degreeToScreenY(0.0, height, cursor.scale);
+    auto base = juce::Rectangle<float>(x, y, width, CoordinateUtils::getStepHeight(height, cursor.scale));
 
-    // Scenario 3: Converting both time and degree to a screen point
-    juce::Point<float> screenPos = CoordinateUtils::musicToScreen(
-        cursor,
-        getWidth(),
-        getHeight(),
-        cursor.timeline,
-        cursor.scale
-    );
-
-
-
-    /* g.fillRect(screenPos.x,    // x position (centered) */
-    /*            screenPos.y,     // y position (centered) */
-    /*            10.0,                     // width */
-    /*            10.0); */
+    g.setColour (juce::Colours::lightgrey.withLightness(0.9f));
+    g.fillRect(base);
+    g.setColour (juce::Colours::black.withLightness(0.7f));
+    g.drawRect(base, 1.0f);
 
     // Get rectangle for cursor
-    auto rect = CoordinateUtils::getRectAtPoint(cursor,
-                                              getWidth(),
-                                              getHeight(),
-                                              cursor.timeline,
-                                              cursor.scale);
-
-
+    auto rect = CoordinateUtils::getRectAtPoint(cursor, width, height, cursor.timeline, cursor.scale);
 
     if (cursor.isNormalMode()) {
         g.setColour (AppColours::getCursorColour(cursor.getMode()));
@@ -60,21 +47,16 @@ void CursorComponent::paint (juce::Graphics& g)
         g.fillRect(rect);
     }
 
-
     if (cursor.isVisualLineMode() || cursor.isVisualBlockMode()) {
-        g.setColour(AppColours::getCursorColour(cursor.getMode()));
+        g.setColour(AppColours::getSelectionColour(cursor.getMode()));
 
         for (const auto& pos : cursor.getVisualSelectionPositions()) {
             // Get rectangle for cursor
-            auto rect = CoordinateUtils::getRectAtPosition(pos,
-                                                      getWidth(),
-                                                      getHeight(),
-                                                      cursor.timeline,
-                                                      cursor.scale);
-            g.fillRect(rect);
+            auto selection = CoordinateUtils::getRectAtPosition(pos, width, height, cursor.timeline, cursor.scale);
+            g.fillRect(selection);
         }
 
-        g.setColour (juce::Colours::darkcyan);
+        g.setColour (AppColours::getCursorColour(cursor.getMode()));
         g.drawRect(rect, 2.0f);
     }
 

@@ -6,7 +6,7 @@
 enum class Direction { up, down, left, right };
 
 struct Position {
-    TimePoint xTime = TimePoint{2.0};
+    TimePoint xTime = TimePoint{0.0};
     Degree yDegree = Degree{0.0};
 };
 
