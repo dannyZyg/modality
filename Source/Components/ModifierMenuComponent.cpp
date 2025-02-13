@@ -3,7 +3,7 @@
 #include "Components/ModifierMenuComponent.h"
 
 //==============================================================================
-ModifierMenuComponent::ModifierMenuComponent()
+ModifierMenuComponent::ModifierMenuComponent(Cursor& c) : cursor(c)
 {
     setVisible(false);
     setWantsKeyboardFocus(true);
@@ -15,7 +15,7 @@ ModifierMenuComponent::~ModifierMenuComponent()
 
 void ModifierMenuComponent::paint (juce::Graphics& g)
 {
-    g.fillAll(juce::Colours::lightslategrey.withLightness(0.6f).withAlpha(0.9f));
+    g.fillAll(juce::Colours::lightslategrey.withLightness(0.7f).withAlpha(0.9f));
     g.setColour(juce::Colours::white);
 
     g.setColour(juce::Colours::black);
@@ -36,8 +36,16 @@ void ModifierMenuComponent::paint (juce::Graphics& g)
     if (mode == ModMenuMode::top) {
         drawTopMode(g);
     }
-    if (mode == ModMenuMode::add) {
-        drawAddMode(g);
+    if (mode == ModMenuMode::add || mode == ModMenuMode::edit || mode == ModMenuMode::remove) {
+        drawModifierOptions(g);
+    }
+
+    if (mode == ModMenuMode::complete) {
+        g.setFont(juce::Font(juce::Font::getDefaultMonospacedFontName(), 16.0f, juce::Font::plain));
+        g.drawText(completeMessage,
+                   getLocalBounds().removeFromTop(200),
+                   juce::Justification::centred,        // Center horizontally and vertically
+                   false);
     }
 }
 
@@ -92,7 +100,7 @@ void ModifierMenuComponent::drawTopMode(juce::Graphics& g)
 
 }
 
-void ModifierMenuComponent::drawAddMode(juce::Graphics& g)
+void ModifierMenuComponent::drawModifierOptions(juce::Graphics& g)
 {
     g.setFont(juce::Font(juce::Font::getDefaultMonospacedFontName(), 16.0f, juce::Font::plain));
     int startY = 50;
@@ -151,8 +159,6 @@ void ModifierMenuComponent::resized ()
 
 bool ModifierMenuComponent::keyPressed(const juce::KeyPress& key)
 {
-    DBG("Modifier keyPressed: " << key.getTextDescription());
-    DBG("Do I have focus?: " << juce::String(hasKeyboardFocus(true) ? "yes" : "no"));
 
     if (mode == ModMenuMode::top) {
         if (key.getTextCharacter() == 'a')
@@ -174,30 +180,66 @@ bool ModifierMenuComponent::keyPressed(const juce::KeyPress& key)
         }
     }
 
+    if (key.getTextCharacter() == 'r')
+    {
+        return handleModifierChange(ModifierType::randomTrigger);
+    }
+
+    if (key.getTextCharacter() == 'v')
+    {
+        return handleModifierChange(ModifierType::velocity);
+    }
+
+    if (key.getTextCharacter() == 'o')
+    {
+        return handleModifierChange(ModifierType::octave);
+    }
+
     return false;
 }
 
-void ModifierMenuComponent::focusGained(FocusChangeType cause)
+void ModifierMenuComponent::focusGained(FocusChangeType)
 {
-    DBG("ModifierMenu gained focus!");
     mode = ModMenuMode::top;
 }
 
-void ModifierMenuComponent::focusLost(FocusChangeType cause)
+void ModifierMenuComponent::timerCallback()
 {
-    DBG("ModifierMenu lost focus!");
+    stopTimer();
+    mode = ModMenuMode::top;
+    completeMessage = "";
+}
 
-    DBG("ModifierMenu lost focus!");
-    DBG("Lost focus cause: " << (cause == FocusChangeType::focusChangedDirectly ? "direct" :
-                                cause == FocusChangeType::focusChangedByMouseClick ? "mouse" : "unknown"));
+void ModifierMenuComponent::showMessage(juce::String message)
+{
+    startTimer(3000);
+    mode = ModMenuMode::complete;
+    completeMessage = message;
+}
 
-    if (Component* newFocus = Component::getCurrentlyFocusedComponent())
-    {
-        DBG("Focus went to: " << newFocus->getName());
+bool ModifierMenuComponent::handleModifierChange(ModifierType t)
+{
+    if (mode == ModMenuMode::add) {
+        int numModifiersAdded = cursor.addModifier(t);
+
+        if (numModifiersAdded == 0) {
+            completeMessage = "No notes selected";
+        } else {
+            completeMessage = "Added " + getModifierName(t) +  " modifier to " + juce::String(numModifiersAdded) + " notes.";
+        }
     }
-    else
-    {
-        DBG("Focus went to nullptr");
+
+    if (mode == ModMenuMode::remove) {
+        int numModifiersAdded = cursor.removeModifier(t);
+
+        if (numModifiersAdded == 0) {
+            completeMessage = "No notes selected";
+        } else {
+            completeMessage = "Removed " + getModifierName(t) + " modifier to " + juce::String(numModifiersAdded) + " notes.";
+        }
     }
 
+    mode = ModMenuMode::complete;
+    startTimer(3000);
+    return true;
 }

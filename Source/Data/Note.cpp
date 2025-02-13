@@ -9,6 +9,7 @@
 */
 
 #include "Note.h"
+#include "Data/ModifierApplicator.h"
 
 
 Note::Note(double deg, double time, double dur) : degree(deg), startTime(time), duration(dur) {}
@@ -36,6 +37,11 @@ void Note::addModifier(Modifier m)
     modifiers.insert(m);
 }
 
+bool Note::removeModifier(Modifier m)
+{
+    return modifiers.erase(m) > 0;
+}
+
 std::optional<Modifier> Note::getModifier(ModifierType type) {
     for (const Modifier& mod : modifiers) {
         if (mod.getType() == type) {  // Assuming you can access type or have a getter
@@ -47,24 +53,19 @@ std::optional<Modifier> Note::getModifier(ModifierType type) {
 
 bool Note::hasAnyModifier() { return modifiers.size() > 0; }
 
+
+int Note::getVelocity() const { return velocity; }
+
+void Note::setVelocity(int v)
+{
+    velocity = v;
+}
+
 std::optional<MidiNote> Note::asMidiNote(Timeline t, Scale s, double tempo)
 {
     double start = t.convertBarPositionToSeconds(getStartTime(), tempo);
     double dur = t.convertDivisionToSeconds(getDuration(), tempo);
-    auto midi = MidiNote(start, 64 + getDegree(), 100, dur);
+    auto midi = MidiNote(start, 64 + getDegree(), velocity, dur);
 
-    auto mod = getModifier(ModifierType::randomTrigger);
-
-    if (mod) {
-        auto probability = mod->getModifierValue("percentChanceTriggerValue");
-        std::bernoulli_distribution d(any_cast<double>(probability));
-
-        if (d(randomGenerator)) {
-            return midi;
-        } else {
-            return std::nullopt;
-        }
-    }
-
-    return midi;
+    return ModifierApplicator::getInstance().applyModifiers(modifiers, std::move(midi));
 }

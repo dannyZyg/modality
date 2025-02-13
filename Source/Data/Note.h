@@ -38,12 +38,15 @@ public:
     double getDuration() const;
     double getOctave() const;
     double getStartTime() const;
+    int getVelocity() const;
+    void setVelocity(int v);
     void shiftDegreeUp();
     void shiftDegreeDown();
     void shiftEarlier(double step);
     void shiftLater(double step);
 
     void addModifier(Modifier m);
+    bool removeModifier(Modifier m);
     std::optional<Modifier> getModifier(ModifierType type);
 
     bool hasAnyModifier();
@@ -53,6 +56,7 @@ private:
     double degree = 0.0;
     double startTime = 0.0;
     double octave = 0;
+    int velocity = 100;
     double duration = Division::sixteenth;
 
     std::unordered_set<Modifier> modifiers;

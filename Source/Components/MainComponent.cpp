@@ -1,7 +1,10 @@
 #include "MainComponent.h"
 
 //==============================================================================
-MainComponent::MainComponent() : sequenceComponent(cursor), cursorComponent(cursor), statusBarComponent(cursor)
+MainComponent::MainComponent() : sequenceComponent(cursor),
+                                 cursorComponent(cursor),
+                                 statusBarComponent(cursor),
+                                 modifierMenuComponent(cursor)
 {
     // Make sure you set the size of the component after
     // you add any child components.
@@ -400,7 +403,6 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
     {
         auto menuWidth = getWidth() * 0.6;
         showModifierMenu(juce::Point<int>(getWidth() / 2 - (menuWidth/2), getHeight() / 2));
-        cursor.addModifier();
         return true;
     }
 
@@ -413,6 +415,10 @@ void MainComponent::showModifierMenu(juce::Point<int> position)
     modifierMenuComponent.setBounds(position.x, position.y, getWidth() * 0.6, 200); // Set your desired size
     modifierMenuComponent.setVisible(true);
     modifierMenuComponent.grabKeyboardFocus();
+
+    if (cursor.findNotesForCursorMode().empty()) {
+        modifierMenuComponent.showMessage("No notes at cursor");
+    }
 }
 
 void MainComponent::hideModifierMenu()

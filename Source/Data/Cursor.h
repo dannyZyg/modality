@@ -88,7 +88,12 @@ public:
     const std::vector<Position>& getVisualSelectionPositions() const;
     Position getVisualSelectionOpposite();
 
-    void addModifier();
+    int addModifier(ModifierType t);
+    int removeModifier(ModifierType t);
+
+    std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesAtCursor();
+    std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesInCursorSelection();
+    std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesForCursorMode();
 
 private:
     std::mt19937 randomGenerator;

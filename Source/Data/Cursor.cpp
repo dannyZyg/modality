@@ -338,27 +338,61 @@ std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesAtPo
 }
 
 
-void Cursor::addModifier()
+std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesAtCursor()
 {
-    std::vector<std::reference_wrapper<std::unique_ptr<Note>>> notes;
+    return getSelectedSequence().findNotes(cursorPosition.xTime.value,
+                                            cursorPosition.xTime.value + timeline.getStepSize(),
+                                            cursorPosition.yDegree.value,
+                                            cursorPosition.yDegree.value);
+}
 
+std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesInCursorSelection()
+{
+    return getSelectedSequence().findNotes(visualSelection.getEarliestPosition().xTime.value,
+                                            visualSelection.getLatestPosition().xTime.value + timeline.getStepSize(),
+                                            visualSelection.getLowestPosition().yDegree.value,
+                                            visualSelection.getHighestPosition().yDegree.value);
+}
+
+std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesForCursorMode()
+{
     if (isNormalMode() || isInsertMode()) {
-        notes = getSelectedSequence().findNotes(cursorPosition.xTime.value,
+        return getSelectedSequence().findNotes(cursorPosition.xTime.value,
                                                 cursorPosition.xTime.value + timeline.getStepSize(),
                                                 cursorPosition.yDegree.value,
                                                 cursorPosition.yDegree.value);
     } else if (isVisualBlockMode() || isVisualLineMode()) {
-        notes = getSelectedSequence().findNotes(visualSelection.getEarliestPosition().xTime.value,
+        return getSelectedSequence().findNotes(visualSelection.getEarliestPosition().xTime.value,
                                                 visualSelection.getLatestPosition().xTime.value + timeline.getStepSize(),
                                                 visualSelection.getLowestPosition().yDegree.value,
                                                 visualSelection.getHighestPosition().yDegree.value);
     }
 
-    Modifier m = Modifier{ModifierType::randomTrigger};
+    return {};
+}
 
-    m.setModifierValue("percentChanceTriggerValue", 0.5);
+int Cursor::addModifier(ModifierType t)
+{
+    auto notes = findNotesForCursorMode();
+
+    Modifier m = Modifier{t};
 
     for (auto& note : notes) {
         (*note.get()).addModifier(m);
     }
+
+    return static_cast<int>(notes.size());
+}
+
+int Cursor::removeModifier(ModifierType t)
+{
+    auto notes = findNotesForCursorMode();
+
+    for (auto& note : notes) {
+        if (auto mod = (*note.get()).getModifier(t)) {
+            (*note.get()).removeModifier(*mod);
+        }
+    }
+
+    return static_cast<int>(notes.size());
 }
