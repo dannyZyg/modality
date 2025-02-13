@@ -8,7 +8,7 @@ MainComponent::MainComponent() : sequenceComponent(cursor),
 {
     // Make sure you set the size of the component after
     // you add any child components.
-    setSize (800, 600);
+    setSize (800 * 1.2, 600 * 1.2);
     setFramesPerSecond (60); // This sets the frequency of the update calls.
     setWantsKeyboardFocus(true);
     addAndMakeVisible(cursorComponent);
