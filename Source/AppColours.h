@@ -7,7 +7,7 @@ namespace AppColours
     static const juce::Colour normalMode              = juce::Colours::pink;
     static const juce::Colour insertMode              = juce::Colours::lightgreen;
     static const juce::Colour visualBlockMode         = juce::Colours::lightblue.withLightness(0.7f);
-    static const juce::Colour visualBlockModeCursor   = juce::Colours::darkcyan;
+    static const juce::Colour visualBlockModeCursor   = juce::Colours::darkcyan.withLightness(0.3f);
     static const juce::Colour visualLineMode          = juce::Colours::orange.withLightness(0.7f);
     static const juce::Colour visualLineModeCursor    = juce::Colours::orange;
 

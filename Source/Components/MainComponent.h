@@ -2,6 +2,7 @@
 
 #include <JuceHeader.h>
 #include "Components/StatusBarComponent.h"
+#include "Components/ModifierMenuComponent.h"
 #include "Data/Cursor.h"
 #include "Components/SequenceComponent.h"
 #include "Components/CursorComponent.h"
@@ -37,7 +38,6 @@ public:
     void paint (juce::Graphics& g) override;
     void resized() override;
 
-
     bool keyPressed (const juce::KeyPress& key) override;
 
     virtual void audioDeviceIOCallbackWithContext (const float* const* inputChannelData,
@@ -64,6 +64,10 @@ private:
     SequenceComponent sequenceComponent;
     CursorComponent cursorComponent;
     StatusBarComponent statusBarComponent;
+    ModifierMenuComponent modifierMenuComponent;
+
+    void showModifierMenu(juce::Point<int> position);
+    void hideModifierMenu();
 
     juce::AudioTransportSource transportSource;
     double sampleRate = 44100.0;

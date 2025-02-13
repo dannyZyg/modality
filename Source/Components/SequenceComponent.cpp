@@ -16,12 +16,7 @@
 SequenceComponent::SequenceComponent(const Cursor& c)
     : cursor(c)
 {
-    /* auto& seq = cursor.getSequence(0); */
-    /* for (auto& step : seq.steps) { */
-    /*     auto stepComponent = std::make_unique<StepComponent>(*step); */
-    /*     addAndMakeVisible(stepComponent.get()); */
-    /*     stepComponents.emplace_back(std::move(stepComponent)); */
-    /* } */
+    setWantsKeyboardFocus(false);
 }
 
 SequenceComponent::~SequenceComponent()

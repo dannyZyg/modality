@@ -8,7 +8,12 @@
 #include <functional>
 #include <unordered_map>
 
-enum class ModifierType { randomTrigger };
+enum class ModifierType { randomTrigger, velocity, octave };
+
+struct ModifierInfo {
+    char shortcut;
+    juce::String displayName;
+};
 
 class Modifier {
 
@@ -29,6 +34,16 @@ public:
     size_t getHashValue() const {
         return static_cast<size_t>(type);
     }
+
+    [[maybe_unused]] static std::map<ModifierType, ModifierInfo> getModifierOptions()
+    {
+        return {
+            {ModifierType::randomTrigger, {'r', "Random Trigger"}},
+            {ModifierType::velocity,      {'v', "Velocity"}},
+            {ModifierType::octave,      {'o', "Octave"}}
+        };
+    }
+
 private:
     ModifierType type;
     std::unordered_map<std::string, std::any> map;

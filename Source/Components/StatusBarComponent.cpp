@@ -7,6 +7,7 @@
 
 StatusBarComponent::StatusBarComponent(const Cursor& c) : cursor(c)
 {
+    setWantsKeyboardFocus(false);
     repaint();
 }
 
@@ -30,7 +31,7 @@ void StatusBarComponent::paint (juce::Graphics& g)
     g.drawHorizontalLine(0, 0.0f, static_cast<float>(bounds.getWidth()));
 
     g.setColour(juce::Colours::black);
-    g.setFont(14.0f);
+    g.setFont(juce::Font(juce::Font::getDefaultMonospacedFontName(), 14.0f, juce::Font::plain));
 
     // Mode section (left side)
     juce::Rectangle<int> modeBox(0, 0, padding * 2 + textWidth, height);

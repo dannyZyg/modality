@@ -7,7 +7,7 @@
 CursorComponent::CursorComponent(const Cursor& c)
     : cursor(c)
 {
-
+    setWantsKeyboardFocus(false);
 }
 
 CursorComponent::~CursorComponent()

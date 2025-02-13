@@ -1,0 +1,203 @@
+#include <JuceHeader.h>
+#include "Data/Modifier.h"
+#include "Components/ModifierMenuComponent.h"
+
+//==============================================================================
+ModifierMenuComponent::ModifierMenuComponent()
+{
+    setVisible(false);
+    setWantsKeyboardFocus(true);
+}
+
+ModifierMenuComponent::~ModifierMenuComponent()
+{
+}
+
+void ModifierMenuComponent::paint (juce::Graphics& g)
+{
+    g.fillAll(juce::Colours::lightslategrey.withLightness(0.6f).withAlpha(0.9f));
+    g.setColour(juce::Colours::white);
+
+    g.setColour(juce::Colours::black);
+    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
+
+    g.setFont(juce::Font(juce::Font::getDefaultMonospacedFontName(), 20.0f, juce::Font::plain));
+
+    // Set text color
+    g.setColour(juce::Colours::black);  // Or any color you prefer
+
+    // Draw the text centered at the top
+    g.drawText("Modifier Menu",
+               getLocalBounds().removeFromTop(30),  // Take top 30 pixels of component
+               juce::Justification::centred,        // Center horizontally and vertically
+               false);
+
+
+    if (mode == ModMenuMode::top) {
+        drawTopMode(g);
+    }
+    if (mode == ModMenuMode::add) {
+        drawAddMode(g);
+    }
+}
+
+void ModifierMenuComponent::drawTopMode(juce::Graphics& g)
+{
+    g.setFont(juce::Font(juce::Font::getDefaultMonospacedFontName(), 16.0f, juce::Font::plain));
+    int startY = 50;
+    int itemHeight = 25;
+    int labelWidth = 30;      // Width for the single letter
+    int descriptionX = 100;   // Fixed position where descriptions start
+
+    // Pairs of label and description
+    struct MenuItem {
+        juce::String label;
+        juce::String description;
+    };
+
+    std::vector<MenuItem> items = {
+        {"a", "add modifier"},
+        {"e", "edit modifier"},
+        {"r", "remove modifier"}
+    };
+
+    for (int i = 0; i < items.size(); ++i)
+    {
+        // Draw the label (single letter)
+        juce::Rectangle<int> labelBounds(
+            20,                         // Left margin
+            startY + (i * itemHeight),
+            labelWidth,
+            itemHeight
+        );
+
+        // Draw the description (aligned at fixed position)
+        juce::Rectangle<int> descBounds(
+            descriptionX,
+            startY + (i * itemHeight),
+            getWidth() - descriptionX - 20,  // Right margin of 20
+            itemHeight
+        );
+
+        g.drawText(items[i].label,
+                  labelBounds,
+                  juce::Justification::left,
+                  false);
+
+        g.drawText(items[i].description,
+                  descBounds,
+                  juce::Justification::left,
+                  false);
+    }
+
+}
+
+void ModifierMenuComponent::drawAddMode(juce::Graphics& g)
+{
+    g.setFont(juce::Font(juce::Font::getDefaultMonospacedFontName(), 16.0f, juce::Font::plain));
+    int startY = 50;
+    int itemHeight = 25;
+    int labelWidth = 30;      // Width for the single letter
+    int descriptionX = 100;   // Fixed position where descriptions start
+
+    // Pairs of label and description
+    struct MenuItem {
+        juce::String label;
+        juce::String description;
+    };
+
+    auto options = Modifier::getModifierOptions();
+
+    int i = 0;
+    for (const auto& [type, info] : options)
+    {
+        // Draw the label (single letter)
+        juce::Rectangle<int> labelBounds(
+            20,
+            startY + (i * itemHeight),
+            labelWidth,
+            itemHeight
+        );
+
+        // Draw the description (aligned at fixed position)
+        juce::Rectangle<int> descBounds(
+            descriptionX,
+            startY + (i * itemHeight),
+            getWidth() - descriptionX - 20,
+            itemHeight
+        );
+
+        // Convert char to String for the shortcut
+        juce::String shortcut = juce::String::charToString(info.shortcut);
+
+        g.drawText(shortcut,
+                  labelBounds,
+                  juce::Justification::left,
+                  false);
+
+        g.drawText(info.displayName,
+                  descBounds,
+                  juce::Justification::left,
+                  false);
+
+        i++;
+    }
+}
+
+void ModifierMenuComponent::resized ()
+{
+
+}
+
+bool ModifierMenuComponent::keyPressed(const juce::KeyPress& key)
+{
+    DBG("Modifier keyPressed: " << key.getTextDescription());
+    DBG("Do I have focus?: " << juce::String(hasKeyboardFocus(true) ? "yes" : "no"));
+
+    if (mode == ModMenuMode::top) {
+        if (key.getTextCharacter() == 'a')
+        {
+            mode = ModMenuMode::add;
+            return true;
+        }
+
+        if (key.getTextCharacter() == 'e')
+        {
+            mode = ModMenuMode::edit;
+            return true;
+        }
+
+        if (key.getTextCharacter() == 'r')
+        {
+            mode = ModMenuMode::remove;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void ModifierMenuComponent::focusGained(FocusChangeType cause)
+{
+    DBG("ModifierMenu gained focus!");
+    mode = ModMenuMode::top;
+}
+
+void ModifierMenuComponent::focusLost(FocusChangeType cause)
+{
+    DBG("ModifierMenu lost focus!");
+
+    DBG("ModifierMenu lost focus!");
+    DBG("Lost focus cause: " << (cause == FocusChangeType::focusChangedDirectly ? "direct" :
+                                cause == FocusChangeType::focusChangedByMouseClick ? "mouse" : "unknown"));
+
+    if (Component* newFocus = Component::getCurrentlyFocusedComponent())
+    {
+        DBG("Focus went to: " << newFocus->getName());
+    }
+    else
+    {
+        DBG("Focus went to nullptr");
+    }
+
+}

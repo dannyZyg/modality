@@ -12,6 +12,8 @@ MainComponent::MainComponent() : sequenceComponent(cursor), cursorComponent(curs
     addAndMakeVisible(sequenceComponent);
     addAndMakeVisible(statusBarComponent);
 
+    addChildComponent(modifierMenuComponent);
+
     // Initialise audio
     deviceManager.initialise(0, 2, nullptr, true);
     deviceManager.addAudioCallback(this); // Register audio callback
@@ -51,7 +53,10 @@ void MainComponent::update()
 //==============================================================================
 void MainComponent::paint (juce::Graphics& g)
 {
-    grabKeyboardFocus();
+
+    if (!modifierMenuComponent.isVisible()) {
+        grabKeyboardFocus();
+    }
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (juce::Colours::whitesmoke);
 
@@ -198,7 +203,21 @@ juce::String MainComponent::notesToString(const std::vector<MidiNote>& notes)
 
 bool MainComponent::keyPressed (const juce::KeyPress& key)
 {
-    keyText = "Key: " + key.getTextDescription();
+
+    if (key == juce::KeyPress::escapeKey)
+    {
+        if (modifierMenuComponent.isVisible()) {
+            hideModifierMenu();
+            return true;
+        } else {
+            cursor.enableNormalMode();
+            return true;
+        }
+    }
+
+    if (modifierMenuComponent.hasKeyboardFocus(true)) {
+        return false;
+    }
 
     // Handle key presses here
     if (key == juce::KeyPress::spaceKey)
@@ -304,12 +323,6 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
         return true;
     }
 
-    if (key == juce::KeyPress::escapeKey)
-    {
-        cursor.enableNormalMode();
-        return true;
-    }
-
     if (key.getTextCharacter() == 'i')
     {
         cursor.enableInsertMode();
@@ -385,6 +398,8 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
 
     if (key.getTextCharacter() == 'm')
     {
+        auto menuWidth = getWidth() * 0.6;
+        showModifierMenu(juce::Point<int>(getWidth() / 2 - (menuWidth/2), getHeight() / 2));
         cursor.addModifier();
         return true;
     }
@@ -392,3 +407,16 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
     return false; // Pass unhandled keys to the base class
 }
 
+void MainComponent::showModifierMenu(juce::Point<int> position)
+{
+    // Set position relative to parent component
+    modifierMenuComponent.setBounds(position.x, position.y, getWidth() * 0.6, 200); // Set your desired size
+    modifierMenuComponent.setVisible(true);
+    modifierMenuComponent.grabKeyboardFocus();
+}
+
+void MainComponent::hideModifierMenu()
+{
+    modifierMenuComponent.setVisible(false);
+    grabKeyboardFocus();
+}
