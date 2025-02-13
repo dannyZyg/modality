@@ -285,12 +285,21 @@ void Cursor::insertNote()
 
 void Cursor::removeNotesAtCursor()
 {
-    double degMin = cursorPosition.yDegree.value;
-    double degMax = degMin;
-    double timeStart = cursorPosition.xTime.value;
-    double timeEnd = timeStart + timeline.getStepSize();
+    if (isNormalMode() || isInsertMode()) {
+        double degMin = cursorPosition.yDegree.value;
+        double degMax = degMin;
+        double timeStart = cursorPosition.xTime.value;
+        double timeEnd = timeStart + timeline.getStepSize();
 
-    getSelectedSequence().removeNotes(timeStart, timeEnd, degMin, degMax);
+        getSelectedSequence().removeNotes(timeStart, timeEnd, degMin, degMax);
+    } else if (isVisualLineMode() || isVisualBlockMode()) {
+        double degMin = visualSelection.getLowestPosition().yDegree.value;
+        double degMax = visualSelection.getHighestPosition().yDegree.value;
+        double timeStart = visualSelection.getEarliestPosition().xTime.value;
+        double timeEnd = visualSelection.getLatestPosition().xTime.value + timeline.getStepSize();
+
+        getSelectedSequence().removeNotes(timeStart, timeEnd, degMin, degMax);
+    }
 }
 
 const juce::String Cursor::readableCursorPosition() const
@@ -331,8 +340,19 @@ std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesAtPo
 
 void Cursor::addModifier()
 {
-    DBG("Adding modifier");
-    auto notes = getSelectedSequence().findNotes(cursorPosition.xTime.value, cursorPosition.xTime.value + 0.25, 0, 10);
+    std::vector<std::reference_wrapper<std::unique_ptr<Note>>> notes;
+
+    if (isNormalMode() || isInsertMode()) {
+        notes = getSelectedSequence().findNotes(cursorPosition.xTime.value,
+                                                cursorPosition.xTime.value + timeline.getStepSize(),
+                                                cursorPosition.yDegree.value,
+                                                cursorPosition.yDegree.value);
+    } else if (isVisualBlockMode() || isVisualLineMode()) {
+        notes = getSelectedSequence().findNotes(visualSelection.getEarliestPosition().xTime.value,
+                                                visualSelection.getLatestPosition().xTime.value + timeline.getStepSize(),
+                                                visualSelection.getLowestPosition().yDegree.value,
+                                                visualSelection.getHighestPosition().yDegree.value);
+    }
 
     Modifier m = Modifier{ModifierType::randomTrigger};
 
