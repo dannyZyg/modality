@@ -1,5 +1,4 @@
 #include "MainComponent.h"
-#include "juce_core/system/juce_PlatformDefs.h"
 
 //==============================================================================
 MainComponent::MainComponent() : sequenceComponent(cursor), cursorComponent(cursor), statusBarComponent(cursor)
@@ -114,8 +113,6 @@ void MainComponent::scheduleNextPattern(double startTime)
     }
 
     nextPatternStartTime = startTime + midiClipDuration;
-    DBG("Scheduled pattern starting at: " << startTime
-        << " Next pattern at: " << nextPatternStartTime);
 }
 
 void MainComponent::stop()

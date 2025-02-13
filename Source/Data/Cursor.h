@@ -62,7 +62,7 @@ public:
     std::vector<MidiNote> extractMidiSequence(size_t seqIndex);
 
     Timeline timeline{0.0, 4.0};
-    Scale scale{-12.0, 12.0};
+    Scale scale{"Natural Minor"};
 
     Position cursorPosition;
 
