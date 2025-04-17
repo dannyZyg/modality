@@ -11,7 +11,8 @@ MainComponent::MainComponent() : sequenceComponent(cursor),
 
     // Make sure you set the size of the component after
     // you add any child components.
-    setSize (800 * 1.2, 600 * 1.2);
+    setSize (AppSettings::getInstance().getLastWindowWidth(), AppSettings::getInstance().getLastWindowHeight());
+
     setFramesPerSecond (60); // This sets the frequency of the update calls.
     setWantsKeyboardFocus(true);
     addAndMakeVisible(cursorComponent);
@@ -75,6 +76,9 @@ void MainComponent::resized()
     sequenceComponent.setBounds(50, 50, getWidth() - 100, getHeight() - 100);
     cursorComponent.setBounds(50, 50, getWidth() - 100, getHeight() - 100);
     statusBarComponent.resized();
+
+    AppSettings::getInstance().setLastWindowHeight(getHeight());
+    AppSettings::getInstance().setLastWindowWidth(getWidth());
 }
 
 void MainComponent::start()
