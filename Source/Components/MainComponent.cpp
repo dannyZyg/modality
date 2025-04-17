@@ -1,4 +1,5 @@
 #include "MainComponent.h"
+#include "Data/AppSettings.h"
 
 //==============================================================================
 MainComponent::MainComponent() : sequenceComponent(cursor),
@@ -6,6 +7,8 @@ MainComponent::MainComponent() : sequenceComponent(cursor),
                                  statusBarComponent(cursor),
                                  modifierMenuComponent(cursor)
 {
+    AppSettings::getInstance().initialise("Modality");
+
     // Make sure you set the size of the component after
     // you add any child components.
     setSize (800 * 1.2, 600 * 1.2);
@@ -43,6 +46,8 @@ MainComponent::~MainComponent()
 {
     transportSource.setSource(nullptr);
     stop();
+
+    AppSettings::getInstance().shutdown();
 }
 
 //==============================================================================
