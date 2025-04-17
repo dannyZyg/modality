@@ -6,6 +6,7 @@
 #include "Data/Cursor.h"
 #include "Components/SequenceComponent.h"
 #include "Components/CursorComponent.h"
+#include "Data/KeyboardShortcutManager.h"
 #include <queue>
 
 // Add to your class header
@@ -53,7 +54,6 @@ public:
 
 private:
     //==============================================================================
-    // Your private member variables go here...
 
     std::unique_ptr<juce::MidiOutput> midiOutput;
     juce::AudioDeviceManager deviceManager;
@@ -73,6 +73,24 @@ private:
     double sampleRate = 44100.0;
     double lastProcessedTime = 0;
     const double clipLength = 1.0; // 1 second loop (4 beats @ 120 BPM)
+
+    std::priority_queue<ScheduledMidiEvent,
+                       std::vector<ScheduledMidiEvent>,
+                       std::greater<ScheduledMidiEvent>> midiEventQueue;
+
+    double nextPatternStartTime = 0.0;
+    const double lookAheadTime = 0.025;
+    void scheduleNextPattern(double startTime);
+
+    double midiClipDuration = 2.0; // Duration of one iteration of the clip
+    double nextClipStartTime = 0.0; // Track when to add next iteration
+    juce::String notesToString(const std::vector<MidiNote>& notes);
+
+    void start();
+    void stop();
+
+    void setupKeyboardShortcuts();
+    KeyboardShortcutManager shortcutManager;
 
     // Add a custom source that doesn't produce audio
     class SilentPositionableSource : public juce::PositionableAudioSource
@@ -115,21 +133,6 @@ private:
         juce::int64 currentPosition = 0;
         double sampleRate = 44100.0;
     };
-
-    std::priority_queue<ScheduledMidiEvent,
-                       std::vector<ScheduledMidiEvent>,
-                       std::greater<ScheduledMidiEvent>> midiEventQueue;
-
-    double nextPatternStartTime = 0.0;
-    const double lookAheadTime = 0.025;
-    void scheduleNextPattern(double startTime);
-
-    double midiClipDuration = 2.0; // Duration of one iteration of the clip
-    double nextClipStartTime = 0.0; // Track when to add next iteration
-    juce::String notesToString(const std::vector<MidiNote>& notes);
-
-    void start();
-    void stop();
 
     std::unique_ptr<SilentPositionableSource> silentSource;
 
