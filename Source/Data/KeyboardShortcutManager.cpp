@@ -7,74 +7,42 @@ KeyboardShortcutManager::KeyboardShortcutManager()
 
 bool KeyboardShortcutManager::handleKeyPress(const juce::KeyPress& key, Mode mode)
 {
-    // First check context-specific shortcuts
-    auto contextIter = shortcuts.find(mode);
-    if (contextIter != shortcuts.end())
+    // Search for a matching shortcut
+    for (const auto& shortcut : activeShortcuts)
     {
-        int keyID = getKeyPressID(key);
-        auto& contextShortcuts = contextIter->second;
-        auto shortcutIter = contextShortcuts.find(keyID);
-
-        if (shortcutIter != contextShortcuts.end())
+        if (shortcut.keyPress == key && shortcut.appliesTo(mode))
         {
             // Execute the action and return its result
-            return shortcutIter->second.first();
+            return shortcut.action();
         }
     }
-
-    /* // If no context-specific shortcut found, check global shortcuts */
-    /* if (currentContext != Context::Global) */
-    /* { */
-    /*     auto globalIter = shortcuts.find(Context::Global); */
-    /*     if (globalIter != shortcuts.end()) */
-    /*     { */
-    /*         int keyID = getKeyPressID(key); */
-    /*         auto& globalShortcuts = globalIter->second; */
-    /*         auto shortcutIter = globalShortcuts.find(keyID); */
-    /**/
-    /*         if (shortcutIter != globalShortcuts.end()) */
-    /*         { */
-    /*             // Execute the global action */
-    /*             return shortcutIter->second.first(); */
-    /*         } */
-    /*     } */
-    /* } */
 
     // No shortcut found
     return false;
 }
 
-void KeyboardShortcutManager::addShortcut(
-    const juce::KeyPress& key,
-    Mode mode,
-    Action action,
-    const std::string& description)
+void KeyboardShortcutManager::registerShortcut(Shortcut shortcut)
 {
-    int keyID = getKeyPressID(key);
-    shortcuts[mode][keyID] = std::make_pair(action, description);
+    activeShortcuts.push_back(shortcut);
 }
 
-void KeyboardShortcutManager::addShortcut(
-    const juce::KeyPress& key,
-    std::vector<Mode> modes,
-    Action action,
-    const std::string& description)
+void KeyboardShortcutManager::registerShortcuts(std::vector<Shortcut> shortcuts)
 {
-    for (auto mode : modes) {
-        addShortcut(key, mode, action, description);
+    for (auto& shortcut : shortcuts) {
+        registerShortcut(shortcut);
     }
 }
 
-void KeyboardShortcutManager::removeShortcut(
-    const juce::KeyPress& key,
-    Mode mode)
+void KeyboardShortcutManager::deregisterShortcut(const juce::KeyPress& key, Mode mode)
 {
-    auto contextIter = shortcuts.find(mode);
-    if (contextIter != shortcuts.end())
-    {
-        int keyID = getKeyPressID(key);
-        contextIter->second.erase(keyID);
-    }
+    // Remove shortcuts that match the given key and mode
+    activeShortcuts.erase(
+        std::remove_if(activeShortcuts.begin(), activeShortcuts.end(),
+            [&key, &mode](const Shortcut& shortcut) {
+                return shortcut.keyPress == key && shortcut.appliesTo(mode);
+            }),
+        activeShortcuts.end()
+    );
 }
 
 std::vector<KeyboardShortcutManager::ShortcutInfo>
@@ -82,56 +50,28 @@ KeyboardShortcutManager::getShortcutsForMode(Mode mode) const
 {
     std::vector<ShortcutInfo> result;
 
-    auto contextIter = shortcuts.find(mode);
-    if (contextIter != shortcuts.end())
+    // Find all shortcuts that apply to this mode
+    for (const auto& shortcut : activeShortcuts)
     {
-        for (const auto& [keyID, actionPair] : contextIter->second)
+        if (shortcut.appliesTo(mode))
         {
-            juce::KeyPress keyPress(keyID);
-            result.push_back({keyPress, actionPair.second});
+            result.push_back({shortcut.keyPress, shortcut.description});
         }
     }
 
     return result;
 }
 
-std::string KeyboardShortcutManager::getShortcutDescription(const juce::KeyPress& key, Mode mode) const
+juce::String KeyboardShortcutManager::getShortcutDescription(const juce::KeyPress& key, Mode mode) const
 {
-    // First check context-specific shortcuts
-    auto contextIter = shortcuts.find(mode);
-    if (contextIter != shortcuts.end())
+    // Find a matching shortcut
+    for (const auto& shortcut : activeShortcuts)
     {
-        int keyID = getKeyPressID(key);
-        auto& contextShortcuts = contextIter->second;
-        auto shortcutIter = contextShortcuts.find(keyID);
-
-        if (shortcutIter != contextShortcuts.end())
+        if (shortcut.keyPress == key && shortcut.appliesTo(mode))
         {
-            return shortcutIter->second.second;
+            return shortcut.description;
         }
     }
 
-    /* // If not found, check global shortcuts */
-    /* if (currentContext != Context::Global) */
-    /* { */
-    /*     auto globalIter = shortcuts.find(Context::Global); */
-    /*     if (globalIter != shortcuts.end()) */
-    /*     { */
-    /*         int keyID = getKeyPressID(key); */
-    /*         auto& globalShortcuts = globalIter->second; */
-    /*         auto shortcutIter = globalShortcuts.find(keyID); */
-    /**/
-    /*         if (shortcutIter != globalShortcuts.end()) */
-    /*         { */
-    /*             return shortcutIter->second.second; */
-    /*         } */
-    /*     } */
-    /* } */
-
     return ""; // No description found
-}
-
-int KeyboardShortcutManager::getKeyPressID(const juce::KeyPress& key) const
-{
-    return key.getKeyCode() + (key.getModifiers().getRawFlags() << 16);
 }

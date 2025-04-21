@@ -2,41 +2,57 @@
 
 #include <JuceHeader.h>
 #include <functional>
-#include <unordered_map>
 #include "Data/Cursor.h"
-#include <string>
 
-/**
- * A class to manage keyboard shortcuts throughout the application.
- * This centralizes shortcut handling and allows for more flexible configurations.
- */
+// Shortcut data structure to hold keybinding information
+struct Shortcut {
+    juce::KeyPress keyPress;
+    std::vector<Mode> applicableModes;
+    std::function<bool()> action;
+    juce::String description;
+
+    Shortcut(const juce::KeyPress& key,
+                   const std::vector<Mode>& modes,
+                   std::function<bool()> callback,
+                   const juce::String& desc)
+        : keyPress(key), applicableModes(modes), action(callback), description(desc) {}
+
+    // Helper method to check if this shortcut applies to a specific mode
+    bool appliesTo(Mode mode) const {
+        return applicableModes.empty() ||
+               std::find(applicableModes.begin(), applicableModes.end(), mode) != applicableModes.end();
+    }
+};
+
 class KeyboardShortcutManager
 {
 public:
-    // Action type - a function to be called when a shortcut is triggered
-    using Action = std::function<bool()>;
-
     KeyboardShortcutManager();
 
+    // Structure for returning shortcut info to the UI
+    struct ShortcutInfo {
+        juce::KeyPress keyPress;
+        juce::String description;
+    };
+
+    // Handle a key press for a specific mode
     bool handleKeyPress(const juce::KeyPress& key, Mode mode);
 
-    void addShortcut(const juce::KeyPress& key, Mode mode, Action action, const std::string& description = "");
+    // Add a shortcut to the manager
+    void registerShortcut(Shortcut shortcut);
 
-    void addShortcut(const juce::KeyPress& key, std::vector<Mode> modes, Action action, const std::string& description = "");
+    void registerShortcuts(std::vector<Shortcut> shortcuts);
 
-    void removeShortcut(const juce::KeyPress& key, Mode mode);
+    // Remove a shortcut for a specific mode and key
+    void deregisterShortcut(const juce::KeyPress& key, Mode mode);
 
-    struct ShortcutInfo
-    {
-        juce::KeyPress keyPress;
-        std::string description;
-    };
+    // Get all shortcuts for a specific mode
     std::vector<ShortcutInfo> getShortcutsForMode(Mode mode) const;
 
-    std::string getShortcutDescription(const juce::KeyPress& key, Mode mode) const;
+    // Get description for a specific shortcut
+    juce::String getShortcutDescription(const juce::KeyPress& key, Mode mode) const;
 
 private:
-    std::unordered_map<Mode, std::unordered_map<int, std::pair<Action, std::string>>> shortcuts;
-
-    int getKeyPressID(const juce::KeyPress& key) const;
+    // Store shortcuts directly in a vector
+    std::vector<Shortcut> activeShortcuts;
 };

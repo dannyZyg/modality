@@ -245,273 +245,279 @@ void MainComponent::hideModifierMenu()
 
 void MainComponent::setupKeyboardShortcuts()
 {
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::escapeKey),
-        Mode::insert,
-        [this]() {
-            if (modifierMenuComponent.isVisible()) {
-                hideModifierMenu();
-                return true;
-            } else {
+
+    std::vector<Shortcut> shortcuts = {
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::escapeKey),
+            {Mode::insert},
+            [this]() {
+                if (modifierMenuComponent.isVisible()) {
+                    hideModifierMenu();
+                    return true;
+                } else {
+                    cursor.enableNormalMode();
+                    return true;
+                }
+            },
+            "Exit current menu or return to normal mode"
+        ),
+
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::escapeKey),
+            {Mode::visualLine, Mode::visualBlock},
+            [this]() {
                 cursor.enableNormalMode();
                 return true;
-            }
-        },
-        "Exit current menu or return to normal mode"
-    );
+            },
+            "Return to normal mode"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::escapeKey),
-        {Mode::visualLine, Mode::visualBlock},
-        [this]() {
-            cursor.enableNormalMode();
-            return true;
-        },
-        "Return to normal mode"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::spaceKey),
+            {Mode::normal},
+            [this]() {
+                if (transportSource.isPlaying()) {
+                    stop();
+                } else {
+                    start();
+                }
+                return true;
+            },
+            "Toggle transport"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::spaceKey),
-        Mode::normal,
-        [this]() {
-            if (transportSource.isPlaying()) {
-                stop();
-            } else {
-                start();
-            }
-            return true;
-        },
-        "Toggle transport"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::createFromDescription("i").getKeyCode()),
+            {Mode::normal},
+            [this]() {
+                cursor.enableInsertMode();
+                return true;
+            },
+            "Enter insert mode"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("i").getKeyCode()),
-        Mode::normal,
-        [this]() {
-            cursor.enableInsertMode();
-            return true;
-        },
-        "Enter insert mode"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::createFromDescription("h").getKeyCode()),
+            {Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine},
+            [this]() {
+                cursor.moveLeft();
+                return true;
+            },
+            "Move cursor left"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("h").getKeyCode()),
-        {Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine},
-        [this]() {
-            cursor.moveLeft();
-            return true;
-        },
-        "Move cursor left"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::createFromDescription("l").getKeyCode()),
+            {Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine},
+            [this]() {
+                cursor.moveRight();
+                return true;
+            },
+            "Move cursor right"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("l").getKeyCode()),
-        {Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine},
-        [this]() {
-            cursor.moveRight();
-            return true;
-        },
-        "Move cursor right"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::createFromDescription("j").getKeyCode()),
+            {Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine},
+            [this]() {
+                cursor.moveDown();
+                return true;
+            },
+            "Move cursor down"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("j").getKeyCode()),
-        {Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine},
-        [this]() {
-            cursor.moveDown();
-            return true;
-        },
-        "Move cursor down"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::createFromDescription("k").getKeyCode()),
+            {Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine},
+            [this]() {
+                cursor.moveUp();
+                return true;
+            },
+            "Move cursor up"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("k").getKeyCode()),
-        {Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine},
-        [this]() {
-            cursor.moveUp();
-            return true;
-        },
-        "Move cursor up"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::createFromDescription("H").getKeyCode()),
+            {Mode::visualLine, Mode::visualBlock},
+            [this]() {
+                cursor.moveCursorSelection(Direction::left);
+                return true;
+            },
+            "Move visual selection left"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("H").getKeyCode()),
-        {Mode::visualLine, Mode::visualBlock},
-        [this]() {
-            cursor.moveCursorSelection(Direction::left);
-            return true;
-        },
-        "Move visual selection left"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::createFromDescription("L").getKeyCode()),
+            {Mode::visualLine, Mode::visualBlock},
+            [this]() {
+                cursor.moveCursorSelection(Direction::right);
+                return true;
+            },
+            "Move visual selection right"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("L").getKeyCode()),
-        {Mode::visualLine, Mode::visualBlock},
-        [this]() {
-            cursor.moveCursorSelection(Direction::right);
-            return true;
-        },
-        "Move visual selection right"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::createFromDescription("J").getKeyCode()),
+            {Mode::visualLine, Mode::visualBlock},
+            [this]() {
+                cursor.moveCursorSelection(Direction::down);
+                return true;
+            },
+            "Move visual selection down"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("J").getKeyCode()),
-        {Mode::visualLine, Mode::visualBlock},
-        [this]() {
-            cursor.moveCursorSelection(Direction::down);
-            return true;
-        },
-        "Move visual selection down"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::createFromDescription("K").getKeyCode()),
+            {Mode::visualLine, Mode::visualBlock},
+            [this]() {
+                cursor.moveCursorSelection(Direction::up);
+                return true;
+            },
+            "Move visual selection up"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("K").getKeyCode()),
-        {Mode::visualLine, Mode::visualBlock},
-        [this]() {
-            cursor.moveCursorSelection(Direction::up);
-            return true;
-        },
-        "Move visual selection up"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::createFromDescription("d").getKeyCode()),
+            {Mode::normal},
+            [this]() {
+                cursor.decreaseTimelineStepSize();
+                return true;
+            },
+            "Decrease timeline step size"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("d").getKeyCode()),
-        Mode::normal,
-        [this]() {
-            cursor.decreaseTimelineStepSize();
-            return true;
-        },
-        "Decrease timeline step size"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::createFromDescription("f").getKeyCode()),
+            {Mode::normal},
+            [this]() {
+                cursor.increaseTimelineStepSize();
+                return true;
+            },
+            "Increase timeline step size"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("f").getKeyCode()),
-        Mode::normal,
-        [this]() {
-            cursor.increaseTimelineStepSize();
-            return true;
-        },
-        "Increase timeline step size"
-    );
+        Shortcut(
+            juce::KeyPress('^', juce::ModifierKeys::shiftModifier, 0),
+            {Mode::normal},
+            [this]() {
+                cursor.jumpToStart();
+                return true;
+            },
+            "Jump cursor to start"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress('^', juce::ModifierKeys::shiftModifier, 0),
-        Mode::normal,
-        [this]() {
-            cursor.jumpToStart();
-            return true;
-        },
-        "Jump cursor to start"
-    );
+        Shortcut(
+            juce::KeyPress('$', juce::ModifierKeys::shiftModifier, 0),
+            {Mode::normal},
+            [this]() {
+                cursor.jumpToEnd();
+                return true;
+            },
+            "Jump cursor to end"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress('$', juce::ModifierKeys::shiftModifier, 0),
-        Mode::normal,
-        [this]() {
-            cursor.jumpToEnd();
-            return true;
-        },
-        "Jump cursor to end"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::createFromDescription("w").getKeyCode()),
+            {Mode::normal},
+            [this]() {
+                cursor.jumpForwardBeat();
+                return true;
+            },
+            "Jump cursor forward one beat"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("w").getKeyCode()),
-        Mode::normal,
-        [this]() {
-            cursor.jumpForwardBeat();
-            return true;
-        },
-        "Jump cursor forward one beat"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::createFromDescription("W").getKeyCode()),
+            {Mode::normal},
+            [this]() {
+                cursor.jumpBackBeat();
+                return true;
+            },
+            "Jump cursor back one beat"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("W").getKeyCode()),
-        Mode::normal,
-        [this]() {
-            cursor.jumpBackBeat();
-            return true;
-        },
-        "Jump cursor back one beat"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::createFromDescription("v").getKeyCode()),
+            {Mode::normal},
+            [this]() {
+                cursor.enableVisualBlockMode();
+                return true;
+            },
+            "Enable visual block mode"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("v").getKeyCode()),
-        Mode::normal,
-        [this]() {
-            cursor.enableVisualBlockMode();
-            return true;
-        },
-        "Enable visual block mode"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::createFromDescription("v").getKeyCode()),
+            {Mode::visualBlock, Mode::visualLine},
+            [this]() {
+                cursor.enableNormalMode();
+                return true;
+            },
+            "Turn off visual mode, enable normal mode"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("v").getKeyCode()),
-        {Mode::visualBlock, Mode::visualLine},
-        [this]() {
-            cursor.enableNormalMode();
-            return true;
-        },
-        "Turn off visual mode, enable normal mode"
-    );
+        Shortcut(
+            juce::KeyPress::createFromDescription("shift+v"),
+            {Mode::normal},
+            [this]() {
+                cursor.enableVisualLineMode();
+                return true;
+            },
+            "Enable visual line mode"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress::createFromDescription("shift+v"),
-        Mode::normal,
-        [this]() {
-            cursor.enableVisualLineMode();
-            return true;
-        },
-        "Enable visual line mode"
-    );
+        Shortcut(
+            juce::KeyPress::createFromDescription("shift+v"),
+            {Mode::visualBlock, Mode::visualLine},
+            [this]() {
+                cursor.enableNormalMode();
+                return true;
+            },
+            "Turn off visual mode, enable normal mode"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress::createFromDescription("shift+v"),
-        {Mode::visualBlock, Mode::visualLine},
-        [this]() {
-            cursor.enableNormalMode();
-            return true;
-        },
-        "Turn off visual mode, enable normal mode"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::createFromDescription("o").getKeyCode()),
+            {Mode::visualBlock, Mode::visualLine},
+            [this]() {
+                cursor.cursorPosition = cursor.getVisualSelectionOpposite();
+                return true;
+            },
+            "Jump cursor to opposite visual selection corner"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("o").getKeyCode()),
-        {Mode::visualBlock, Mode::visualLine},
-        [this]() {
-            cursor.cursorPosition = cursor.getVisualSelectionOpposite();
-            return true;
-        },
-        "Jump cursor to opposite visual selection corner"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::returnKey),
+            {Mode::insert},
+            [this]() {
+                cursor.insertNote();
+                return true;
+            },
+            "Insert note at cursor position"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::returnKey),
-        Mode::insert,
-        [this]() {
-            cursor.insertNote();
-            return true;
-        },
-        "Insert note at cursor position"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::createFromDescription("x")),
+            {Mode::normal, Mode::insert},
+            [this]() {
+                cursor.removeNotesAtCursor();
+                return true;
+            },
+            "Remove note at cursor position"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("x")),
-        {Mode::normal, Mode::insert},
-        [this]() {
-            cursor.removeNotesAtCursor();
-            return true;
-        },
-        "Remove note at cursor position"
-    );
+        Shortcut(
+            juce::KeyPress(juce::KeyPress::createFromDescription("m")),
+            {Mode::normal, Mode::insert},
+            [this]() {
+                auto menuWidth = getWidth() * 0.6;
+                showModifierMenu(juce::Point<int>(getWidth() / 2 - (menuWidth/2), getHeight() / 2));
+                return true;
+            },
+            "Open modifier menu"
+        ),
 
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("m")),
-        {Mode::normal, Mode::insert},
-        [this]() {
-            auto menuWidth = getWidth() * 0.6;
-            showModifierMenu(juce::Point<int>(getWidth() / 2 - (menuWidth/2), getHeight() / 2));
-            return true;
-        },
-        "Open modifier menu"
-    );
+    };
+
+    shortcutManager.registerShortcuts(shortcuts);
 }
