@@ -262,17 +262,7 @@ void MainComponent::setupKeyboardShortcuts()
 
     shortcutManager.addShortcut(
         juce::KeyPress(juce::KeyPress::escapeKey),
-        Mode::visualLine,
-        [this]() {
-            cursor.enableNormalMode();
-            return true;
-        },
-        "Return to normal mode"
-    );
-
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::escapeKey),
-        Mode::visualBlock,
+        {Mode::visualLine, Mode::visualBlock},
         [this]() {
             cursor.enableNormalMode();
             return true;
@@ -306,27 +296,7 @@ void MainComponent::setupKeyboardShortcuts()
 
     shortcutManager.addShortcut(
         juce::KeyPress(juce::KeyPress::createFromDescription("h").getKeyCode()),
-        Mode::normal,
-        [this]() {
-            cursor.moveLeft();
-            return true;
-        },
-        "Move cursor left"
-    );
-
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("h").getKeyCode()),
-        Mode::visualBlock,
-        [this]() {
-            cursor.moveLeft();
-            return true;
-        },
-        "Move cursor left"
-    );
-
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("h").getKeyCode()),
-        Mode::visualLine,
+        {Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine},
         [this]() {
             cursor.moveLeft();
             return true;
@@ -336,27 +306,7 @@ void MainComponent::setupKeyboardShortcuts()
 
     shortcutManager.addShortcut(
         juce::KeyPress(juce::KeyPress::createFromDescription("l").getKeyCode()),
-        Mode::normal,
-        [this]() {
-            cursor.moveRight();
-            return true;
-        },
-        "Move cursor right"
-    );
-
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("l").getKeyCode()),
-        Mode::visualLine,
-        [this]() {
-            cursor.moveRight();
-            return true;
-        },
-        "Move cursor right"
-    );
-
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("l").getKeyCode()),
-        Mode::visualBlock,
+        {Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine},
         [this]() {
             cursor.moveRight();
             return true;
@@ -366,27 +316,7 @@ void MainComponent::setupKeyboardShortcuts()
 
     shortcutManager.addShortcut(
         juce::KeyPress(juce::KeyPress::createFromDescription("j").getKeyCode()),
-        Mode::normal,
-        [this]() {
-            cursor.moveDown();
-            return true;
-        },
-        "Move cursor down"
-    );
-
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("j").getKeyCode()),
-        Mode::visualLine,
-        [this]() {
-            cursor.moveDown();
-            return true;
-        },
-        "Move cursor down"
-    );
-
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("j").getKeyCode()),
-        Mode::visualBlock,
+        {Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine},
         [this]() {
             cursor.moveDown();
             return true;
@@ -396,27 +326,7 @@ void MainComponent::setupKeyboardShortcuts()
 
     shortcutManager.addShortcut(
         juce::KeyPress(juce::KeyPress::createFromDescription("k").getKeyCode()),
-        Mode::normal,
-        [this]() {
-            cursor.moveUp();
-            return true;
-        },
-        "Move cursor up"
-    );
-
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("k").getKeyCode()),
-        Mode::visualLine,
-        [this]() {
-            cursor.moveUp();
-            return true;
-        },
-        "Move cursor up"
-    );
-
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("k").getKeyCode()),
-        Mode::visualBlock,
+        {Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine},
         [this]() {
             cursor.moveUp();
             return true;
@@ -426,82 +336,42 @@ void MainComponent::setupKeyboardShortcuts()
 
     shortcutManager.addShortcut(
         juce::KeyPress(juce::KeyPress::createFromDescription("H").getKeyCode()),
-        Mode::visualLine,
+        {Mode::visualLine, Mode::visualBlock},
         [this]() {
             cursor.moveCursorSelection(Direction::left);
             return true;
         },
-        "Move visual line selection left"
-    );
-
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("H").getKeyCode()),
-        Mode::visualBlock,
-        [this]() {
-            cursor.moveCursorSelection(Direction::left);
-            return true;
-        },
-        "Move visual block selection left"
+        "Move visual selection left"
     );
 
     shortcutManager.addShortcut(
         juce::KeyPress(juce::KeyPress::createFromDescription("L").getKeyCode()),
-        Mode::visualLine,
+        {Mode::visualLine, Mode::visualBlock},
         [this]() {
             cursor.moveCursorSelection(Direction::right);
             return true;
         },
-        "Move visual line selection right"
-    );
-
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("L").getKeyCode()),
-        Mode::visualBlock,
-        [this]() {
-            cursor.moveCursorSelection(Direction::right);
-            return true;
-        },
-        "Move visual block selection right"
+        "Move visual selection right"
     );
 
     shortcutManager.addShortcut(
         juce::KeyPress(juce::KeyPress::createFromDescription("J").getKeyCode()),
-        Mode::visualLine,
+        {Mode::visualLine, Mode::visualBlock},
         [this]() {
             cursor.moveCursorSelection(Direction::down);
             return true;
         },
-        "Move visual line selection down"
-    );
-
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("J").getKeyCode()),
-        Mode::visualBlock,
-        [this]() {
-            cursor.moveCursorSelection(Direction::down);
-            return true;
-        },
-        "Move visual block selection down"
+        "Move visual selection down"
     );
 
     shortcutManager.addShortcut(
         juce::KeyPress(juce::KeyPress::createFromDescription("K").getKeyCode()),
-        Mode::visualLine,
+        {Mode::visualLine, Mode::visualBlock},
         [this]() {
             cursor.moveCursorSelection(Direction::up);
             return true;
         },
-        "Move visual line selection up"
-    );
-
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("K").getKeyCode()),
-        Mode::visualBlock,
-        [this]() {
-            cursor.moveCursorSelection(Direction::up);
-            return true;
-        },
-        "Move visual block selection up"
+        "Move visual selection up"
     );
 
     shortcutManager.addShortcut(
@@ -576,22 +446,12 @@ void MainComponent::setupKeyboardShortcuts()
 
     shortcutManager.addShortcut(
         juce::KeyPress(juce::KeyPress::createFromDescription("v").getKeyCode()),
-        Mode::visualBlock,
+        {Mode::visualBlock, Mode::visualLine},
         [this]() {
             cursor.enableNormalMode();
             return true;
         },
-        "Turn off visual block mode, enable normal mode"
-    );
-
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("v").getKeyCode()),
-        Mode::visualLine,
-        [this]() {
-            cursor.enableNormalMode();
-            return true;
-        },
-        "Turn off visual line mode, enable normal mode"
+        "Turn off visual mode, enable normal mode"
     );
 
     shortcutManager.addShortcut(
@@ -606,42 +466,22 @@ void MainComponent::setupKeyboardShortcuts()
 
     shortcutManager.addShortcut(
         juce::KeyPress::createFromDescription("shift+v"),
-        Mode::visualBlock,
+        {Mode::visualBlock, Mode::visualLine},
         [this]() {
             cursor.enableNormalMode();
             return true;
         },
-        "Turn off visual block mode, enable normal mode"
-    );
-
-    shortcutManager.addShortcut(
-        juce::KeyPress::createFromDescription("shift+v"),
-        Mode::visualLine,
-        [this]() {
-            cursor.enableNormalMode();
-            return true;
-        },
-        "Turn off visual line mode, enable normal mode"
+        "Turn off visual mode, enable normal mode"
     );
 
     shortcutManager.addShortcut(
         juce::KeyPress(juce::KeyPress::createFromDescription("o").getKeyCode()),
-        Mode::visualLine,
+        {Mode::visualBlock, Mode::visualLine},
         [this]() {
             cursor.cursorPosition = cursor.getVisualSelectionOpposite();
             return true;
         },
-        "Jump cursor to opposite selection corner"
-    );
-
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("o").getKeyCode()),
-        Mode::visualBlock,
-        [this]() {
-            cursor.cursorPosition = cursor.getVisualSelectionOpposite();
-            return true;
-        },
-        "Jump cursor to opposite selection corner"
+        "Jump cursor to opposite visual selection corner"
     );
 
     shortcutManager.addShortcut(
@@ -656,17 +496,7 @@ void MainComponent::setupKeyboardShortcuts()
 
     shortcutManager.addShortcut(
         juce::KeyPress(juce::KeyPress::createFromDescription("x")),
-        Mode::normal,
-        [this]() {
-            cursor.removeNotesAtCursor();
-            return true;
-        },
-        "Remove note at cursor position"
-    );
-
-    shortcutManager.addShortcut(
-        juce::KeyPress(juce::KeyPress::createFromDescription("x")),
-        Mode::insert,
+        {Mode::normal, Mode::insert},
         [this]() {
             cursor.removeNotesAtCursor();
             return true;
@@ -676,7 +506,7 @@ void MainComponent::setupKeyboardShortcuts()
 
     shortcutManager.addShortcut(
         juce::KeyPress(juce::KeyPress::createFromDescription("m")),
-        Mode::insert,
+        {Mode::normal, Mode::insert},
         [this]() {
             auto menuWidth = getWidth() * 0.6;
             showModifierMenu(juce::Point<int>(getWidth() / 2 - (menuWidth/2), getHeight() / 2));

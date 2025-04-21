@@ -54,6 +54,17 @@ void KeyboardShortcutManager::addShortcut(
     shortcuts[mode][keyID] = std::make_pair(action, description);
 }
 
+void KeyboardShortcutManager::addShortcut(
+    const juce::KeyPress& key,
+    std::vector<Mode> modes,
+    Action action,
+    const std::string& description)
+{
+    for (auto mode : modes) {
+        addShortcut(key, mode, action, description);
+    }
+}
+
 void KeyboardShortcutManager::removeShortcut(
     const juce::KeyPress& key,
     Mode mode)

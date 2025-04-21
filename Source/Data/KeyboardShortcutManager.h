@@ -22,6 +22,8 @@ public:
 
     void addShortcut(const juce::KeyPress& key, Mode mode, Action action, const std::string& description = "");
 
+    void addShortcut(const juce::KeyPress& key, std::vector<Mode> modes, Action action, const std::string& description = "");
+
     void removeShortcut(const juce::KeyPress& key, Mode mode);
 
     struct ShortcutInfo
