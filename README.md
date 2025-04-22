@@ -1,32 +1,20 @@
-# TODO
+# Modality
 
-## Modal stuff
-- [ ] add visual (multi) select
-- [ ] add yank/paste/delete
-- [ ] repeat last action (action buffer)
-- [ ] undo (action buffer??)
+Modality is a modal music step sequencer, heavily inspired by Vim. It provides manual and algorithmic sequencing through vim-style keybindings and functionality. Currently, Modality sequences MIDI notes which are then sent to external devices or software and does not generate sound itself.
 
-## Step/Note Editing
-- [ ] invert notes (degrees go pos/neg)
-- [ ] transform notes (e.g. ramp from lowest to highest selection)(ramp up, ramp down, linear, exponential)
-- [x] turn off steps/notes (or mute?)
-- [ ] edit velocity
-- [ ] edit duration
-- [ ] nudge micro timing of steps
-- [ ] add repeat to steps?
-- [ ] add random notes (from an edited selection)
-- [ ] split/combine beats or chunks - so that you can create smaller/larger note divisions
-  - format (triplets or other note divisions)
-  - zoom into (focus on) smaller chunks for editing
-  - predictable cycling through them (back, forwards, etc.)
+## Main Modes
 
-- add modifiers/LFOs to individual steps
-- [x] polyphony/chords
+- Normal Mode
+- Insert Mode
+- Visual Block Mode
+- Visual Line Mode
 
-## Sequencing / global settings
-- [x] Add transport!
-- [ ] Add tempo control
-- [x] Add MIDI or OSC to output sequence
-- [ ] Add chance
-- [ ] Add scales + root note
-- [ ] Add visual playhead indicator
+## Additional Modes
+
+- Sequence settings
+- Modifier settings
+
+## Acknowledgments and Inspirations
+
+- [Vim](https://github.com/vim/vim)/[Neovim](https://github.com/neovim/neovim)
+- [Ranger](https://github.com/ranger/ranger)
