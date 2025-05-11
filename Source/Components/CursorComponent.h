@@ -1,7 +1,7 @@
 #pragma once
 
-#include <JuceHeader.h>
 #include "Data/Cursor.h"
+#include <JuceHeader.h>
 
 //==============================================================================
 /*
@@ -12,7 +12,7 @@ class CursorComponent : public juce::Component
 {
 public:
     //==============================================================================
-    CursorComponent(const Cursor& c);
+    CursorComponent (const Cursor& c);
     ~CursorComponent() override;
 
     void paint (juce::Graphics&) override;

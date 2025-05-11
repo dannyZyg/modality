@@ -8,20 +8,26 @@
   ==============================================================================
 */
 
-# include <JuceHeader.h>
-# include <random>
-# include "Note.h"
-# include "Sequence.h"
-# include "Data/Timeline.h"
-# include "Data/Scale.h"
-# include "Data/Selection.h"
+#include "Data/Scale.h"
+#include "Data/Selection.h"
+#include "Data/Timeline.h"
+#include "Note.h"
+#include "Sequence.h"
+#include <JuceHeader.h>
+#include <random>
 #pragma once
 
-enum class Mode { normal, visualLine, visualBlock, insert, noteEdit };
+enum class Mode
+{
+    normal,
+    visualLine,
+    visualBlock,
+    insert,
+    noteEdit
+};
 
 class Cursor
 {
-
 public:
     Cursor();
     ~Cursor();
@@ -37,8 +43,8 @@ public:
     void moveDown();
     void moveUp();
 
-    void moveCursorSelection(Direction d);
-    void moveNotesInSelection(Direction d);
+    void moveCursorSelection (Direction d);
+    void moveNotesInSelection (Direction d);
 
     void removeNote();
     void enableNormalMode();
@@ -47,22 +53,22 @@ public:
     void enableInsertMode();
     const Mode getMode() const;
     const juce::String getModeName() const;
-    constexpr const char* modeToString(Mode m) const;
+    constexpr const char* modeToString (Mode m) const;
 
-    bool isSequenceSelected(const Sequence& seq) const;
+    bool isSequenceSelected (const Sequence& seq) const;
     size_t getStepIndex();
     size_t getNoteIndex();
 
-    Sequence& getSequence(size_t index) const;
+    Sequence& getSequence (size_t index) const;
     Sequence& getSelectedSequence() const;
 
     void previewNote();
     void previewStep();
 
-    std::vector<MidiNote> extractMidiSequence(size_t seqIndex);
+    std::vector<MidiNote> extractMidiSequence (size_t seqIndex);
 
-    Timeline timeline{0.0, 4.0};
-    Scale scale{"Natural Minor"};
+    Timeline timeline { 0.0, 4.0 };
+    Scale scale { "Natural Minor" };
 
     Position cursorPosition;
 
@@ -76,7 +82,6 @@ public:
     bool isVisualBlockMode() const;
     bool isInsertMode() const;
 
-
     void jumpForwardBeat();
     void jumpBackBeat();
 
@@ -88,8 +93,8 @@ public:
     const std::vector<Position>& getVisualSelectionPositions() const;
     Position getVisualSelectionOpposite();
 
-    int addModifier(ModifierType t);
-    int removeModifier(ModifierType t);
+    int addModifier (ModifierType t);
+    int removeModifier (ModifierType t);
 
     std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesAtCursor();
     std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesInCursorSelection();
@@ -106,10 +111,10 @@ private:
     size_t selectedStepIndex = 0;
     size_t selectedNoteIndex = 0;
 
-    void selectSequence(size_t sIndex);
-    void selectNote(size_t nIndex);
+    void selectSequence (size_t sIndex);
+    void selectNote (size_t nIndex);
 
     Selection visualSelection;
 
-    std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesAtPosition(Position& p, Timeline& t, Scale& s);
+    std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesAtPosition (Position& p, Timeline& t, Scale& s);
 };

@@ -1,31 +1,33 @@
 #pragma once
 
-#include <JuceHeader.h>
-#include "Components/StatusBarComponent.h"
-#include "Components/ModifierMenuComponent.h"
-#include "Data/Cursor.h"
-#include "Components/SequenceComponent.h"
+#include "Components/ContextualMenuComponent.h"
 #include "Components/CursorComponent.h"
+#include "Components/ModifierMenuComponent.h"
+#include "Components/SequenceComponent.h"
+#include "Components/StatusBarComponent.h"
+#include "Data/Cursor.h"
 #include "Data/KeyboardShortcutManager.h"
+#include <JuceHeader.h>
 #include <queue>
 
 // Add to your class header
-struct ScheduledMidiEvent {
+struct ScheduledMidiEvent
+{
     double timestamp;
     juce::MidiMessage message;
-    bool operator>(const ScheduledMidiEvent& other) const {
+    bool operator> (const ScheduledMidiEvent& other) const
+    {
         return timestamp > other.timestamp;
     }
 };
-
 
 //==============================================================================
 /*
     This component lives inside our window, and this is where you should put all
     your controls and content.
 */
-class MainComponent  : public juce::AnimatedAppComponent,
-                       public juce::AudioIODeviceCallback // Handles audio manually
+class MainComponent : public juce::AnimatedAppComponent,
+                      public juce::AudioIODeviceCallback // Handles audio manually
 {
 public:
     //==============================================================================
@@ -49,8 +51,7 @@ public:
                                                    const AudioIODeviceCallbackContext& context) override;
 
     void audioDeviceStopped() override;
-    void audioDeviceAboutToStart(juce::AudioIODevice* device) override;
-
+    void audioDeviceAboutToStart (juce::AudioIODevice* device) override;
 
 private:
     //==============================================================================
@@ -66,7 +67,7 @@ private:
     StatusBarComponent statusBarComponent;
     ModifierMenuComponent modifierMenuComponent;
 
-    void showModifierMenu(juce::Point<int> position);
+    void showModifierMenu (juce::Point<int> position);
     void hideModifierMenu();
 
     juce::AudioTransportSource transportSource;
@@ -75,16 +76,17 @@ private:
     const double clipLength = 1.0; // 1 second loop (4 beats @ 120 BPM)
 
     std::priority_queue<ScheduledMidiEvent,
-                       std::vector<ScheduledMidiEvent>,
-                       std::greater<ScheduledMidiEvent>> midiEventQueue;
+                        std::vector<ScheduledMidiEvent>,
+                        std::greater<ScheduledMidiEvent>>
+        midiEventQueue;
 
     double nextPatternStartTime = 0.0;
     const double lookAheadTime = 0.025;
-    void scheduleNextPattern(double startTime);
+    void scheduleNextPattern (double startTime);
 
     double midiClipDuration = 2.0; // Duration of one iteration of the clip
     double nextClipStartTime = 0.0; // Track when to add next iteration
-    juce::String notesToString(const std::vector<MidiNote>& notes);
+    juce::String notesToString (const std::vector<MidiNote>& notes);
 
     void start();
     void stop();
@@ -96,20 +98,20 @@ private:
     class SilentPositionableSource : public juce::PositionableAudioSource
     {
     public:
-        void prepareToPlay(int, double sampleRate_) override
+        void prepareToPlay (int, double sampleRate_) override
         {
             sampleRate = sampleRate_;
         }
 
         void releaseResources() override {}
 
-        void getNextAudioBlock(const juce::AudioSourceChannelInfo& info) override
+        void getNextAudioBlock (const juce::AudioSourceChannelInfo& info) override
         {
             info.clearActiveBufferRegion();
             currentPosition += info.numSamples;
         }
 
-        void setNextReadPosition(juce::int64 newPosition) override
+        void setNextReadPosition (juce::int64 newPosition) override
         {
             currentPosition = newPosition;
         }

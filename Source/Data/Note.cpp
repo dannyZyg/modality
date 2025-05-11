@@ -11,10 +11,9 @@
 #include "Note.h"
 #include "Data/ModifierApplicator.h"
 
+Note::Note (double deg, double time, double dur) : degree (deg), startTime (time), duration (dur) {}
 
-Note::Note(double deg, double time, double dur) : degree(deg), startTime(time), duration(dur) {}
-
-Note::~Note() { }
+Note::~Note() {}
 
 double Note::getDegree() const { return degree; }
 
@@ -28,23 +27,26 @@ void Note::shiftDegreeUp() { degree++; }
 
 void Note::shiftDegreeDown() { degree--; }
 
-void Note::shiftEarlier(double step) { startTime-= step; }
+void Note::shiftEarlier (double step) { startTime -= step; }
 
-void Note::shiftLater(double step) { startTime+= step; }
+void Note::shiftLater (double step) { startTime += step; }
 
-void Note::addModifier(Modifier m)
+void Note::addModifier (Modifier m)
 {
-    modifiers.insert(m);
+    modifiers.insert (m);
 }
 
-bool Note::removeModifier(Modifier m)
+bool Note::removeModifier (Modifier m)
 {
-    return modifiers.erase(m) > 0;
+    return modifiers.erase (m) > 0;
 }
 
-std::optional<Modifier> Note::getModifier(ModifierType type) {
-    for (const Modifier& mod : modifiers) {
-        if (mod.getType() == type) {  // Assuming you can access type or have a getter
+std::optional<Modifier> Note::getModifier (ModifierType type)
+{
+    for (const Modifier& mod : modifiers)
+    {
+        if (mod.getType() == type)
+        { // Assuming you can access type or have a getter
             return mod;
         }
     }
@@ -53,19 +55,18 @@ std::optional<Modifier> Note::getModifier(ModifierType type) {
 
 bool Note::hasAnyModifier() { return modifiers.size() > 0; }
 
-
 int Note::getVelocity() const { return velocity; }
 
-void Note::setVelocity(int v)
+void Note::setVelocity (int v)
 {
     velocity = v;
 }
 
-std::optional<MidiNote> Note::asMidiNote(Timeline t, Scale s, double tempo)
+std::optional<MidiNote> Note::asMidiNote (Timeline t, Scale s, double tempo)
 {
-    double start = t.convertBarPositionToSeconds(getStartTime(), tempo);
-    double dur = t.convertDivisionToSeconds(getDuration(), tempo);
-    auto midi = MidiNote(start, 64 + getDegree(), velocity, dur);
+    double start = t.convertBarPositionToSeconds (getStartTime(), tempo);
+    double dur = t.convertDivisionToSeconds (getDuration(), tempo);
+    auto midi = MidiNote (start, 64 + getDegree(), velocity, dur);
 
-    return ModifierApplicator::getInstance().applyModifiers(modifiers, std::move(midi));
+    return ModifierApplicator::getInstance().applyModifiers (modifiers, std::move (midi));
 }

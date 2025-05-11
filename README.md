@@ -16,5 +16,5 @@ Modality is a modal music step sequencer, heavily inspired by Vim. It provides m
 
 ## Acknowledgments and Inspirations
 
-- [Vim](https://github.com/vim/vim)/[Neovim](https://github.com/neovim/neovim)
+- [Vim](https://github.com/vim/vim) / [Neovim](https://github.com/neovim/neovim)
 - [Ranger](https://github.com/ranger/ranger)

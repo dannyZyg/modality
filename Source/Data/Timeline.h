@@ -1,14 +1,15 @@
 #pragma once
 #include <JuceHeader.h>
 
-class TimePoint {
+class TimePoint
+{
 public:
-    TimePoint(double init);
+    TimePoint (double init);
     double value;
 };
 
-
-class Division {
+class Division
+{
 public:
     static constexpr double whole = 1.0;
     static constexpr double half = 0.5;
@@ -18,36 +19,49 @@ public:
     static constexpr double thirtysecond = 0.03125;
 
     // Triplets
-    static constexpr double quarterTriplet = quarter * 2.0/3.0;
-    static constexpr double eighthTriplet = eighth * 2.0/3.0;
+    static constexpr double quarterTriplet = quarter * 2.0 / 3.0;
+    static constexpr double eighthTriplet = eighth * 2.0 / 3.0;
 
     static constexpr std::array<double, 6> values = {
-        thirtysecond, sixteenth, eighth, quarter, half, whole
+        thirtysecond,
+        sixteenth,
+        eighth,
+        quarter,
+        half,
+        whole
     };
 
     static constexpr double epsilon = 0.0001; // Small value for comparison
 
-    static bool isEqual(double a, double b) {
-        return std::abs(a - b) < epsilon;
+    static bool isEqual (double a, double b)
+    {
+        return std::abs (a - b) < epsilon;
     }
 
-    static bool isLessOrEqual(double a, double b) {
-        return a < b || isEqual(a, b);
+    static bool isLessOrEqual (double a, double b)
+    {
+        return a < b || isEqual (a, b);
     }
 
-    static double getNextSmaller(double current) {
-        for (size_t i = values.size() - 1; i > 0; --i) {
-            if (isEqual(values[i], current)) {
-                return values[i-1];
+    static double getNextSmaller (double current)
+    {
+        for (size_t i = values.size() - 1; i > 0; --i)
+        {
+            if (isEqual (values[i], current))
+            {
+                return values[i - 1];
             }
         }
         return current; // Return same value if no smaller found
     }
 
-    static double getNextLarger(double current) {
-        for (size_t i = 0; i < values.size() - 1; ++i) {
-            if (isEqual(values[i], current)) {
-                return values[i+1];
+    static double getNextLarger (double current)
+    {
+        for (size_t i = 0; i < values.size() - 1; ++i)
+        {
+            if (isEqual (values[i], current))
+            {
+                return values[i + 1];
             }
         }
         return current; // Return same value if no larger found
@@ -56,22 +70,21 @@ public:
     Division() = delete;
 };
 
-class Timeline {
-
+class Timeline
+{
 public:
-    Timeline(double lower, double upper);
+    Timeline (double lower, double upper);
 
-
-    double clampValue(double newValue);
+    double clampValue (double newValue);
 
     double getLowerBound() const;
     double getUpperBound() const;
 
-    TimePoint getNextStep(const TimePoint& tp);
-    TimePoint getNextStep(const TimePoint& tp, double division);
+    TimePoint getNextStep (const TimePoint& tp);
+    TimePoint getNextStep (const TimePoint& tp, double division);
 
-    TimePoint getPrevStep(const TimePoint& tp);
-    TimePoint getPrevStep(const TimePoint& tp, double division);
+    TimePoint getPrevStep (const TimePoint& tp);
+    TimePoint getPrevStep (const TimePoint& tp, double division);
 
     double getStepSize() const;
     double getSmallestStepSize() const;
@@ -79,11 +92,12 @@ public:
     void increaseStepSize();
     void decreaseStepSize();
 
-    double convertBarPositionToSeconds(double barPosition, double tempo);
-    double convertDivisionToSeconds(double division, double tempo);
+    double convertBarPositionToSeconds (double barPosition, double tempo);
+    double convertDivisionToSeconds (double division, double tempo);
 
     const double size() const;
     const double sizeAtCurrentStepSize() const;
+
 private:
     double stepSize = Division::quarter;
     double value;

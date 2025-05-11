@@ -14,7 +14,6 @@
 class Sequence
 {
 public:
-
     Sequence();
     ~Sequence();
 
@@ -22,10 +21,9 @@ public:
 
     std::vector<std::unique_ptr<Note>> notes;
 
-    std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotes(double minTime, double maxTime, double minDegree, double maxDegree);
-    void removeNotes(double minTime, double maxTime, double minDegree, double maxDegree);
+    std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotes (double minTime, double maxTime, double minDegree, double maxDegree);
+    void removeNotes (double minTime, double maxTime, double minDegree, double maxDegree);
 
 private:
-    auto makeNotePredicate(double minTime, double maxTime, double minDegree, double maxDegree);
-
+    auto makeNotePredicate (double minTime, double maxTime, double minDegree, double maxDegree);
 };

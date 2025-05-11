@@ -10,24 +10,23 @@
 
 #pragma once
 
-#include <JuceHeader.h>
 #include "Data/Cursor.h"
+#include <JuceHeader.h>
 
 //==============================================================================
 /*
 */
-class SequenceComponent  : public juce::Component
+class SequenceComponent : public juce::Component
 {
 public:
-    SequenceComponent(const Cursor& c);
+    SequenceComponent (const Cursor& c);
     ~SequenceComponent() override;
 
     void paint (juce::Graphics&) override;
     void resized() override;
     void update();
 
-    juce::Path createNotePath(Note& n);
-
+    juce::Path createNotePath (Note& n);
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SequenceComponent)
@@ -39,8 +38,7 @@ private:
 
     int visibleRange = 30;
 
-    juce::Point<float> calculateStepPositions(size_t index, float blockSize);
+    juce::Point<float> calculateStepPositions (size_t index, float blockSize);
 
     int calculateNoteComponentVerticalBounds();
-
 };

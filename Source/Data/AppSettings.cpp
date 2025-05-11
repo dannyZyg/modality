@@ -7,7 +7,7 @@ AppSettings& AppSettings::getInstance()
 }
 
 AppSettings::AppSettings()
-    : appProperties(std::make_unique<juce::ApplicationProperties>())
+    : appProperties (std::make_unique<juce::ApplicationProperties>())
 {
 }
 
@@ -17,7 +17,7 @@ AppSettings::~AppSettings()
     // appProperties will be properly destroyed by unique_ptr
 }
 
-void AppSettings::initialise(const juce::String& applicationName)
+void AppSettings::initialise (const juce::String& applicationName)
 {
     if (isInitialised)
         return;
@@ -29,7 +29,7 @@ void AppSettings::initialise(const juce::String& applicationName)
     options.folderName = applicationName;
     options.storageFormat = juce::PropertiesFile::storeAsXML;
 
-    appProperties->setStorageParameters(options);
+    appProperties->setStorageParameters (options);
     properties = appProperties->getUserSettings();
 
     isInitialised = true;
@@ -48,47 +48,47 @@ void AppSettings::shutdown()
     isInitialised = false;
 }
 
-bool AppSettings::getBoolValue(const juce::String& keyName, bool defaultValue)
+bool AppSettings::getBoolValue (const juce::String& keyName, bool defaultValue)
 {
-    return properties->getBoolValue(keyName, defaultValue);
+    return properties->getBoolValue (keyName, defaultValue);
 }
 
-void AppSettings::setBoolValue(const juce::String& keyName, bool value)
+void AppSettings::setBoolValue (const juce::String& keyName, bool value)
 {
-    properties->setValue(keyName, value);
+    properties->setValue (keyName, value);
     properties->saveIfNeeded();
 }
 
-int AppSettings::getIntValue(const juce::String& keyName, int defaultValue)
+int AppSettings::getIntValue (const juce::String& keyName, int defaultValue)
 {
-    return properties->getIntValue(keyName, defaultValue);
+    return properties->getIntValue (keyName, defaultValue);
 }
 
-void AppSettings::setIntValue(const juce::String& keyName, int value)
+void AppSettings::setIntValue (const juce::String& keyName, int value)
 {
-    properties->setValue(keyName, value);
+    properties->setValue (keyName, value);
     properties->saveIfNeeded();
 }
 
-double AppSettings::getDoubleValue(const juce::String& keyName, double defaultValue)
+double AppSettings::getDoubleValue (const juce::String& keyName, double defaultValue)
 {
-    return properties->getDoubleValue(keyName, defaultValue);
+    return properties->getDoubleValue (keyName, defaultValue);
 }
 
-void AppSettings::setDoubleValue(const juce::String& keyName, double value)
+void AppSettings::setDoubleValue (const juce::String& keyName, double value)
 {
-    properties->setValue(keyName, value);
+    properties->setValue (keyName, value);
     properties->saveIfNeeded();
 }
 
-juce::String AppSettings::getStringValue(const juce::String& keyName, const juce::String& defaultValue)
+juce::String AppSettings::getStringValue (const juce::String& keyName, const juce::String& defaultValue)
 {
-    return properties->getValue(keyName, defaultValue);
+    return properties->getValue (keyName, defaultValue);
 }
 
-void AppSettings::setStringValue(const juce::String& keyName, const juce::String& value)
+void AppSettings::setStringValue (const juce::String& keyName, const juce::String& value)
 {
-    properties->setValue(keyName, value);
+    properties->setValue (keyName, value);
     properties->saveIfNeeded();
 }
 
@@ -96,20 +96,20 @@ void AppSettings::setStringValue(const juce::String& keyName, const juce::String
 
 int AppSettings::getLastWindowWidth()
 {
-    return getIntValue("window.lastWidth", 800);
+    return getIntValue ("window.lastWidth", 800);
 }
 
-void AppSettings::setLastWindowWidth(int width)
+void AppSettings::setLastWindowWidth (int width)
 {
-    setIntValue("window.lastWidth", width);
+    setIntValue ("window.lastWidth", width);
 }
 
 int AppSettings::getLastWindowHeight()
 {
-    return getIntValue("window.lastHeight", 600);
+    return getIntValue ("window.lastHeight", 600);
 }
 
-void AppSettings::setLastWindowHeight(int height)
+void AppSettings::setLastWindowHeight (int height)
 {
-    setIntValue("window.lastHeight", height);
+    setIntValue ("window.lastHeight", height);
 }
