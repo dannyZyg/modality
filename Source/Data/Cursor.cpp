@@ -9,6 +9,7 @@
 */
 
 #include "Cursor.h"
+#include "Data/Selection.h"
 #include "juce_core/system/juce_PlatformDefs.h"
 
 Cursor::Cursor() : randomGenerator (std::random_device()())
@@ -45,28 +46,7 @@ bool Cursor::isSequenceSelected (const Sequence& otherSequence) const
 void Cursor::moveCursorSelection (Direction d)
 {
     moveNotesInSelection (d);
-
-    switch (d)
-    {
-        case Direction::left:
-            visualSelection.moveSelection (timeline.getStepSize(), d);
-            moveLeft();
-            break;
-        case Direction::right:
-            visualSelection.moveSelection (timeline.getStepSize(), d);
-            moveRight();
-            break;
-        case Direction::up:
-            visualSelection.moveSelection (scale.getStepSize(), d);
-            moveUp();
-            break;
-        case Direction::down:
-            visualSelection.moveSelection (scale.getStepSize(), d);
-            moveDown();
-            break;
-        default:
-            break;
-    }
+    move (d, Selection::MoveMode::shift);
 }
 
 void Cursor::moveNotesInSelection (Direction d)
@@ -100,63 +80,45 @@ void Cursor::moveNotesInSelection (Direction d)
     }
 }
 
-void Cursor::moveLeft()
+// Moves the cursor and relevant cursor selection
+// If in a visual mode, new notes will be added to the selection if they fall within the boundary
+// TODO: Also remove notes from selection?
+void Cursor::move (Direction d, Selection::MoveMode moveMode)
 {
-    cursorPosition.xTime = timeline.getPrevStep (cursorPosition.xTime);
-
-    if (isVisualLineMode())
+    switch (d)
     {
-        visualSelection.addToVisualLineSelection (cursorPosition, timeline, scale);
+        case Direction::left:
+            cursorPosition.xTime = timeline.getPrevStep (cursorPosition.xTime);
+            break;
+        case Direction::right:
+            cursorPosition.xTime = timeline.getNextStep (cursorPosition.xTime);
+            break;
+        case Direction::up:
+            cursorPosition.yDegree = scale.getHigher (cursorPosition.yDegree);
+            break;
+        case Direction::down:
+            cursorPosition.yDegree = scale.getLower (cursorPosition.yDegree);
+            break;
+        default:
+            break;
     }
 
-    if (isVisualBlockMode())
+    if (moveMode == Selection::MoveMode::shift)
     {
-        visualSelection.addToVisualBlockSelection (cursorPosition);
+        double stepSize = d == Direction::left || d == Direction::right ? timeline.getStepSize() : scale.getStepSize();
+        visualSelection.moveSelection (stepSize, d);
     }
-}
-
-void Cursor::moveRight()
-{
-    cursorPosition.xTime = timeline.getNextStep (cursorPosition.xTime);
-
-    if (isVisualLineMode())
+    else if (moveMode == Selection::MoveMode::extend)
     {
-        visualSelection.addToVisualLineSelection (cursorPosition, timeline, scale);
-    }
+        if (isVisualLineMode())
+        {
+            visualSelection.addToVisualLineSelection (cursorPosition, timeline, scale);
+        }
 
-    if (isVisualBlockMode())
-    {
-        visualSelection.addToVisualBlockSelection (cursorPosition);
-    }
-}
-
-void Cursor::moveDown()
-{
-    cursorPosition.yDegree = scale.getLower (cursorPosition.yDegree);
-
-    if (isVisualLineMode())
-    {
-        visualSelection.addToVisualLineSelection (cursorPosition, timeline, scale);
-    }
-
-    if (isVisualBlockMode())
-    {
-        visualSelection.addToVisualBlockSelection (cursorPosition);
-    }
-}
-
-void Cursor::moveUp()
-{
-    cursorPosition.yDegree = scale.getHigher (cursorPosition.yDegree);
-
-    if (isVisualLineMode())
-    {
-        visualSelection.addToVisualLineSelection (cursorPosition, timeline, scale);
-    }
-
-    if (isVisualBlockMode())
-    {
-        visualSelection.addToVisualBlockSelection (cursorPosition);
+        if (isVisualBlockMode())
+        {
+            visualSelection.addToVisualBlockSelection (cursorPosition);
+        }
     }
 }
 

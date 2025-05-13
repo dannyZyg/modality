@@ -1,5 +1,6 @@
 #include "MainComponent.h"
 #include "Data/AppSettings.h"
+#include "Data/Selection.h"
 
 //==============================================================================
 MainComponent::MainComponent() : sequenceComponent (cursor),
@@ -176,7 +177,7 @@ void MainComponent::audioDeviceIOCallbackWithContext ([[maybe_unused]] const flo
         return;
 
     double currentPosition = transportSource.getCurrentPosition();
-    double bufferEndTime = currentPosition + (numSamples / sampleRate);
+    double bufferEndTime = currentPosition + (static_cast<double> (numSamples) / sampleRate);
 
     // Schedule next pattern if needed
     if (currentPosition >= nextPatternStartTime - lookAheadTime)
@@ -201,7 +202,7 @@ void MainComponent::audioDeviceAboutToStart (juce::AudioIODevice* device)
     juce::Logger::writeToLog ("Device name: " + device->getName());
     juce::Logger::writeToLog ("Sample rate: " + juce::String (device->getCurrentSampleRate()));
 
-    sampleRate = device->getCurrentSampleRate();
+    sampleRate = static_cast<int> (device->getCurrentSampleRate());
     transportSource.prepareToPlay (512, sampleRate);
 }
 
@@ -222,7 +223,6 @@ juce::String MainComponent::notesToString (const std::vector<MidiNote>& notes)
 
 bool MainComponent::keyPressed (const juce::KeyPress& key)
 {
-    DBG ("mode " << cursor.getModeName());
     if (shortcutManager.handleKeyPress (key, cursor.getMode()))
     {
         return true;
@@ -313,7 +313,7 @@ void MainComponent::setupKeyboardShortcuts()
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
-                cursor.moveLeft();
+                cursor.move (Direction::left);
                 return true;
             },
             "Move cursor left"),
@@ -323,7 +323,7 @@ void MainComponent::setupKeyboardShortcuts()
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
-                cursor.moveRight();
+                cursor.move (Direction::right);
                 return true;
             },
             "Move cursor right"),
@@ -333,7 +333,7 @@ void MainComponent::setupKeyboardShortcuts()
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
-                cursor.moveDown();
+                cursor.move (Direction::down);
                 return true;
             },
             "Move cursor down"),
@@ -343,14 +343,14 @@ void MainComponent::setupKeyboardShortcuts()
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
-                cursor.moveUp();
+                cursor.move (Direction::up);
                 return true;
             },
             "Move cursor up"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("H").getKeyCode()),
-            { Mode::visualLine, Mode::visualBlock },
+            juce::KeyPress::createFromDescription ("shift+h"),
+            { Mode::normal, Mode::visualLine, Mode::visualBlock },
             [this]()
             {
                 cursor.moveCursorSelection (Direction::left);
@@ -359,8 +359,8 @@ void MainComponent::setupKeyboardShortcuts()
             "Move visual selection left"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("L").getKeyCode()),
-            { Mode::visualLine, Mode::visualBlock },
+            juce::KeyPress::createFromDescription ("shift+l"),
+            { Mode::normal, Mode::visualLine, Mode::visualBlock },
             [this]()
             {
                 cursor.moveCursorSelection (Direction::right);
@@ -369,8 +369,8 @@ void MainComponent::setupKeyboardShortcuts()
             "Move visual selection right"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("J").getKeyCode()),
-            { Mode::visualLine, Mode::visualBlock },
+            juce::KeyPress::createFromDescription ("shift+j"),
+            { Mode::normal, Mode::visualLine, Mode::visualBlock },
             [this]()
             {
                 cursor.moveCursorSelection (Direction::down);
@@ -379,8 +379,8 @@ void MainComponent::setupKeyboardShortcuts()
             "Move visual selection down"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("K").getKeyCode()),
-            { Mode::visualLine, Mode::visualBlock },
+            juce::KeyPress::createFromDescription ("shift+k"),
+            { Mode::normal, Mode::visualLine, Mode::visualBlock },
             [this]()
             {
                 cursor.moveCursorSelection (Direction::up);

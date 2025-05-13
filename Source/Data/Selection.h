@@ -29,6 +29,12 @@ public:
         horizontal
     };
 
+    enum class MoveMode
+    {
+        shift,
+        extend,
+    };
+
     void clear();
 
     void addToVisualLineSelection (Position p, Timeline t, Scale s);

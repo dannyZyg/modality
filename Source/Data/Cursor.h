@@ -38,10 +38,7 @@ public:
     void jumpToStart();
     void jumpToEnd();
 
-    void moveRight();
-    void moveLeft();
-    void moveDown();
-    void moveUp();
+    void move (Direction d, Selection::MoveMode moveMode = Selection::MoveMode::extend);
 
     void moveCursorSelection (Direction d);
     void moveNotesInSelection (Direction d);
