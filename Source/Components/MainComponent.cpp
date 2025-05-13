@@ -461,7 +461,7 @@ void MainComponent::setupKeyboardShortcuts()
 
         Shortcut (
             juce::KeyPress (juce::KeyPress::createFromDescription ("v").getKeyCode()),
-            { Mode::normal },
+            { Mode::normal, Mode::insert },
             [this]()
             {
                 cursor.enableVisualBlockMode();
