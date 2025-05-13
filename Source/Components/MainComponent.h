@@ -5,6 +5,7 @@
 #include "Components/MidlineComponent.h"
 #include "Components/ModifierMenuComponent.h"
 #include "Components/SequenceComponent.h"
+#include "Components/SequenceSelectionComponent.h"
 #include "Components/StatusBarComponent.h"
 #include "Data/Cursor.h"
 #include "Data/KeyboardShortcutManager.h"
@@ -68,6 +69,7 @@ private:
     MidlineComponent midlineComponent;
     StatusBarComponent statusBarComponent;
     ModifierMenuComponent modifierMenuComponent;
+    SequenceSelectionComponent sequenceSelectionComponent;
 
     void showModifierMenu (juce::Point<int> position);
     void hideModifierMenu();

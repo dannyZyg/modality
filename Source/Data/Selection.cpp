@@ -1,4 +1,5 @@
 #include "Selection.h"
+#include "juce_core/system/juce_PlatformDefs.h"
 
 const std::vector<Position>& Selection::getPositions() const
 {

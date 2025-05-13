@@ -56,8 +56,11 @@ public:
     size_t getStepIndex();
     size_t getNoteIndex();
 
+    void selectSequence (size_t sIndex);
     Sequence& getSequence (size_t index) const;
     Sequence& getSelectedSequence() const;
+
+    const std::vector<std::unique_ptr<Sequence>>& getSequences() const;
 
     void previewNote();
     void previewStep();
@@ -102,13 +105,13 @@ private:
 
     Mode mode = Mode::normal;
 
+    int numInitialSequences = 4;
     std::vector<std::unique_ptr<Sequence>> sequences;
 
     size_t selectedSeqIndex = 0;
     size_t selectedStepIndex = 0;
     size_t selectedNoteIndex = 0;
 
-    void selectSequence (size_t sIndex);
     void selectNote (size_t nIndex);
 
     Selection visualSelection;

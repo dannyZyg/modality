@@ -8,7 +8,8 @@ MainComponent::MainComponent() : sequenceComponent (cursor),
                                  cursorComponent (cursor),
                                  midlineComponent (cursor),
                                  statusBarComponent (cursor),
-                                 modifierMenuComponent (cursor)
+                                 modifierMenuComponent (cursor),
+                                 sequenceSelectionComponent (cursor)
 {
     AppSettings::getInstance().initialise ("Modality");
 
@@ -24,6 +25,7 @@ MainComponent::MainComponent() : sequenceComponent (cursor),
     addAndMakeVisible (cursorComponent);
     addAndMakeVisible (sequenceComponent);
     addAndMakeVisible (statusBarComponent);
+    addAndMakeVisible (sequenceSelectionComponent);
 
     addChildComponent (modifierMenuComponent);
 
@@ -85,6 +87,7 @@ void MainComponent::resized()
     sequenceComponent.setBounds (50, 50, getWidth() - 100, getHeight() - 100);
     cursorComponent.setBounds (50, 50, getWidth() - 100, getHeight() - 100);
     midlineComponent.setBounds (50, 50, getWidth() - 100, getHeight() - 100);
+    sequenceSelectionComponent.setBounds (50, 10, getWidth() - 100, 30);
     statusBarComponent.resized();
 
     AppSettings::getInstance().setLastWindowHeight (getHeight());
@@ -263,7 +266,7 @@ void MainComponent::setupKeyboardShortcuts()
     std::vector<Shortcut> shortcuts = {
         Shortcut (
             juce::KeyPress (juce::KeyPress::escapeKey),
-            { Mode::normal, Mode::insert },
+            { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
                 if (modifierMenuComponent.isVisible())
@@ -418,7 +421,7 @@ void MainComponent::setupKeyboardShortcuts()
 
         Shortcut (
             juce::KeyPress ('^', juce::ModifierKeys::shiftModifier, 0),
-            { Mode::normal },
+            { Mode::normal, Mode::insert },
             [this]()
             {
                 cursor.jumpToStart();
@@ -428,7 +431,7 @@ void MainComponent::setupKeyboardShortcuts()
 
         Shortcut (
             juce::KeyPress ('$', juce::ModifierKeys::shiftModifier, 0),
-            { Mode::normal },
+            { Mode::normal, Mode::insert },
             [this]()
             {
                 cursor.jumpToEnd();
@@ -438,7 +441,7 @@ void MainComponent::setupKeyboardShortcuts()
 
         Shortcut (
             juce::KeyPress (juce::KeyPress::createFromDescription ("w").getKeyCode()),
-            { Mode::normal },
+            { Mode::normal, Mode::insert },
             [this]()
             {
                 cursor.jumpForwardBeat();
@@ -448,7 +451,7 @@ void MainComponent::setupKeyboardShortcuts()
 
         Shortcut (
             juce::KeyPress (juce::KeyPress::createFromDescription ("W").getKeyCode()),
-            { Mode::normal },
+            { Mode::normal, Mode::insert },
             [this]()
             {
                 cursor.jumpBackBeat();
@@ -536,6 +539,46 @@ void MainComponent::setupKeyboardShortcuts()
                 return true;
             },
             "Open modifier menu"),
+
+        Shortcut (
+            juce::KeyPress (juce::KeyPress::createFromDescription ("1")),
+            { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
+            [this]()
+            {
+                cursor.selectSequence (0);
+                return true;
+            },
+            "Select sequence 1"),
+
+        Shortcut (
+            juce::KeyPress (juce::KeyPress::createFromDescription ("2")),
+            { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
+            [this]()
+            {
+                cursor.selectSequence (1);
+                return true;
+            },
+            "Select sequence 2"),
+
+        Shortcut (
+            juce::KeyPress (juce::KeyPress::createFromDescription ("3")),
+            { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
+            [this]()
+            {
+                cursor.selectSequence (2);
+                return true;
+            },
+            "Select sequence 3"),
+
+        Shortcut (
+            juce::KeyPress (juce::KeyPress::createFromDescription ("4")),
+            { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
+            [this]()
+            {
+                cursor.selectSequence (3);
+                return true;
+            },
+            "Select sequence 4"),
 
     };
 

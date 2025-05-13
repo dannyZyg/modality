@@ -10,7 +10,6 @@
 
 #include "Cursor.h"
 #include "Data/Selection.h"
-#include "juce_core/system/juce_PlatformDefs.h"
 
 Cursor::Cursor() : randomGenerator (std::random_device()())
 {
@@ -22,8 +21,11 @@ Cursor::~Cursor() {}
 
 void Cursor::createSequence()
 {
-    auto sequence = std::make_unique<Sequence>();
-    sequences.emplace_back (std::move (sequence));
+    for (int i = 0; i < numInitialSequences; i++)
+    {
+        auto sequence = std::make_unique<Sequence>();
+        sequences.emplace_back (std::move (sequence));
+    }
 }
 
 void Cursor::selectSequence (size_t index)
@@ -235,6 +237,11 @@ Sequence& Cursor::getSequence (size_t index) const
         throw std::out_of_range (m);
     }
     return *sequences[index];
+}
+
+const std::vector<std::unique_ptr<Sequence>>& Cursor::getSequences() const
+{
+    return sequences;
 }
 
 Sequence& Cursor::getSelectedSequence() const
