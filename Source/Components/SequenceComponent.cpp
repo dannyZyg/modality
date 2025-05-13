@@ -51,7 +51,7 @@ void SequenceComponent::paint (juce::Graphics& g)
     // Draw the notes
     for (auto& note : cursor.getSelectedSequence().notes)
     {
-        auto tri = CoordinateUtils::getTriangleAtPoint (*note, width, height, cursor.timeline, cursor.scale);
+        auto tri = CoordinateUtils::getTriangleAtPoint (*note, width, height, cursor.getCurrentTimeline(), cursor.getCurrentScale());
 
         if (note->hasAnyModifier())
         {

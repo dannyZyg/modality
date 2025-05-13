@@ -55,18 +55,19 @@ void Cursor::moveNotesInSelection (Direction d)
 {
     for (const Position& pos : getVisualSelectionPositions())
     {
-        for (auto& note : getSelectedSequence().notes)
+        auto& seq = getSelectedSequence();
+        for (auto& note : seq.notes)
         {
-            if (Division::isEqual (pos.xTime.value, note->getStartTime())
+            if (Division::isEqual (pos.xTimepoint.value, note->getStartTime())
                 && Division::isEqual (pos.yDegree.value, note->getDegree()))
             {
                 switch (d)
                 {
                     case Direction::left:
-                        note->shiftEarlier (timeline.getStepSize());
+                        note->shiftEarlier (seq.getTimeline().getStepSize());
                         break;
                     case Direction::right:
-                        note->shiftLater (timeline.getStepSize());
+                        note->shiftLater (seq.getTimeline().getStepSize());
                         break;
                     case Direction::up:
                         note->shiftDegreeUp();
@@ -90,16 +91,16 @@ void Cursor::move (Direction d, Selection::MoveMode moveMode)
     switch (d)
     {
         case Direction::left:
-            cursorPosition.xTime = timeline.getPrevStep (cursorPosition.xTime);
+            cursorPosition.xTimepoint = getSelectedSequence().getPrevTimelineStep (cursorPosition.xTimepoint);
             break;
         case Direction::right:
-            cursorPosition.xTime = timeline.getNextStep (cursorPosition.xTime);
+            cursorPosition.xTimepoint = getSelectedSequence().getNextTimelineStep (cursorPosition.xTimepoint);
             break;
         case Direction::up:
-            cursorPosition.yDegree = scale.getHigher (cursorPosition.yDegree);
+            cursorPosition.yDegree = getCurrentScale().getHigher (cursorPosition.yDegree);
             break;
         case Direction::down:
-            cursorPosition.yDegree = scale.getLower (cursorPosition.yDegree);
+            cursorPosition.yDegree = getCurrentScale().getLower (cursorPosition.yDegree);
             break;
         default:
             break;
@@ -107,14 +108,14 @@ void Cursor::move (Direction d, Selection::MoveMode moveMode)
 
     if (moveMode == Selection::MoveMode::shift)
     {
-        double stepSize = d == Direction::left || d == Direction::right ? timeline.getStepSize() : scale.getStepSize();
+        double stepSize = d == Direction::left || d == Direction::right ? getCurrentTimeline().getStepSize() : getCurrentScale().getStepSize();
         visualSelection.moveSelection (stepSize, d);
     }
     else if (moveMode == Selection::MoveMode::extend)
     {
         if (isVisualLineMode())
         {
-            visualSelection.addToVisualLineSelection (cursorPosition, timeline, scale);
+            visualSelection.addToVisualLineSelection (cursorPosition, getCurrentTimeline(), getCurrentScale());
         }
 
         if (isVisualBlockMode())
@@ -126,22 +127,22 @@ void Cursor::move (Direction d, Selection::MoveMode moveMode)
 
 void Cursor::jumpToStart()
 {
-    cursorPosition.xTime.value = timeline.getLowerBound();
+    cursorPosition.xTimepoint.value = getCurrentTimeline().getLowerBound();
 }
 
 void Cursor::jumpToEnd()
 {
-    cursorPosition.xTime.value = timeline.getUpperBound() - timeline.getStepSize();
+    cursorPosition.xTimepoint.value = getCurrentTimeline().getUpperBound() - getCurrentTimeline().getStepSize();
 }
 
 void Cursor::jumpForwardBeat()
 {
-    cursorPosition.xTime.value = timeline.getNextStep (cursorPosition.xTime.value, Division::whole).value;
+    cursorPosition.xTimepoint.value = getSelectedSequence().getNextTimelineStep (cursorPosition.xTimepoint.value, Division::whole).value;
 }
 
 void Cursor::jumpBackBeat()
 {
-    cursorPosition.xTime.value = timeline.getPrevStep (cursorPosition.xTime.value, Division::whole).value;
+    cursorPosition.xTimepoint.value = getSelectedSequence().getPrevTimelineStep (cursorPosition.xTimepoint.value, Division::whole).value;
 }
 
 void Cursor::enableNormalMode()
@@ -157,7 +158,7 @@ void Cursor::enableNormalMode()
 void Cursor::enableVisualLineMode()
 {
     mode = Mode::visualLine;
-    visualSelection.addToVisualLineSelection (cursorPosition, timeline, scale);
+    visualSelection.addToVisualLineSelection (cursorPosition, getCurrentTimeline(), getCurrentScale());
 }
 
 void Cursor::enableVisualBlockMode()
@@ -257,7 +258,7 @@ std::vector<MidiNote> Cursor::extractMidiSequence (size_t seqIndex)
 
     for (auto& n : getSequence (seqIndex).notes)
     {
-        auto midi = n->asMidiNote (timeline, scale, tempo);
+        auto midi = n->asMidiNote (getCurrentTimeline(), getCurrentScale(), tempo);
 
         if (midi)
         {
@@ -269,7 +270,7 @@ std::vector<MidiNote> Cursor::extractMidiSequence (size_t seqIndex)
 
 void Cursor::insertNote()
 {
-    auto note = std::make_unique<Note> (cursorPosition.yDegree.value, cursorPosition.xTime.value, timeline.getStepSize());
+    auto note = std::make_unique<Note> (cursorPosition.yDegree.value, cursorPosition.xTimepoint.value, getCurrentTimeline().getStepSize());
     getSelectedSequence().notes.emplace_back (std::move (note));
 }
 
@@ -279,8 +280,8 @@ void Cursor::removeNotesAtCursor()
     {
         double degMin = cursorPosition.yDegree.value;
         double degMax = degMin;
-        double timeStart = cursorPosition.xTime.value;
-        double timeEnd = timeStart + timeline.getStepSize();
+        double timeStart = cursorPosition.xTimepoint.value;
+        double timeEnd = timeStart + getCurrentTimeline().getStepSize();
 
         getSelectedSequence().removeNotes (timeStart, timeEnd, degMin, degMax);
     }
@@ -288,8 +289,8 @@ void Cursor::removeNotesAtCursor()
     {
         double degMin = visualSelection.getLowestPosition().yDegree.value;
         double degMax = visualSelection.getHighestPosition().yDegree.value;
-        double timeStart = visualSelection.getEarliestPosition().xTime.value;
-        double timeEnd = visualSelection.getLatestPosition().xTime.value + timeline.getStepSize();
+        double timeStart = visualSelection.getEarliestPosition().xTimepoint.value;
+        double timeEnd = visualSelection.getLatestPosition().xTimepoint.value + getCurrentTimeline().getStepSize();
 
         getSelectedSequence().removeNotes (timeStart, timeEnd, degMin, degMax);
     }
@@ -297,7 +298,7 @@ void Cursor::removeNotesAtCursor()
 
 const juce::String Cursor::readableCursorPosition() const
 {
-    return juce::String (cursorPosition.yDegree.value) + " :: " + juce::String (cursorPosition.xTime.value);
+    return juce::String (cursorPosition.yDegree.value) + " :: " + juce::String (cursorPosition.xTimepoint.value);
 }
 
 bool Cursor::isInsertMode() const { return mode == Mode::insert; }
@@ -305,8 +306,8 @@ bool Cursor::isNormalMode() const { return mode == Mode::normal; }
 bool Cursor::isVisualLineMode() const { return mode == Mode::visualLine; }
 bool Cursor::isVisualBlockMode() const { return mode == Mode::visualBlock; }
 
-void Cursor::increaseTimelineStepSize() { timeline.increaseStepSize(); }
-void Cursor::decreaseTimelineStepSize() { timeline.decreaseStepSize(); }
+void Cursor::increaseTimelineStepSize() { getSelectedSequence().increaseTimelineStepSize(); }
+void Cursor::decreaseTimelineStepSize() { getSelectedSequence().decreaseTimelineStepSize(); }
 
 const std::vector<Position>& Cursor::getVisualSelectionPositions() const
 {
@@ -322,8 +323,8 @@ Position Cursor::getVisualSelectionOpposite()
 
 std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesAtPosition (Position& p, Timeline& t, Scale& s)
 {
-    auto minTime = p.xTime.value;
-    auto maxTime = p.xTime.value + t.getStepSize();
+    auto minTime = p.xTimepoint.value;
+    auto maxTime = p.xTimepoint.value + t.getStepSize();
     auto minDegree = p.yDegree.value;
     auto maxDegree = p.yDegree.value + s.getStepSize();
 
@@ -332,16 +333,16 @@ std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesAtPo
 
 std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesAtCursor()
 {
-    return getSelectedSequence().findNotes (cursorPosition.xTime.value,
-                                            cursorPosition.xTime.value + timeline.getStepSize(),
+    return getSelectedSequence().findNotes (cursorPosition.xTimepoint.value,
+                                            cursorPosition.xTimepoint.value + getCurrentTimeline().getStepSize(),
                                             cursorPosition.yDegree.value,
                                             cursorPosition.yDegree.value);
 }
 
 std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesInCursorSelection()
 {
-    return getSelectedSequence().findNotes (visualSelection.getEarliestPosition().xTime.value,
-                                            visualSelection.getLatestPosition().xTime.value + timeline.getStepSize(),
+    return getSelectedSequence().findNotes (visualSelection.getEarliestPosition().xTimepoint.value,
+                                            visualSelection.getLatestPosition().xTimepoint.value + getCurrentTimeline().getStepSize(),
                                             visualSelection.getLowestPosition().yDegree.value,
                                             visualSelection.getHighestPosition().yDegree.value);
 }
@@ -350,15 +351,15 @@ std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesForC
 {
     if (isNormalMode() || isInsertMode())
     {
-        return getSelectedSequence().findNotes (cursorPosition.xTime.value,
-                                                cursorPosition.xTime.value + timeline.getStepSize(),
+        return getSelectedSequence().findNotes (cursorPosition.xTimepoint.value,
+                                                cursorPosition.xTimepoint.value + getCurrentTimeline().getStepSize(),
                                                 cursorPosition.yDegree.value,
                                                 cursorPosition.yDegree.value);
     }
     else if (isVisualBlockMode() || isVisualLineMode())
     {
-        return getSelectedSequence().findNotes (visualSelection.getEarliestPosition().xTime.value,
-                                                visualSelection.getLatestPosition().xTime.value + timeline.getStepSize(),
+        return getSelectedSequence().findNotes (visualSelection.getEarliestPosition().xTimepoint.value,
+                                                visualSelection.getLatestPosition().xTimepoint.value + getCurrentTimeline().getStepSize(),
                                                 visualSelection.getLowestPosition().yDegree.value,
                                                 visualSelection.getHighestPosition().yDegree.value);
     }
@@ -393,4 +394,24 @@ int Cursor::removeModifier (ModifierType t)
     }
 
     return static_cast<int> (notes.size());
+}
+
+const Timeline& Cursor::getCurrentTimeline() const
+{
+    return getSelectedSequence().getTimeline();
+}
+
+const Scale& Cursor::getCurrentScale() const
+{
+    return getSelectedSequence().getScale();
+}
+
+Timeline& Cursor::getCurrentTimeline()
+{
+    return getSelectedSequence().getTimeline();
+}
+
+Scale& Cursor::getCurrentScale()
+{
+    return getSelectedSequence().getScale();
 }

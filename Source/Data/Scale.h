@@ -36,8 +36,8 @@ public:
     double getLowerBound() const;
     double getUpperBound() const;
 
-    Degree getHigher (const Degree& d);
-    Degree getLower (const Degree& d);
+    const Degree getHigher (const Degree& d) const;
+    const Degree getLower (const Degree& d) const;
 
     double getSmallestStepSize() const;
     double getStepSize() const;

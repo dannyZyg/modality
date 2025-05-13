@@ -72,7 +72,7 @@ void StatusBarComponent::paint (juce::Graphics& g)
     g.setColour (juce::Colours::white);
     g.fillEllipse (pieRect);
 
-    setPiePercentage (static_cast<float> (cursor.timeline.getStepSize()));
+    setPiePercentage (static_cast<float> (cursor.getCurrentTimeline().getStepSize()));
 
     // Draw filled portion
     g.setColour (AppColours::getCursorColour (cursor.getMode()));

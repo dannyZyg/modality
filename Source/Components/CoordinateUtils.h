@@ -75,7 +75,7 @@ public:
                                              const Scale& scale)
     {
         return {
-            timeToScreenX (c.cursorPosition.xTime.value, screenWidth, timeline),
+            timeToScreenX (c.cursorPosition.xTimepoint.value, screenWidth, timeline),
             degreeToScreenY (c.cursorPosition.yDegree.value, screenHeight, scale)
         };
     }
@@ -101,7 +101,7 @@ public:
                                                   const Timeline& timeline,
                                                   const Scale& scale)
     {
-        return getRectAtPoint (c.cursorPosition.xTime.value,
+        return getRectAtPoint (c.cursorPosition.xTimepoint.value,
                                c.cursorPosition.yDegree.value,
                                screenWidth,
                                screenHeight,
@@ -116,7 +116,7 @@ public:
                                                      const Timeline& timeline,
                                                      const Scale& scale)
     {
-        return getRectAtPoint (p.xTime.value,
+        return getRectAtPoint (p.xTimepoint.value,
                                p.yDegree.value,
                                screenWidth,
                                screenHeight,

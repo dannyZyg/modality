@@ -16,9 +16,9 @@ void MidlineComponent::paint (juce::Graphics& g)
     float height = static_cast<float> (getHeight());
 
     // Draw the sequence midline (pitch = degree 0)
-    auto x = CoordinateUtils::timeToScreenX (0.0, width, cursor.timeline);
-    auto y = CoordinateUtils::degreeToScreenY (0.0, height, cursor.scale);
-    auto base = juce::Rectangle<float> (x, y, width, CoordinateUtils::getStepHeight (height, cursor.scale));
+    auto x = CoordinateUtils::timeToScreenX (0.0, width, cursor.getCurrentTimeline());
+    auto y = CoordinateUtils::degreeToScreenY (0.0, height, cursor.getCurrentScale());
+    auto base = juce::Rectangle<float> (x, y, width, CoordinateUtils::getStepHeight (height, cursor.getCurrentScale()));
 
     g.setColour (juce::Colours::lightgrey.withLightness (0.9f));
     g.fillRect (base);

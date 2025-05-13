@@ -28,7 +28,7 @@ void CursorComponent::paint (juce::Graphics& g)
     juce::Colour blink = AppColours::getCursorColour (cursor.getMode()).interpolatedWith (juce::Colours::lightgrey, blendFactor);
 
     // Get rectangle for cursor
-    auto rect = CoordinateUtils::getRectAtPoint (cursor, width, height, cursor.timeline, cursor.scale);
+    auto rect = CoordinateUtils::getRectAtPoint (cursor, width, height, cursor.getCurrentTimeline(), cursor.getCurrentScale());
 
     if (cursor.isNormalMode())
     {
@@ -48,7 +48,7 @@ void CursorComponent::paint (juce::Graphics& g)
         for (const auto& pos : cursor.getVisualSelectionPositions())
         {
             // Get rectangle for cursor
-            auto selection = CoordinateUtils::getRectAtPosition (pos, width, height, cursor.timeline, cursor.scale);
+            auto selection = CoordinateUtils::getRectAtPosition (pos, width, height, cursor.getCurrentTimeline(), cursor.getCurrentScale());
             g.fillRect (selection);
         }
 

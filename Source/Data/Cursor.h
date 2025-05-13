@@ -67,9 +67,6 @@ public:
 
     std::vector<MidiNote> extractMidiSequence (size_t seqIndex);
 
-    Timeline timeline { 0.0, 4.0 };
-    Scale scale { "Natural Minor" };
-
     Position cursorPosition;
 
     void insertNote();
@@ -99,6 +96,11 @@ public:
     std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesAtCursor();
     std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesInCursorSelection();
     std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesForCursorMode();
+
+    const Timeline& getCurrentTimeline() const;
+    const Scale& getCurrentScale() const;
+    Timeline& getCurrentTimeline();
+    Scale& getCurrentScale();
 
 private:
     std::mt19937 randomGenerator;

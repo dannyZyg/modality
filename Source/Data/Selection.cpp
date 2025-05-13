@@ -1,5 +1,4 @@
 #include "Selection.h"
-#include "juce_core/system/juce_PlatformDefs.h"
 
 const std::vector<Position>& Selection::getPositions() const
 {
@@ -54,8 +53,8 @@ void Selection::addToVisualLineSelection (Position p, Timeline t, Scale s)
     else if (lineMode == VisualLineMode::vertical)
     {
         // Get the range of columns to fill (between anchor and cursor)
-        double minTime = std::min (anchor.xTime.value, p.xTime.value);
-        double maxTime = std::max (anchor.xTime.value, p.xTime.value);
+        double minTime = std::min (anchor.xTimepoint.value, p.xTimepoint.value);
+        double maxTime = std::max (anchor.xTimepoint.value, p.xTimepoint.value);
 
         // For each column in the range...
         for (double time = minTime; time <= maxTime; time += t.getSmallestStepSize())
@@ -84,8 +83,8 @@ void Selection::addToVisualBlockSelection (Position p)
     positions.clear();
 
     // Calculate boundaries between anchor and cursor
-    double minTime = std::min (anchor.xTime.value, p.xTime.value);
-    double maxTime = std::max (anchor.xTime.value, p.xTime.value);
+    double minTime = std::min (anchor.xTimepoint.value, p.xTimepoint.value);
+    double maxTime = std::max (anchor.xTimepoint.value, p.xTimepoint.value);
     double minDegree = std::min (anchor.yDegree.value, p.yDegree.value);
     double maxDegree = std::max (anchor.yDegree.value, p.yDegree.value);
 
@@ -108,7 +107,7 @@ void Selection::removeFromSelection (Position p)
     auto newEnd = std::remove_if (positions.begin(), positions.end(), [&p] (const Position& pos)
                                   {
             // Compare both time and degree for exact match
-            return Division::isEqual(pos.xTime.value, p.xTime.value) && Division::isEqual(pos.yDegree.value, p.yDegree.value); });
+            return Division::isEqual(pos.xTimepoint.value, p.xTimepoint.value) && Division::isEqual(pos.yDegree.value, p.yDegree.value); });
 
     // Erase the removed elements
     positions.erase (newEnd, positions.end());
@@ -122,7 +121,7 @@ Position Selection::getEarliestPosition()
     }
 
     return *std::min_element (positions.begin(), positions.end(), [] (const Position& a, const Position& b)
-                              { return a.xTime.value < b.xTime.value; });
+                              { return a.xTimepoint.value < b.xTimepoint.value; });
 }
 
 Position Selection::getLatestPosition()
@@ -133,7 +132,7 @@ Position Selection::getLatestPosition()
     }
 
     return *std::max_element (positions.begin(), positions.end(), [] (const Position& a, const Position& b)
-                              { return a.xTime.value < b.xTime.value; });
+                              { return a.xTimepoint.value < b.xTimepoint.value; });
 }
 
 Position Selection::getHighestPosition()
@@ -168,8 +167,8 @@ Position Selection::getOppositeCorner (Position p)
     }
 
     // First, determine which corner the input position represents
-    bool isLatest = Division::isEqual (p.xTime.value, getLatestPosition().xTime.value);
-    bool isEarliest = Division::isEqual (p.xTime.value, getEarliestPosition().xTime.value);
+    bool isLatest = Division::isEqual (p.xTimepoint.value, getLatestPosition().xTimepoint.value);
+    bool isEarliest = Division::isEqual (p.xTimepoint.value, getEarliestPosition().xTimepoint.value);
     bool isHighest = Division::isEqual (p.yDegree.value, getHighestPosition().yDegree.value);
     bool isLowest = Division::isEqual (p.yDegree.value, getLowestPosition().yDegree.value);
 
@@ -177,22 +176,22 @@ Position Selection::getOppositeCorner (Position p)
     if (isLatest && isHighest)
     {
         // If input is top-right, return bottom-left
-        return Position { getEarliestPosition().xTime, getLowestPosition().yDegree };
+        return Position { getEarliestPosition().xTimepoint, getLowestPosition().yDegree };
     }
     else if (isLatest && isLowest)
     {
         // If input is bottom-right, return top-left
-        return Position { getEarliestPosition().xTime, getHighestPosition().yDegree };
+        return Position { getEarliestPosition().xTimepoint, getHighestPosition().yDegree };
     }
     else if (isEarliest && isHighest)
     {
         // If input is top-left, return bottom-right
-        return Position { getLatestPosition().xTime, getLowestPosition().yDegree };
+        return Position { getLatestPosition().xTimepoint, getLowestPosition().yDegree };
     }
     else if (isEarliest && isLowest)
     {
         // If input is bottom-left, return top-right
-        return Position { getLatestPosition().xTime, getHighestPosition().yDegree };
+        return Position { getLatestPosition().xTimepoint, getHighestPosition().yDegree };
     }
 
     // If the position isn't at a corner, return default position
@@ -206,10 +205,10 @@ void Selection::moveSelection (double step, Direction d)
         switch (d)
         {
             case Direction::left:
-                p.xTime.value -= step;
+                p.xTimepoint.value -= step;
                 break;
             case Direction::right:
-                p.xTime.value += step;
+                p.xTimepoint.value += step;
                 break;
             case Direction::up:
                 p.yDegree.value += step;

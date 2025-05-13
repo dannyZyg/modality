@@ -17,7 +17,7 @@ Scale::Scale (const std::string& name)
     }
 }
 
-Degree Scale::getHigher (const Degree& d)
+const Degree Scale::getHigher (const Degree& d) const
 {
     auto descendingDegrees = getDescendingDegrees();
 
@@ -49,7 +49,7 @@ Degree Scale::getHigher (const Degree& d)
     }
 }
 
-Degree Scale::getLower (const Degree& d)
+const Degree Scale::getLower (const Degree& d) const
 {
     // Get the descending scale degrees
     auto descendingDegrees = getDescendingDegrees();

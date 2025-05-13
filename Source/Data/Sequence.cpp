@@ -58,3 +58,41 @@ void Sequence::removeNotes (
         std::remove_if (notes.begin(), notes.end(), predicate),
         notes.end());
 }
+
+const Timeline& Sequence::getTimeline() const { return timeline; }
+
+Timeline& Sequence::getTimeline() { return timeline; }
+
+const Scale& Sequence::getScale() const { return scale; }
+
+Scale& Sequence::getScale() { return scale; }
+
+void Sequence::increaseTimelineStepSize()
+{
+    timeline.increaseStepSize();
+}
+
+void Sequence::decreaseTimelineStepSize()
+{
+    timeline.decreaseStepSize();
+}
+
+TimePoint Sequence::getNextTimelineStep (const TimePoint& tp)
+{
+    return timeline.getNextStep (tp);
+}
+
+TimePoint Sequence::getNextTimelineStep (const TimePoint& tp, double division)
+{
+    return timeline.getNextStep (tp, division);
+}
+
+TimePoint Sequence::getPrevTimelineStep (const TimePoint& tp)
+{
+    return timeline.getPrevStep (tp);
+}
+
+TimePoint Sequence::getPrevTimelineStep (const TimePoint& tp, double division)
+{
+    return timeline.getPrevStep (tp, division);
+}

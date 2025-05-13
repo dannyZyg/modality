@@ -13,7 +13,7 @@ enum class Direction
 
 struct Position
 {
-    TimePoint xTime = TimePoint { 0.0 };
+    TimePoint xTimepoint = TimePoint { 0.0 };
     Degree yDegree = Degree { 0.0 };
 };
 
