@@ -9,6 +9,7 @@
 */
 
 #include "SequenceComponent.h"
+#include "AppColours.h"
 #include "CoordinateUtils.h"
 #include <JuceHeader.h>
 
@@ -25,19 +26,32 @@ SequenceComponent::~SequenceComponent()
 
 void SequenceComponent::paint (juce::Graphics& g)
 {
-    /* This demo code just fills the component's background and
-       draws some placeholder text to get you started.
+    float width = static_cast<float> (getWidth());
+    float height = static_cast<float> (getHeight());
 
-       You should replace everything in this method with your own
-       drawing code..
-    */
+    // Draw the playhead
+    g.setColour (AppColours::playhead);
 
+    const auto& selectedSequence = cursor.getSelectedSequence();
+    double tempoBPM = 120;
+    double secondsPerBeat = 60.0 / tempoBPM;
+    double sequenceDurationInSeconds = selectedSequence.lengthBeats * secondsPerBeat;
+
+    if (sequenceDurationInSeconds > 0)
+    {
+        double loopedPosition = std::fmod (currentPlayheadTime_, sequenceDurationInSeconds);
+        double playheadX = (loopedPosition / sequenceDurationInSeconds) * width;
+        g.drawLine (static_cast<float> (playheadX), 0, static_cast<float> (playheadX), height, 3.0f);
+    }
+
+    // Draw the outline
     g.setColour (juce::Colours::grey);
-    g.drawRect (getLocalBounds(), 1); // draw an outline around the component
+    g.drawRect (getLocalBounds(), 1);
 
+    // Draw the notes
     for (auto& note : cursor.getSelectedSequence().notes)
     {
-        auto tri = CoordinateUtils::getTriangleAtPoint (*note, getWidth(), getHeight(), cursor.timeline, cursor.scale);
+        auto tri = CoordinateUtils::getTriangleAtPoint (*note, width, height, cursor.timeline, cursor.scale);
 
         if (note->hasAnyModifier())
         {
@@ -51,8 +65,6 @@ void SequenceComponent::paint (juce::Graphics& g)
         g.fillPath (tri);
         g.setColour (juce::Colours::black);
         g.strokePath (tri, juce::PathStrokeType (1.0f));
-        /* g.drawRect(rect, 2.0f); */
-        /* g.fillRect(rect); */
     }
 }
 
@@ -63,4 +75,10 @@ void SequenceComponent::resized()
 //==============================================================================
 void SequenceComponent::update()
 {
+}
+
+void SequenceComponent::setCurrentPlayheadTime (double time)
+{
+    currentPlayheadTime_ = time;
+    repaint();
 }

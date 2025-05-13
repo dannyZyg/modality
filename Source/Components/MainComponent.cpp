@@ -1,10 +1,12 @@
 #include "MainComponent.h"
+#include "Components/MidlineComponent.h"
 #include "Data/AppSettings.h"
 #include "Data/Selection.h"
 
 //==============================================================================
 MainComponent::MainComponent() : sequenceComponent (cursor),
                                  cursorComponent (cursor),
+                                 midlineComponent (cursor),
                                  statusBarComponent (cursor),
                                  modifierMenuComponent (cursor)
 {
@@ -18,6 +20,7 @@ MainComponent::MainComponent() : sequenceComponent (cursor),
 
     setFramesPerSecond (60); // This sets the frequency of the update calls.
     setWantsKeyboardFocus (true);
+    addAndMakeVisible (midlineComponent);
     addAndMakeVisible (cursorComponent);
     addAndMakeVisible (sequenceComponent);
     addAndMakeVisible (statusBarComponent);
@@ -71,12 +74,17 @@ void MainComponent::paint (juce::Graphics& g)
     }
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (juce::Colours::whitesmoke);
+
+    // Get the current position from the transport source (in seconds)
+    double currentPosition = transportSource.getCurrentPosition();
+    sequenceComponent.setCurrentPlayheadTime (currentPosition);
 }
 
 void MainComponent::resized()
 {
     sequenceComponent.setBounds (50, 50, getWidth() - 100, getHeight() - 100);
     cursorComponent.setBounds (50, 50, getWidth() - 100, getHeight() - 100);
+    midlineComponent.setBounds (50, 50, getWidth() - 100, getHeight() - 100);
     statusBarComponent.resized();
 
     AppSettings::getInstance().setLastWindowHeight (getHeight());
@@ -283,7 +291,7 @@ void MainComponent::setupKeyboardShortcuts()
 
         Shortcut (
             juce::KeyPress (juce::KeyPress::spaceKey),
-            { Mode::normal },
+            { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
                 if (transportSource.isPlaying())
@@ -390,7 +398,7 @@ void MainComponent::setupKeyboardShortcuts()
 
         Shortcut (
             juce::KeyPress (juce::KeyPress::createFromDescription ("d").getKeyCode()),
-            { Mode::normal },
+            { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
                 cursor.decreaseTimelineStepSize();
@@ -400,7 +408,7 @@ void MainComponent::setupKeyboardShortcuts()
 
         Shortcut (
             juce::KeyPress (juce::KeyPress::createFromDescription ("f").getKeyCode()),
-            { Mode::normal },
+            { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
                 cursor.increaseTimelineStepSize();

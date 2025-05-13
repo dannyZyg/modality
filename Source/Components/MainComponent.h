@@ -2,6 +2,7 @@
 
 #include "Components/ContextualMenuComponent.h"
 #include "Components/CursorComponent.h"
+#include "Components/MidlineComponent.h"
 #include "Components/ModifierMenuComponent.h"
 #include "Components/SequenceComponent.h"
 #include "Components/StatusBarComponent.h"
@@ -64,6 +65,7 @@ private:
 
     SequenceComponent sequenceComponent;
     CursorComponent cursorComponent;
+    MidlineComponent midlineComponent;
     StatusBarComponent statusBarComponent;
     ModifierMenuComponent modifierMenuComponent;
 

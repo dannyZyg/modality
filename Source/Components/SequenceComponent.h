@@ -25,20 +25,12 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
     void update();
-
+    void setCurrentPlayheadTime (double time);
     juce::Path createNotePath (Note& n);
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SequenceComponent)
 
-    void drawSequence();
-    void drawCursor();
-
     const Cursor& cursor;
-
-    int visibleRange = 30;
-
-    juce::Point<float> calculateStepPositions (size_t index, float blockSize);
-
-    int calculateNoteComponentVerticalBounds();
+    double currentPlayheadTime_ = 0.0;
 };

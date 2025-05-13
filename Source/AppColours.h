@@ -10,6 +10,7 @@ static const juce::Colour visualBlockMode = juce::Colours::lightblue.withLightne
 static const juce::Colour visualBlockModeCursor = juce::Colours::darkcyan.withLightness (0.3f);
 static const juce::Colour visualLineMode = juce::Colours::orange.withLightness (0.7f);
 static const juce::Colour visualLineModeCursor = juce::Colours::orange;
+static const juce::Colour playhead = juce::Colour (47, 128, 107);
 
 [[maybe_unused]] static juce::Colour getSelectionColour (Mode m)
 {

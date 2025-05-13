@@ -27,15 +27,6 @@ void CursorComponent::paint (juce::Graphics& g)
     // Interpolate between black and light grey
     juce::Colour blink = AppColours::getCursorColour (cursor.getMode()).interpolatedWith (juce::Colours::lightgrey, blendFactor);
 
-    auto x = CoordinateUtils::timeToScreenX (0.0, width, cursor.timeline);
-    auto y = CoordinateUtils::degreeToScreenY (0.0, height, cursor.scale);
-    auto base = juce::Rectangle<float> (x, y, width, CoordinateUtils::getStepHeight (height, cursor.scale));
-
-    g.setColour (juce::Colours::lightgrey.withLightness (0.9f));
-    g.fillRect (base);
-    g.setColour (juce::Colours::black.withLightness (0.7f));
-    g.drawRect (base, 1.0f);
-
     // Get rectangle for cursor
     auto rect = CoordinateUtils::getRectAtPoint (cursor, width, height, cursor.timeline, cursor.scale);
 
