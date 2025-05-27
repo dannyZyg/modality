@@ -1,24 +1,50 @@
-
-
 #pragma once
 
+#include "Components/Widgets/ISelectableWidget.h"
+#include "Components/Widgets/SliderWidgetComponent.h"
+#include "juce_core/juce_core.h"
 #include <JuceHeader.h>
-#include <any>
-#include <functional>
-#include <unordered_map>
+#include <memory>
 
 enum class ModifierType
 {
     randomTrigger,
-    velocity,
-    octave
+    randomVelocity,
+    randomOctaveShift
 };
 
-struct ParameterInfo
+enum class ParamWidgetType
 {
-    std::string name;
-    std::any defaultValue;
-    // Optionally add more metadata like range, units, etc.
+    slider,
+    toggle
+};
+
+struct Param
+{
+    ParamWidgetType type;
+    double value;
+    double min;
+    double max;
+};
+
+static std::map<std::string, Param> randomTriggerParams = {
+    { "Trigger Probability", Param { ParamWidgetType::slider, 0.5, 0.0, 1.0 } }
+};
+
+static std::map<std::string, Param> randomOctaveShiftParams = {
+    { "Octave Shift Probability", Param { ParamWidgetType::slider, 0.5, 0.0, 1.0 } },
+    { "Octave Range", Param { ParamWidgetType::slider, 0.5, 0.0, 1.0 } },
+};
+
+static std::map<std::string, Param> randomVelocityParams = {
+    { "Velocity Probability", Param { ParamWidgetType::slider, 0.5, 0.0, 1.0 } },
+    { "Velocity Range", Param { ParamWidgetType::slider, 0.5, 0.0, 1.0 } },
+};
+
+static std::map<ModifierType, std::map<std::string, Param>> modifierTypeToParams = {
+    { ModifierType::randomTrigger, randomTriggerParams },
+    { ModifierType::randomOctaveShift, randomOctaveShiftParams },
+    { ModifierType::randomVelocity, randomVelocityParams },
 };
 
 [[maybe_unused]] static const juce::String getModifierName (ModifierType t)
@@ -27,49 +53,74 @@ struct ParameterInfo
     {
         case ModifierType::randomTrigger:
             return "Random Trigger";
-            break;
-        case ModifierType::velocity:
-            return "Velocity";
-            break;
-        case ModifierType::octave:
-            return "Octave";
-            break;
+        case ModifierType::randomVelocity:
+            return "Random Velocity";
+        case ModifierType::randomOctaveShift:
+            return "Random Octave Shift";
         default:
             return "Unknown";
-            break;
     }
 }
 
-static const std::unordered_map<ModifierType, std::vector<ParameterInfo>> MODIFIER_PARAMETERS = {
-    { ModifierType::randomTrigger,
-      {
-          { "probability", 0.5 },
-      } },
-    { ModifierType::velocity,
-      {
-          { "min", 20 },
-          { "max", 120 },
-      } },
-    { ModifierType::octave,
-      { { "probability", 0.5 },
-        { "range", 1 } } }
-};
-
-struct ModifierInfo
+[[maybe_unused]] static const juce::String getParamWidgetClass (ParamWidgetType t)
 {
-    char shortcut;
-    juce::String displayName;
-};
+    switch (t)
+    {
+        case ParamWidgetType::slider:
+            return "Random Trigger";
+        case ParamWidgetType::toggle:
+            return "Random Octave Shift";
+        default:
+            return "Unknown";
+    }
+}
+
+[[maybe_unused]] static const std::unique_ptr<ISelectableWidget> createParamWidget (const Param& param, const juce::String& title)
+{
+    switch (param.type)
+    {
+        case ParamWidgetType::slider:
+            return std::make_unique<SliderWidgetComponent> (param.min, param.max, param.value, title);
+        case ParamWidgetType::toggle:
+            return nullptr;
+        default:
+            return nullptr;
+    }
+}
+
+[[maybe_unused]] static const std::vector<std::unique_ptr<ISelectableWidget>> createParamWidgets (ModifierType type)
+{
+    std::vector<std::unique_ptr<ISelectableWidget>> widgets;
+
+    auto outerMapIt = modifierTypeToParams.find (type);
+
+    if (outerMapIt != modifierTypeToParams.end())
+    {
+        const auto& innerMap = outerMapIt->second;
+
+        for (const auto& paramPair : innerMap)
+        {
+            auto widget = createParamWidget (paramPair.second, paramPair.first);
+            if (widget != nullptr)
+            {
+                widgets.push_back (std::move (widget));
+            }
+        }
+    }
+    return widgets;
+}
 
 class Modifier
 {
 public:
     Modifier (ModifierType t);
 
-    std::vector<std::string> getParameterNames() const;
+    std::map<std::string, Param> parameters;
+
+    // std::vector<std::string> getParameterNames() const;
     bool hasParameter (const std::string& key) const;
-    void setModifierValue (const std::string& key, std::any v);
-    std::any getModifierValue (const std::string k) const;
+    void setModifierValue (const std::string& key, double v);
+    double getModifierValue (const std::string key) const;
 
     const ModifierType getType() const;
 
@@ -78,35 +129,11 @@ public:
         return type == other.type;
     }
 
-    // Add a method to get the hash value
-    size_t getHashValue() const
+    bool operator< (const Modifier& other) const
     {
-        return static_cast<size_t> (type);
-    }
-
-    [[maybe_unused]] static std::map<ModifierType, ModifierInfo> getModifierOptions()
-    {
-        return {
-            { ModifierType::randomTrigger, { 'r', "Random Trigger" } },
-            { ModifierType::velocity, { 'v', "Velocity" } },
-            { ModifierType::octave, { 'o', "Octave" } }
-        };
+        return type < other.type;
     }
 
 private:
     ModifierType type;
-    std::unordered_map<std::string, std::any> map;
-    friend struct std::hash<Modifier>;
 };
-
-namespace std
-{
-template <>
-struct hash<Modifier>
-{
-    size_t operator() (const Modifier& mod) const noexcept
-    {
-        return mod.getHashValue();
-    }
-};
-} // namespace std

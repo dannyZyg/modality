@@ -211,16 +211,6 @@ size_t Cursor::getNoteIndex()
     return selectedNoteIndex;
 }
 
-/* void Cursor::nextNearestNote() */
-/* { */
-/**/
-/* } */
-/**/
-/* void Cursor::prevNearestNote() */
-/* { */
-/**/
-/* } */
-
 void Cursor::previewNote()
 {
 }
@@ -302,11 +292,15 @@ const juce::String Cursor::readableCursorPosition() const
 }
 
 bool Cursor::isInsertMode() const { return mode == Mode::insert; }
+
 bool Cursor::isNormalMode() const { return mode == Mode::normal; }
+
 bool Cursor::isVisualLineMode() const { return mode == Mode::visualLine; }
+
 bool Cursor::isVisualBlockMode() const { return mode == Mode::visualBlock; }
 
 void Cursor::increaseTimelineStepSize() { getSelectedSequence().increaseTimelineStepSize(); }
+
 void Cursor::decreaseTimelineStepSize() { getSelectedSequence().decreaseTimelineStepSize(); }
 
 const std::vector<Position>& Cursor::getVisualSelectionPositions() const

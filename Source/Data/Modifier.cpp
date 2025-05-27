@@ -2,47 +2,30 @@
 
 Modifier::Modifier (ModifierType t) : type (t)
 {
-    // Initialize with default values from MODIFIER_PARAMETERS
-    auto it = MODIFIER_PARAMETERS.find (type);
-    if (it != MODIFIER_PARAMETERS.end())
-    {
-        for (const auto& param : it->second)
-        {
-            map[param.name] = param.defaultValue;
-        }
-    }
-}
+    auto iterator = modifierTypeToParams.find (type);
 
-std::vector<std::string> Modifier::getParameterNames() const
-{
-    std::vector<std::string> names;
-    auto it = MODIFIER_PARAMETERS.find (type);
-    if (it != MODIFIER_PARAMETERS.end())
+    if (iterator != modifierTypeToParams.end())
     {
-        for (const auto& param : it->second)
-        {
-            names.push_back (param.name);
-        }
+        parameters = iterator->second;
     }
-    return names;
 }
 
 bool Modifier::hasParameter (const std::string& key) const
 {
-    auto it = MODIFIER_PARAMETERS.find (type);
-    if (it != MODIFIER_PARAMETERS.end())
+    auto it = parameters.find (key);
+    if (it != parameters.end())
     {
-        return std::any_of (it->second.begin(), it->second.end(), [&key] (const ParameterInfo& info)
-                            { return info.name == key; });
+        return true;
     }
     return false;
 }
 
-void Modifier::setModifierValue (const std::string& key, std::any v)
+void Modifier::setModifierValue (const std::string& key, double v)
 {
     if (hasParameter (key))
     {
-        map[key] = std::move (v);
+        auto param = parameters.at (key);
+        param.value = std::move (v);
     }
     else
     {
@@ -52,7 +35,15 @@ void Modifier::setModifierValue (const std::string& key, std::any v)
 
 const ModifierType Modifier::getType() const { return type; }
 
-std::any Modifier::getModifierValue (const std::string k) const
+double Modifier::getModifierValue (const std::string key) const
 {
-    return map.at (k);
+    try
+    {
+        return parameters.at (key).value;
+    }
+    catch (const std::out_of_range& e)
+    {
+        std::cerr << "Error: Parameter '" << key << "' not found. " << e.what() << std::endl;
+        return {};
+    }
 }

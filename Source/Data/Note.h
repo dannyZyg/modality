@@ -58,6 +58,6 @@ private:
     int velocity = 100;
     double duration = Division::sixteenth;
 
-    std::unordered_set<Modifier> modifiers;
+    std::set<Modifier> modifiers;
     std::mt19937 randomGenerator;
 };

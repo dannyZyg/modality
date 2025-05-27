@@ -71,6 +71,15 @@ private:
     ModifierMenuComponent modifierMenuComponent;
     SequenceSelectionComponent sequenceSelectionComponent;
 
+    ContextualMenuComponent contextualMenuComponent;
+
+    std::unique_ptr<MenuNode> helpMenuRoot;
+    std::unique_ptr<MenuNode> globalSettingsMenuRoot;
+    std::unique_ptr<MenuNode> sequenceSettingsMenuRoot;
+    std::unique_ptr<MenuNode> modifierMenuRoot;
+
+    std::unique_ptr<MenuNode> createHelpMenuTree();
+
     void showModifierMenu (juce::Point<int> position);
     void hideModifierMenu();
 

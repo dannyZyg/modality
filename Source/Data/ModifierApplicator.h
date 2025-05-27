@@ -36,7 +36,7 @@ public:
     }
 
     // Apply multiple modifiers in sequence
-    std::optional<MidiNote> applyModifiers (const std::unordered_set<Modifier>& mods, MidiNote note) const
+    std::optional<MidiNote> applyModifiers (const std::set<Modifier>& mods, MidiNote note) const
     {
         std::optional<MidiNote> current = std::move (note);
         for (const auto& mod : mods)
@@ -49,59 +49,7 @@ public:
     }
 
 private:
-    ModifierApplicator()
-    {
-        initializeDefaultCallbacks();
-    }
-
-    void initializeDefaultCallbacks()
-    {
-        static std::mt19937 randomGenerator { std::random_device {}() };
-
-        // Random trigger modifier
-        registerCallback (ModifierType::randomTrigger,
-                          [] (const Modifier& mod, MidiNote note) -> std::optional<MidiNote>
-                          {
-                              auto probability = std::any_cast<double> (mod.getModifierValue ("probability"));
-                              std::bernoulli_distribution d (probability);
-                              if (d (randomGenerator))
-                              {
-                                  return note;
-                              }
-                              return std::nullopt;
-                          });
-
-        // Velocity modifier
-        registerCallback (ModifierType::velocity,
-                          [] (const Modifier& mod, MidiNote note) -> std::optional<MidiNote>
-                          {
-                              auto min = std::any_cast<int> (mod.getModifierValue ("min"));
-                              auto max = std::any_cast<int> (mod.getModifierValue ("max"));
-
-                              std::uniform_int_distribution<int> distribution (min, max);
-                              int newVelocity = distribution (randomGenerator);
-
-                              note.velocity = newVelocity;
-                              return note;
-                          });
-
-        // Octave modifier
-        registerCallback (ModifierType::octave,
-                          [] (const Modifier& mod, MidiNote note) -> std::optional<MidiNote>
-                          {
-                              auto probability = std::any_cast<double> (mod.getModifierValue ("probability"));
-                              auto range = std::any_cast<int> (mod.getModifierValue ("range"));
-
-                              std::bernoulli_distribution d (probability);
-                              if (d (randomGenerator))
-                              {
-                                  note.noteNumber += range * 12;
-                                  return note;
-                              }
-
-                              return note;
-                          });
-    }
+    ModifierApplicator() {}
 
     std::map<ModifierType, ModifierCallback> callbacks;
 };

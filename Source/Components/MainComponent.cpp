@@ -1,7 +1,15 @@
 #include "MainComponent.h"
 #include "Components/MidlineComponent.h"
+#include "Components/PaginatedSettingsComponent.h"
+#include "Components/Widgets/ISelectableWidget.h"
 #include "Data/AppSettings.h"
+#include "Data/MenuNode.h"
+#include "Data/Modifier.h"
 #include "Data/Selection.h"
+#include "juce_gui_basics/juce_gui_basics.h"
+#include <algorithm>
+#include <memory>
+#include <utility>
 
 //==============================================================================
 MainComponent::MainComponent() : sequenceComponent (cursor),
@@ -49,6 +57,43 @@ MainComponent::MainComponent() : sequenceComponent (cursor),
 
     // Make sure all children components have size set
     resized();
+
+    addAndMakeVisible (contextualMenuComponent);
+    contextualMenuComponent.setVisible (false);
+
+    // GLOBAL SETTINGS MENU
+
+    globalSettingsMenuRoot = std::make_unique<MenuNode> ("Settings");
+
+    auto tempoNode = std::make_unique<MenuNode> ("Tempo Settings", juce::KeyPress::createFromDescription ("t"));
+    auto deviceNode = std::make_unique<MenuNode> ("Device Settings", juce::KeyPress::createFromDescription ("d"));
+
+    // Add children and receive the raw pointer to them (to further assign children to these) - the original unq ptr has moved!
+    MenuNode* tempoNodePtr = globalSettingsMenuRoot->addChild (std::move (tempoNode));
+    MenuNode* deviceNodePtr = globalSettingsMenuRoot->addChild (std::move (deviceNode));
+
+    auto deviceSub = std::make_unique<MenuNode> ("Device Sub Menu", juce::KeyPress::createFromDescription ("s"));
+
+    deviceNodePtr->addChild (std::move (deviceSub));
+
+    // Mod Menu
+    modifierMenuRoot = std::make_unique<MenuNode> ("Modifiers");
+
+    std::vector<std::unique_ptr<ISelectableWidget>> widgets = createParamWidgets (ModifierType::randomTrigger);
+    std::vector<std::unique_ptr<ISelectableWidget>> widgetsVel = createParamWidgets (ModifierType::randomVelocity);
+    std::vector<std::unique_ptr<ISelectableWidget>> widgetsOct = createParamWidgets (ModifierType::randomOctaveShift);
+
+    auto randomTriggerModComponent = std::make_unique<PaginatedSettingsComponent> (std::move (widgets));
+    auto velocityModComponent = std::make_unique<PaginatedSettingsComponent> (std::move (widgetsVel));
+    auto octaveModComponent = std::make_unique<PaginatedSettingsComponent> (std::move (widgetsOct));
+
+    auto randomTriggerModNode = std::make_unique<MenuNode> ("Random Trigger", juce::KeyPress::createFromDescription ("t"), std::move (randomTriggerModComponent));
+    auto velocityModNode = std::make_unique<MenuNode> ("Velocity", juce::KeyPress::createFromDescription ("v"), std::move (velocityModComponent));
+    auto octaveModNode = std::make_unique<MenuNode> ("Octave", juce::KeyPress::createFromDescription ("o"), std::move (octaveModComponent));
+
+    MenuNode* randomTriggerModNodePtr = modifierMenuRoot->addChild (std::move (randomTriggerModNode));
+    MenuNode* velocityModNodePtr = modifierMenuRoot->addChild (std::move (velocityModNode));
+    MenuNode* octaveModNodePtr = modifierMenuRoot->addChild (std::move (octaveModNode));
 }
 
 MainComponent::~MainComponent()
@@ -70,7 +115,7 @@ void MainComponent::update()
 //==============================================================================
 void MainComponent::paint (juce::Graphics& g)
 {
-    if (! modifierMenuComponent.isVisible())
+    if (! contextualMenuComponent.isVisible())
     {
         grabKeyboardFocus();
     }
@@ -89,6 +134,17 @@ void MainComponent::resized()
     midlineComponent.setBounds (50, 50, getWidth() - 100, getHeight() - 100);
     sequenceSelectionComponent.setBounds (50, 10, getWidth() - 100, 30);
     statusBarComponent.resized();
+
+    auto menuWidth = getWidth() * 0.6;
+    auto menuHeight = getHeight() * 0.8;
+
+    auto xPos = getWidth() / 2 - (menuWidth / 2);
+    auto yPos = (getHeight() - menuHeight) / 2;
+    juce::Point<int> position = juce::Point<int> (xPos, yPos);
+
+    modifierMenuComponent.setBounds (position.x, position.y, getWidth() * 0.6, 200); // Set your desired size
+
+    contextualMenuComponent.setBounds (position.x, position.y, getWidth() * 0.6, menuHeight);
 
     AppSettings::getInstance().setLastWindowHeight (getHeight());
     AppSettings::getInstance().setLastWindowWidth (getWidth());
@@ -534,8 +590,7 @@ void MainComponent::setupKeyboardShortcuts()
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
-                auto menuWidth = getWidth() * 0.6;
-                showModifierMenu (juce::Point<int> (getWidth() / 2 - (menuWidth / 2), getHeight() / 2));
+                contextualMenuComponent.displayMenu (modifierMenuRoot.get());
                 return true;
             },
             "Open modifier menu"),
@@ -579,6 +634,16 @@ void MainComponent::setupKeyboardShortcuts()
                 return true;
             },
             "Select sequence 4"),
+
+        Shortcut (
+            juce::KeyPress (juce::KeyPress::createFromDescription ("6")),
+            { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
+            [this]()
+            {
+                contextualMenuComponent.displayMenu (globalSettingsMenuRoot.get());
+                return true;
+            },
+            "Global Settings"),
 
     };
 
