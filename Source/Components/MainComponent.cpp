@@ -63,6 +63,7 @@ MainComponent::MainComponent() : sequenceComponent (cursor),
 
     // GLOBAL SETTINGS MENU
 
+    helpMenuRoot = std::make_unique<MenuNode> ("Help");
     globalSettingsMenuRoot = std::make_unique<MenuNode> ("Settings");
 
     auto tempoNode = std::make_unique<MenuNode> ("Tempo Settings", juce::KeyPress::createFromDescription ("t"));
@@ -366,7 +367,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Toggle transport"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("i").getKeyCode()),
+            juce::KeyPress ('i'),
             { Mode::normal },
             [this]()
             {
@@ -376,7 +377,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Enter insert mode"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("h").getKeyCode()),
+            juce::KeyPress ('h'),
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
@@ -386,7 +387,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Move cursor left"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("l").getKeyCode()),
+            juce::KeyPress ('l'),
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
@@ -396,7 +397,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Move cursor right"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("j").getKeyCode()),
+            juce::KeyPress ('j'),
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
@@ -406,7 +407,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Move cursor down"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("k").getKeyCode()),
+            juce::KeyPress ('k'),
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
@@ -456,7 +457,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Move visual selection up"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("d").getKeyCode()),
+            juce::KeyPress ('d'),
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
@@ -466,7 +467,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Decrease timeline step size"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("f").getKeyCode()),
+            juce::KeyPress ('f'),
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
@@ -496,7 +497,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Jump cursor to end"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("w").getKeyCode()),
+            juce::KeyPress ('w'),
             { Mode::normal, Mode::insert },
             [this]()
             {
@@ -506,7 +507,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Jump cursor forward one beat"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("W").getKeyCode()),
+            juce::KeyPress::createFromDescription ("shift+w"),
             { Mode::normal, Mode::insert },
             [this]()
             {
@@ -516,7 +517,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Jump cursor back one beat"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("v").getKeyCode()),
+            juce::KeyPress ('v'),
             { Mode::normal, Mode::insert },
             [this]()
             {
@@ -526,7 +527,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Enable visual block mode"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("v").getKeyCode()),
+            juce::KeyPress ('v'),
             { Mode::visualBlock, Mode::visualLine },
             [this]()
             {
@@ -556,7 +557,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Turn off visual mode, enable normal mode"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("o").getKeyCode()),
+            juce::KeyPress ('o'),
             { Mode::visualBlock, Mode::visualLine },
             [this]()
             {
@@ -576,7 +577,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Insert note at cursor position"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("x")),
+            juce::KeyPress ('x'),
             { Mode::normal, Mode::insert },
             [this]()
             {
@@ -586,7 +587,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Remove note at cursor position"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("m")),
+            juce::KeyPress ('m'),
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
@@ -596,7 +597,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Open modifier menu"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("1")),
+            juce::KeyPress ('1'),
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
@@ -606,7 +607,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Select sequence 1"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("2")),
+            juce::KeyPress ('2'),
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
@@ -616,7 +617,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Select sequence 2"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("3")),
+            juce::KeyPress ('3'),
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
@@ -626,7 +627,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Select sequence 3"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("4")),
+            juce::KeyPress ('4'),
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
@@ -636,7 +637,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Select sequence 4"),
 
         Shortcut (
-            juce::KeyPress (juce::KeyPress::createFromDescription ("6")),
+            juce::KeyPress ('6'),
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
@@ -644,6 +645,16 @@ void MainComponent::setupKeyboardShortcuts()
                 return true;
             },
             "Global Settings"),
+
+        Shortcut (
+            juce::KeyPress ('?', juce::ModifierKeys::shiftModifier, 0),
+            { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
+            [this]()
+            {
+                contextualMenuComponent.displayMenu (helpMenuRoot.get());
+                return true;
+            },
+            "Open help menu"),
 
     };
 
