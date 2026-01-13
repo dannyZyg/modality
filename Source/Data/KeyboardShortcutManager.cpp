@@ -43,17 +43,17 @@ void KeyboardShortcutManager::deregisterShortcut (const juce::KeyPress& key, Mod
         activeShortcuts.end());
 }
 
-std::vector<KeyboardShortcutManager::ShortcutInfo>
+std::vector<Shortcut>
     KeyboardShortcutManager::getShortcutsForMode (Mode mode) const
 {
-    std::vector<ShortcutInfo> result;
+    std::vector<Shortcut> result;
 
     // Find all shortcuts that apply to this mode
     for (const auto& shortcut : activeShortcuts)
     {
         if (shortcut.appliesTo (mode))
         {
-            result.push_back ({ shortcut.keyPress, shortcut.description });
+            result.push_back (shortcut);
         }
     }
 
@@ -67,7 +67,7 @@ juce::String KeyboardShortcutManager::getShortcutDescription (const juce::KeyPre
     {
         if (shortcut.keyPress == key && shortcut.appliesTo (mode))
         {
-            return shortcut.description;
+            return shortcut.shortDescription;
         }
     }
 

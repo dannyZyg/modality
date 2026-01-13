@@ -1,6 +1,7 @@
 #include "MainComponent.h"
 #include "Components/MidlineComponent.h"
 #include "Components/PaginatedSettingsComponent.h"
+#include "Components/ShortcutInfoComponent.h"
 #include "Components/Widgets/ISelectableWidget.h"
 #include "Data/AppSettings.h"
 #include "Data/MenuNode.h"
@@ -65,6 +66,11 @@ MainComponent::MainComponent() : sequenceComponent (cursor),
 
     helpMenuRoot = std::make_unique<MenuNode> ("Help");
     globalSettingsMenuRoot = std::make_unique<MenuNode> ("Settings");
+
+    auto shortcutInfoComponent = std::make_unique<ShortcutInfoComponent> (shortcutManager);
+    auto shortcutsNode = std::make_unique<MenuNode> ("Shortcuts", juce::KeyPress::createFromDescription ("s"), std::move (shortcutInfoComponent));
+
+    helpMenuRoot->addChild (std::move (shortcutsNode));
 
     auto tempoNode = std::make_unique<MenuNode> ("Tempo Settings", juce::KeyPress::createFromDescription ("t"));
     auto deviceNode = std::make_unique<MenuNode> ("Device Settings", juce::KeyPress::createFromDescription ("d"));
@@ -337,6 +343,7 @@ void MainComponent::setupKeyboardShortcuts()
                     return true;
                 }
             },
+            "Exit",
             "Exit current menu or return to normal mode"),
 
         Shortcut (
@@ -347,6 +354,7 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.enableNormalMode();
                 return true;
             },
+            "Normal mode",
             "Return to normal mode"),
 
         Shortcut (
@@ -364,7 +372,8 @@ void MainComponent::setupKeyboardShortcuts()
                 }
                 return true;
             },
-            "Toggle transport"),
+            "Toggle transport",
+            "Toggles the transport play state"),
 
         Shortcut (
             juce::KeyPress ('i'),
@@ -374,6 +383,7 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.enableInsertMode();
                 return true;
             },
+            "Insert Mode",
             "Enter insert mode"),
 
         Shortcut (
@@ -384,7 +394,8 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.move (Direction::left);
                 return true;
             },
-            "Move cursor left"),
+            "Left",
+            "Move the cursor left"),
 
         Shortcut (
             juce::KeyPress ('l'),
@@ -394,6 +405,7 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.move (Direction::right);
                 return true;
             },
+            "Right",
             "Move cursor right"),
 
         Shortcut (
@@ -404,6 +416,7 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.move (Direction::down);
                 return true;
             },
+            "Down",
             "Move cursor down"),
 
         Shortcut (
@@ -414,6 +427,7 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.move (Direction::up);
                 return true;
             },
+            "Up",
             "Move cursor up"),
 
         Shortcut (
@@ -424,6 +438,7 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.moveCursorSelection (Direction::left);
                 return true;
             },
+            "Selection left",
             "Move visual selection left"),
 
         Shortcut (
@@ -434,6 +449,7 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.moveCursorSelection (Direction::right);
                 return true;
             },
+            "Selection right",
             "Move visual selection right"),
 
         Shortcut (
@@ -444,6 +460,7 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.moveCursorSelection (Direction::down);
                 return true;
             },
+            "Selection down",
             "Move visual selection down"),
 
         Shortcut (
@@ -454,6 +471,7 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.moveCursorSelection (Direction::up);
                 return true;
             },
+            "Selection up",
             "Move visual selection up"),
 
         Shortcut (
@@ -464,6 +482,7 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.decreaseTimelineStepSize();
                 return true;
             },
+            "Smaller steps",
             "Decrease timeline step size"),
 
         Shortcut (
@@ -474,6 +493,7 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.increaseTimelineStepSize();
                 return true;
             },
+            "Larger steps",
             "Increase timeline step size"),
 
         Shortcut (
@@ -484,7 +504,8 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.jumpToStart();
                 return true;
             },
-            "Jump cursor to start"),
+            "Go to start",
+            "Jump cursor to start of sequence"),
 
         Shortcut (
             juce::KeyPress ('$', juce::ModifierKeys::shiftModifier, 0),
@@ -494,7 +515,8 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.jumpToEnd();
                 return true;
             },
-            "Jump cursor to end"),
+            "Go to end",
+            "Jump cursor to end of sequence"),
 
         Shortcut (
             juce::KeyPress ('w'),
@@ -504,6 +526,7 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.jumpForwardBeat();
                 return true;
             },
+            "Next beat",
             "Jump cursor forward one beat"),
 
         Shortcut (
@@ -514,6 +537,7 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.jumpBackBeat();
                 return true;
             },
+            "Previous beat",
             "Jump cursor back one beat"),
 
         Shortcut (
@@ -524,7 +548,8 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.enableVisualBlockMode();
                 return true;
             },
-            "Enable visual block mode"),
+            "Visual block",
+            "Enable visual block selection mode"),
 
         Shortcut (
             juce::KeyPress ('v'),
@@ -534,7 +559,8 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.enableNormalMode();
                 return true;
             },
-            "Turn off visual mode, enable normal mode"),
+            "Exit visual",
+            "Turn off visual mode, return to normal mode"),
 
         Shortcut (
             juce::KeyPress::createFromDescription ("shift+v"),
@@ -544,7 +570,8 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.enableVisualLineMode();
                 return true;
             },
-            "Enable visual line mode"),
+            "Visual line",
+            "Enable visual line selection mode"),
 
         Shortcut (
             juce::KeyPress::createFromDescription ("shift+v"),
@@ -554,7 +581,8 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.enableNormalMode();
                 return true;
             },
-            "Turn off visual mode, enable normal mode"),
+            "Exit visual",
+            "Turn off visual mode, return to normal mode"),
 
         Shortcut (
             juce::KeyPress ('o'),
@@ -564,6 +592,7 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.cursorPosition = cursor.getVisualSelectionOpposite();
                 return true;
             },
+            "Swap corner",
             "Jump cursor to opposite visual selection corner"),
 
         Shortcut (
@@ -574,7 +603,8 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.insertNote();
                 return true;
             },
-            "Insert note at cursor position"),
+            "Insert note",
+            "Insert a note at the current cursor position"),
 
         Shortcut (
             juce::KeyPress ('x'),
@@ -584,6 +614,7 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.removeNotesAtCursor();
                 return true;
             },
+            "Delete note",
             "Remove note at cursor position"),
 
         Shortcut (
@@ -594,7 +625,8 @@ void MainComponent::setupKeyboardShortcuts()
                 contextualMenuComponent.displayMenu (modifierMenuRoot.get());
                 return true;
             },
-            "Open modifier menu"),
+            "Modifiers",
+            "Open the modifier menu for selected notes"),
 
         Shortcut (
             juce::KeyPress ('1'),
@@ -604,7 +636,8 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.selectSequence (0);
                 return true;
             },
-            "Select sequence 1"),
+            "Sequence 1",
+            "Switch to sequence 1"),
 
         Shortcut (
             juce::KeyPress ('2'),
@@ -614,7 +647,8 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.selectSequence (1);
                 return true;
             },
-            "Select sequence 2"),
+            "Sequence 2",
+            "Switch to sequence 2"),
 
         Shortcut (
             juce::KeyPress ('3'),
@@ -624,7 +658,8 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.selectSequence (2);
                 return true;
             },
-            "Select sequence 3"),
+            "Sequence 3",
+            "Switch to sequence 3"),
 
         Shortcut (
             juce::KeyPress ('4'),
@@ -634,7 +669,8 @@ void MainComponent::setupKeyboardShortcuts()
                 cursor.selectSequence (3);
                 return true;
             },
-            "Select sequence 4"),
+            "Sequence 4",
+            "Switch to sequence 4"),
 
         Shortcut (
             juce::KeyPress ('6'),
@@ -644,7 +680,8 @@ void MainComponent::setupKeyboardShortcuts()
                 contextualMenuComponent.displayMenu (globalSettingsMenuRoot.get());
                 return true;
             },
-            "Global Settings"),
+            "Settings",
+            "Open global settings menu"),
 
         Shortcut (
             juce::KeyPress ('?', juce::ModifierKeys::shiftModifier, 0),
@@ -654,7 +691,8 @@ void MainComponent::setupKeyboardShortcuts()
                 contextualMenuComponent.displayMenu (helpMenuRoot.get());
                 return true;
             },
-            "Open help menu"),
+            "Help",
+            "Open help menu with keyboard shortcuts"),
 
     };
 

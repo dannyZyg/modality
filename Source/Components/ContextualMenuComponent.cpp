@@ -112,10 +112,15 @@ void ContextualMenuComponent::resized()
 {
     if (currentMenuNode && currentMenuNode->component)
     {
-        auto padding = getWidth() * 0.1;
-        auto width = getWidth() - (2 * padding);
-        auto height = getHeight() * 0.7;
-        auto bounds = juce::Rectangle<int> (padding, padding, width, height);
+        auto titleHeight = 40;
+        auto messageHeight = 60;
+        auto verticalPadding = 10;
+        auto horizontalPadding = 20;
+
+        auto y = titleHeight + verticalPadding;
+        auto height = getHeight() - titleHeight - messageHeight - (2 * verticalPadding);
+        auto width = getWidth() - (2 * horizontalPadding);
+        auto bounds = juce::Rectangle<int> (horizontalPadding, y, width, height);
 
         currentMenuNode->component->setBounds (bounds);
     }
