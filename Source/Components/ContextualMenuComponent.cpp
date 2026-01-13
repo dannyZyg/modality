@@ -215,9 +215,9 @@ void ContextualMenuComponent::drawSubNavOptions (juce::Graphics& g)
 
     for (auto& c : currentMenuNode->children)
     {
-        juce::String keyText = c->navShortcut.getTextDescription();
+        juce::String keyText = c->navShortcut.getTextDescription().toLowerCase();
         juce::String itemLabel = c->title;
-        juce::String displayText = keyText + ": " + itemLabel;
+        juce::String displayText = keyText + " -> " + itemLabel;
 
         g.drawText (displayText,
                     getLocalBounds().getX() + 50,
