@@ -9,13 +9,14 @@
 */
 
 #include "SequenceComponent.h"
+#include "Audio/Transport.h"
 #include "AppColours.h"
 #include "CoordinateUtils.h"
 #include <JuceHeader.h>
 
 //==============================================================================
-SequenceComponent::SequenceComponent (const Cursor& c)
-    : cursor (c)
+SequenceComponent::SequenceComponent (const Cursor& c, const Transport& t)
+    : cursor (c), transport (t)
 {
     setWantsKeyboardFocus (false);
 }
@@ -33,7 +34,7 @@ void SequenceComponent::paint (juce::Graphics& g)
     g.setColour (AppColours::playhead);
 
     const auto& selectedSequence = cursor.getSelectedSequence();
-    double tempoBPM = 120;
+    double tempoBPM = transport.getTempo();
     double secondsPerBeat = 60.0 / tempoBPM;
     double sequenceDurationInSeconds = selectedSequence.lengthBeats * secondsPerBeat;
 

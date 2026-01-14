@@ -65,7 +65,7 @@ public:
     void previewNote();
     void previewStep();
 
-    std::vector<MidiNote> extractMidiSequence (size_t seqIndex);
+    std::vector<MidiNote> extractMidiSequence (size_t seqIndex, double tempo);
 
     Position cursorPosition;
 

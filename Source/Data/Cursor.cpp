@@ -240,11 +240,9 @@ Sequence& Cursor::getSelectedSequence() const
     return getSequence (selectedSeqIndex);
 }
 
-std::vector<MidiNote> Cursor::extractMidiSequence (size_t seqIndex)
+std::vector<MidiNote> Cursor::extractMidiSequence (size_t seqIndex, double tempo)
 {
     std::vector<MidiNote> midiClip;
-
-    float tempo = 120.0;
 
     for (auto& n : getSequence (seqIndex).notes)
     {

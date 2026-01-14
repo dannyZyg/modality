@@ -8,12 +8,11 @@
 #include "Data/Modifier.h"
 #include "Data/Selection.h"
 #include "juce_gui_basics/juce_gui_basics.h"
-#include <algorithm>
 #include <memory>
 #include <utility>
 
 //==============================================================================
-MainComponent::MainComponent() : sequenceComponent (cursor),
+MainComponent::MainComponent() : sequenceComponent (cursor, transport),
                                  cursorComponent (cursor),
                                  midlineComponent (cursor),
                                  statusBarComponent (cursor),
@@ -38,23 +37,19 @@ MainComponent::MainComponent() : sequenceComponent (cursor),
 
     addChildComponent (modifierMenuComponent);
 
-    // Initialise audio
+    // Initialise audio and register Transport as the audio callback
     deviceManager.initialise (0, 2, nullptr, true);
-    deviceManager.addAudioCallback (this); // Register audio callback
+    deviceManager.addAudioCallback (&transport);
 
-    // Set up MIDI output
-    auto midiOutputs = juce::MidiOutput::getAvailableDevices();
-    if (! midiOutputs.isEmpty())
+    // MIDI outputs are managed by MidiOutputManager
+    // Each sequence can specify its own output device via midiOutputId
+    auto availableDevices = midiOutputManager.getAvailableDevices();
+    if (! availableDevices.isEmpty())
     {
-        auto deviceInfo = midiOutputs[0];
-        midiOutput = juce::MidiOutput::openDevice (deviceInfo.identifier);
-        if (midiOutput)
-            juce::Logger::writeToLog ("MIDI output initialised: " + deviceInfo.name);
+        juce::Logger::writeToLog ("Available MIDI outputs:");
+        for (const auto& device : availableDevices)
+            juce::Logger::writeToLog ("  - " + device.name + " (" + device.identifier + ")");
     }
-
-    // Create and set up silent source
-    silentSource = std::make_unique<SilentPositionableSource>();
-    transportSource.setSource (silentSource.get(), 0, nullptr, sampleRate);
 
     // Make sure all children components have size set
     resized();
@@ -76,7 +71,7 @@ MainComponent::MainComponent() : sequenceComponent (cursor),
     auto deviceNode = std::make_unique<MenuNode> ("Device Settings", juce::KeyPress::createFromDescription ("d"));
 
     // Add children and receive the raw pointer to them (to further assign children to these) - the original unq ptr has moved!
-    MenuNode* tempoNodePtr = globalSettingsMenuRoot->addChild (std::move (tempoNode));
+    [[maybe_unused]] MenuNode* tempoNodePtr = globalSettingsMenuRoot->addChild (std::move (tempoNode));
     MenuNode* deviceNodePtr = globalSettingsMenuRoot->addChild (std::move (deviceNode));
 
     auto deviceSub = std::make_unique<MenuNode> ("Device Sub Menu", juce::KeyPress::createFromDescription ("s"));
@@ -98,15 +93,20 @@ MainComponent::MainComponent() : sequenceComponent (cursor),
     auto velocityModNode = std::make_unique<MenuNode> ("Velocity", juce::KeyPress::createFromDescription ("v"), std::move (velocityModComponent));
     auto octaveModNode = std::make_unique<MenuNode> ("Octave", juce::KeyPress::createFromDescription ("o"), std::move (octaveModComponent));
 
-    MenuNode* randomTriggerModNodePtr = modifierMenuRoot->addChild (std::move (randomTriggerModNode));
-    MenuNode* velocityModNodePtr = modifierMenuRoot->addChild (std::move (velocityModNode));
-    MenuNode* octaveModNodePtr = modifierMenuRoot->addChild (std::move (octaveModNode));
+    [[maybe_unused]] MenuNode* randomTriggerModNodePtr = modifierMenuRoot->addChild (std::move (randomTriggerModNode));
+    [[maybe_unused]] MenuNode* velocityModNodePtr = modifierMenuRoot->addChild (std::move (velocityModNode));
+    [[maybe_unused]] MenuNode* octaveModNodePtr = modifierMenuRoot->addChild (std::move (octaveModNode));
 }
 
 MainComponent::~MainComponent()
 {
-    transportSource.setSource (nullptr);
+    // Remove audio callback before destroying transport
+    deviceManager.removeAudioCallback (&transport);
+
     stop();
+
+    // Close all MIDI outputs
+    midiOutputManager.closeAll();
 
     AppSettings::getInstance().shutdown();
 }
@@ -117,6 +117,26 @@ void MainComponent::update()
     // This function is called at the frequency specified by the setFramesPerSecond() call
     // in the constructor. You can use it to update counters, animate values, etc.
     sequenceComponent.update();
+
+    // Check if any tracks need their next loop scheduled (UI thread responsibility)
+    // Each track has independent timing, so we check each one separately
+    if (transport.isPlaying())
+    {
+        checkAndScheduleTracks();
+    }
+}
+
+void MainComponent::checkAndScheduleTracks()
+{
+    size_t numTracks = cursor.getSequences().size();
+
+    for (size_t i = 0; i < numTracks; ++i)
+    {
+        if (transport.trackNeedsScheduling (i))
+        {
+            scheduleTrack (i);
+        }
+    }
 }
 
 //==============================================================================
@@ -129,8 +149,8 @@ void MainComponent::paint (juce::Graphics& g)
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (juce::Colours::whitesmoke);
 
-    // Get the current position from the transport source (in seconds)
-    double currentPosition = transportSource.getCurrentPosition();
+    // Get the current position from transport (in seconds)
+    double currentPosition = transport.getCurrentPosition();
     sequenceComponent.setCurrentPlayheadTime (currentPosition);
 }
 
@@ -168,131 +188,79 @@ void MainComponent::resized()
 
 void MainComponent::start()
 {
-    // Stop any currently playing notes
-    if (midiOutput)
+    // Stop any currently playing notes on all open outputs
+    midiOutputManager.sendAllNotesOff();
+
+    // Reset transport - all tracks start from beat 0
+    transport.reset();
+
+    // Set up track count based on number of sequences
+    transport.setNumTracks (cursor.getSequences().size());
+
+    // Schedule all tracks for the first loop iteration
+    size_t numTracks = cursor.getSequences().size();
+    for (size_t i = 0; i < numTracks; ++i)
     {
-        for (int channel = 1; channel <= 16; ++channel)
-            midiOutput->sendMessageNow (juce::MidiMessage::allNotesOff (channel));
+        scheduleTrack (i);
     }
 
-    // Reset everything
-    transportSource.setPosition (0.0);
-    lastProcessedTime = 0.0;
-    nextPatternStartTime = 0.0;
-
-    // Clear the queue-
-    midiEventQueue = {}; // Create a new empty queue
-
-    // Schedule initial pattern
-    scheduleNextPattern (0.0);
-
-    transportSource.start();
-    juce::Logger::writeToLog ("Transport Started");
+    transport.start();
+    juce::Logger::writeToLog ("Transport Started at " + juce::String (transport.getTempo()) + " BPM");
 }
 
-void MainComponent::scheduleNextPattern (double startTime)
+void MainComponent::scheduleTrack (size_t trackIndex)
 {
-    // Get fresh pattern from cursor
-    auto pattern = cursor.extractMidiSequence (0);
+    auto& seq = cursor.getSequence (trackIndex);
 
-    // Schedule all notes in the pattern
-    for (const auto& note : pattern)
+    // Skip disabled or muted tracks
+    if (! seq.isEnabled() || seq.isMuted())
+        return;
+
+    // Get the MIDI output for this track
+    juce::MidiOutput* output = midiOutputManager.getOutput (seq.getMidiOutputId());
+    if (output == nullptr)
     {
-        double noteStartTime = startTime + note.startTime;
-        double noteEndTime = noteStartTime + note.duration;
-
-        // Schedule note-on
-        midiEventQueue.push (ScheduledMidiEvent {
-            noteStartTime,
-            juce::MidiMessage::noteOn (1, note.noteNumber, (uint8) note.velocity) });
-
-        // Schedule note-off
-        midiEventQueue.push (ScheduledMidiEvent {
-            noteEndTime,
-            juce::MidiMessage::noteOff (1, note.noteNumber) });
+        // Fall back to default output if specified output not available
+        output = midiOutputManager.getDefaultOutput();
     }
 
-    nextPatternStartTime = startTime + midiClipDuration;
+    if (output == nullptr)
+    {
+        // No output available, skip this track
+        return;
+    }
+
+    // Check for pending tempo change and apply it at this track's loop boundary
+    double tempo = transport.getTempo();
+    if (transport.hasPendingTempoChange())
+    {
+        tempo = transport.applyPendingTempo();
+        juce::Logger::writeToLog ("Applied tempo change: " + juce::String (tempo) + " BPM");
+    }
+
+    // Extract MIDI notes using global tempo
+    auto notes = cursor.extractMidiSequence (trackIndex, tempo);
+
+    // Get timing from the sequence (using global tempo)
+    double loopStartTime = transport.getTrackNextLoopStartTime (trackIndex);
+    double loopLengthSeconds = seq.getLengthSeconds (tempo);
+    int midiChannel = seq.getMidiChannel();
+
+    // Schedule the track
+    transport.scheduleTrack (trackIndex, notes, loopStartTime, loopLengthSeconds, output, midiChannel);
+
+    // Mark this track's loop as scheduled
+    transport.markTrackScheduled (trackIndex, loopLengthSeconds);
 }
 
 void MainComponent::stop()
 {
-    transportSource.stop();
+    transport.stop();
 
-    // Clear the event queue
-    midiEventQueue = {};
+    // Stop all notes on all outputs
+    midiOutputManager.sendAllNotesOff();
 
-    // Stop any currently playing notes
-    if (midiOutput)
-    {
-        for (int channel = 1; channel <= 16; ++channel)
-            midiOutput->sendMessageNow (juce::MidiMessage::allNotesOff (channel));
-    }
     juce::Logger::writeToLog ("Transport Stopped");
-}
-
-void MainComponent::audioDeviceIOCallbackWithContext ([[maybe_unused]] const float* const* inputChannelData,
-                                                      [[maybe_unused]] int numInputChannels,
-                                                      float* const* outputChannelData,
-                                                      int numOutputChannels,
-                                                      int numSamples,
-                                                      [[maybe_unused]] const AudioIODeviceCallbackContext& context)
-{
-    // Clear output buffer
-    for (int channel = 0; channel < numOutputChannels; ++channel)
-        if (outputChannelData[channel] != nullptr)
-            std::fill_n (outputChannelData[channel], numSamples, 0.0f);
-
-    // Update transport
-    juce::AudioBuffer<float> tempBuffer (outputChannelData, numOutputChannels, numSamples);
-    transportSource.getNextAudioBlock (juce::AudioSourceChannelInfo (tempBuffer));
-
-    if (! transportSource.isPlaying() || ! midiOutput)
-        return;
-
-    double currentPosition = transportSource.getCurrentPosition();
-    double bufferEndTime = currentPosition + (static_cast<double> (numSamples) / sampleRate);
-
-    // Schedule next pattern if needed
-    if (currentPosition >= nextPatternStartTime - lookAheadTime)
-    {
-        scheduleNextPattern (nextPatternStartTime);
-    }
-
-    // Process all events that should occur in this buffer
-    while (! midiEventQueue.empty() && midiEventQueue.top().timestamp <= bufferEndTime)
-    {
-        const auto& event = midiEventQueue.top();
-        midiOutput->sendMessageNow (event.message);
-        midiEventQueue.pop();
-    }
-
-    lastProcessedTime = currentPosition;
-}
-
-void MainComponent::audioDeviceAboutToStart (juce::AudioIODevice* device)
-{
-    juce::Logger::writeToLog ("Audio Device About to Start");
-    juce::Logger::writeToLog ("Device name: " + device->getName());
-    juce::Logger::writeToLog ("Sample rate: " + juce::String (device->getCurrentSampleRate()));
-
-    sampleRate = static_cast<int> (device->getCurrentSampleRate());
-    transportSource.prepareToPlay (512, sampleRate);
-}
-
-void MainComponent::audioDeviceStopped()
-{
-    transportSource.releaseResources();
-}
-
-juce::String MainComponent::notesToString (const std::vector<MidiNote>& notes)
-{
-    juce::String result;
-    for (const auto& note : notes)
-    {
-        result += juce::String (note.noteNumber) + " ";
-    }
-    return result;
 }
 
 bool MainComponent::keyPressed (const juce::KeyPress& key)
@@ -362,7 +330,7 @@ void MainComponent::setupKeyboardShortcuts()
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
-                if (transportSource.isPlaying())
+                if (transport.isPlaying())
                 {
                     stop();
                 }

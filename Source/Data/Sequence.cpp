@@ -18,6 +18,60 @@ Sequence::~Sequence()
 {
 }
 
+double Sequence::getLengthSeconds (double tempo) const
+{
+    return (static_cast<double> (lengthBeats) / tempo) * 60.0;
+}
+
+void Sequence::setLengthBeats (float beats)
+{
+    lengthBeats = beats;
+    // Recreate timeline with new bounds
+    timeline = Timeline (0.0, static_cast<double> (lengthBeats));
+}
+
+// === MIDI Configuration Accessors ===
+
+void Sequence::setMidiChannel (int channel)
+{
+    midiChannel = juce::jlimit (1, 16, channel);
+}
+
+int Sequence::getMidiChannel() const
+{
+    return midiChannel;
+}
+
+void Sequence::setMidiOutputId (const juce::String& outputId)
+{
+    midiOutputId = outputId;
+}
+
+const juce::String& Sequence::getMidiOutputId() const
+{
+    return midiOutputId;
+}
+
+void Sequence::setEnabled (bool isEnabled)
+{
+    enabled = isEnabled;
+}
+
+bool Sequence::isEnabled() const
+{
+    return enabled;
+}
+
+void Sequence::setMuted (bool isMuted)
+{
+    muted = isMuted;
+}
+
+bool Sequence::isMuted() const
+{
+    return muted;
+}
+
 // Create a reusable predicate
 auto Sequence::makeNotePredicate (double minTime, double maxTime, double minDegree, double maxDegree)
 {
