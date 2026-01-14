@@ -60,7 +60,8 @@ MainComponent::MainComponent() : sequenceComponent (cursor, transport),
     // GLOBAL SETTINGS MENU
 
     helpMenuRoot = std::make_unique<MenuNode> ("Help");
-    globalSettingsMenuRoot = std::make_unique<MenuNode> ("Settings");
+    globalSettingsMenuRoot = std::make_unique<MenuNode> ("Global Settings");
+    sequenceSettingsMenuRoot = std::make_unique<MenuNode> ("Sequence Settings");
 
     auto shortcutInfoComponent = std::make_unique<ShortcutInfoComponent> (shortcutManager);
     auto shortcutsNode = std::make_unique<MenuNode> ("Shortcuts", juce::KeyPress::createFromDescription ("s"), std::move (shortcutInfoComponent));
@@ -167,23 +168,14 @@ void MainComponent::resized()
 
     auto xPos = getWidth() / 2 - (menuWidth / 2);
     auto yPos = (getHeight() - menuHeight) / 2;
-    juce::Point<int> position = juce::Point<int> (xPos, yPos);
+    juce::Point<int> position = juce::Point<int> (static_cast<int> (xPos), static_cast<int> (yPos));
 
-    modifierMenuComponent.setBounds (position.x, position.y, getWidth() * 0.6, 200); // Set your desired size
+    modifierMenuComponent.setBounds (position.x, position.y, static_cast<int> (getWidth() * 0.6), 200);
 
-    contextualMenuComponent.setBounds (position.x, position.y, getWidth() * 0.6, menuHeight);
+    contextualMenuComponent.setBounds (position.x, position.y, static_cast<int> (getWidth() * 0.6), static_cast<int> (menuHeight));
 
     AppSettings::getInstance().setLastWindowHeight (getHeight());
     AppSettings::getInstance().setLastWindowWidth (getWidth());
-
-    /* auto bounds = getLocalBounds(); */
-
-    /* // Position modifier menu (center in the window) */
-    /* auto menuSize = juce::Rectangle<int>(0, 0, 400, 300); */
-    /* menuSize.setCentre(bounds.getCentre()); */
-
-    /* // Initially hide the modifier menu */
-    /* modifierMenu->setVisible(false); */
 }
 
 void MainComponent::start()
@@ -276,9 +268,8 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
 void MainComponent::showModifierMenu (juce::Point<int> position)
 {
     // Set position relative to parent component
-    modifierMenuComponent.setBounds (position.x, position.y, getWidth() * 0.6, 200); // Set your desired size
+    modifierMenuComponent.setBounds (position.x, position.y, static_cast<int> (getWidth() * 0.6), 200);
     modifierMenuComponent.setVisible (true);
-    //modifierMenuComponent.grabKeyboardFocus();
 
     if (cursor.findNotesForCursorMode().empty())
     {
@@ -641,7 +632,7 @@ void MainComponent::setupKeyboardShortcuts()
             "Switch to sequence 4"),
 
         Shortcut (
-            juce::KeyPress ('6'),
+            juce::KeyPress ('/'),
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
@@ -661,6 +652,17 @@ void MainComponent::setupKeyboardShortcuts()
             },
             "Help",
             "Open help menu with keyboard shortcuts"),
+
+        Shortcut (
+            juce::KeyPress ('s'),
+            { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
+            [this]()
+            {
+                contextualMenuComponent.displayMenu (sequenceSettingsMenuRoot.get());
+                return true;
+            },
+            "Sequence Settings",
+            "Open settings menu for the currently selected sequence"),
 
     };
 

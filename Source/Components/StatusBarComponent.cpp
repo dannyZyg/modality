@@ -106,6 +106,18 @@ void StatusBarComponent::paint (juce::Graphics& g)
         iconSize,
         iconSize);
     g.fillPath (playPath, playPath.getTransformToScaleToFit (playBounds, true));
+
+    // Help text in the center
+    g.setColour (juce::Colours::darkgrey);
+    g.setFont (juce::Font (12.0f, juce::Font::italic));
+
+    auto helpTextBounds = juce::Rectangle<int> (
+        static_cast<int> (playBounds.getRight()) + padding,
+        0,
+        cursorBox.getX() - static_cast<int> (playBounds.getRight()) - (2 * padding),
+        height);
+
+    g.drawText ("/ : settings    ? : help", helpTextBounds, juce::Justification::centred, true);
 }
 
 void StatusBarComponent::resized()
