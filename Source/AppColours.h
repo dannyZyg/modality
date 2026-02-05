@@ -18,13 +18,13 @@ static const juce::Colour playhead = juce::Colour (47, 128, 107);
     {
         case Mode::visualBlock:
             return AppColours::visualBlockMode;
-            break;
         case Mode::visualLine:
             return AppColours::visualLineMode;
-            break;
+        case Mode::normal:
+        case Mode::insert:
+        case Mode::noteEdit:
         default:
             return juce::Colours::blue;
-            break;
     }
 }
 
@@ -34,19 +34,15 @@ static const juce::Colour playhead = juce::Colour (47, 128, 107);
     {
         case Mode::normal:
             return AppColours::normalMode;
-            break;
         case Mode::insert:
             return AppColours::insertMode;
-            break;
         case Mode::visualBlock:
             return AppColours::visualBlockModeCursor;
-            break;
         case Mode::visualLine:
             return AppColours::visualLineModeCursor;
-            break;
+        case Mode::noteEdit:
         default:
             return juce::Colours::blue;
-            break;
     }
 }
 } // namespace AppColours

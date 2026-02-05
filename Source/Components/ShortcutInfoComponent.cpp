@@ -143,7 +143,7 @@ void ShortcutInfoComponent::drawPageIndicators (juce::Graphics& g, juce::Rectang
 void ShortcutInfoComponent::drawNavHelp (juce::Graphics& g, juce::Rectangle<int> bounds)
 {
     g.setColour (juce::Colours::lightgrey);
-    g.setFont (juce::Font (16.0f, juce::Font::italic));
+    g.setFont (juce::Font (juce::FontOptions (16.0f).withStyle ("Italic")));
     g.drawText (juce::String::fromUTF8 ("j/↓   k/↑: Select   h/←   l/→: Page   ESC: Back"),
                 bounds.reduced (10, 0),
                 juce::Justification::centred,

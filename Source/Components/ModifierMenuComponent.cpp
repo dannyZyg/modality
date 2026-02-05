@@ -50,19 +50,19 @@ void ModifierMenuComponent::drawTopMode (juce::Graphics& g)
     // Additional drawing code...
 }
 
-void ModifierMenuComponent::drawModifierOptions (juce::Graphics& g)
+void ModifierMenuComponent::drawModifierOptions ([[maybe_unused]] juce::Graphics& g)
 {
     // Your existing implementation
     // Draw available modifier options
 }
 
-void ModifierMenuComponent::drawEditMode (juce::Graphics& g)
+void ModifierMenuComponent::drawEditMode ([[maybe_unused]] juce::Graphics& g)
 {
     // Your existing implementation
     // Draw edit mode UI
 }
 
-void ModifierMenuComponent::drawRemoveMode (juce::Graphics& g)
+void ModifierMenuComponent::drawRemoveMode ([[maybe_unused]] juce::Graphics& g)
 {
     // Your existing implementation
     // Draw remove mode UI

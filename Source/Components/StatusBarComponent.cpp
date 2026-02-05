@@ -30,7 +30,7 @@ void StatusBarComponent::paint (juce::Graphics& g)
     g.drawHorizontalLine (0, 0.0f, static_cast<float> (bounds.getWidth()));
 
     g.setColour (juce::Colours::black);
-    g.setFont (juce::Font (juce::Font::getDefaultMonospacedFontName(), 14.0f, juce::Font::plain));
+    g.setFont (juce::Font (juce::FontOptions (juce::Font::getDefaultMonospacedFontName(), "Regular", 14.0f)));
 
     // Mode section (left side)
     juce::Rectangle<int> modeBox (0, 0, padding * 2 + textWidth, height);
@@ -109,7 +109,7 @@ void StatusBarComponent::paint (juce::Graphics& g)
 
     // Help text in the center
     g.setColour (juce::Colours::darkgrey);
-    g.setFont (juce::Font (12.0f, juce::Font::italic));
+    g.setFont (juce::Font (juce::FontOptions (12.0f).withStyle ("Italic")));
 
     auto helpTextBounds = juce::Rectangle<int> (
         static_cast<int> (playBounds.getRight()) + padding,

@@ -22,18 +22,19 @@ void SequenceSelectionComponent::paint (juce::Graphics& g)
     const auto& sequences = cursor.getSequences();
     const Sequence& selectedSequence = cursor.getSelectedSequence();
 
-    int padding = 20;
+    float padding = 20.0f;
 
-    size_t numSeqs = sequences.size();
+    auto numSeqs = static_cast<float> (sequences.size());
 
-    auto barWidth = (width - ((numSeqs - 1) * padding)) / numSeqs;
+    auto barWidth = (width - ((numSeqs - 1.0f) * padding)) / numSeqs;
 
     for (size_t i = 0; i < sequences.size(); ++i)
     {
         const auto& seqPtr = sequences[i]; // Access the unique_ptr at the current index
         //
+        auto fi = static_cast<float> (i);
         auto rect = juce::Rectangle<float> (
-            (i * barWidth) + (i * padding),
+            (fi * barWidth) + (fi * padding),
             0,
             barWidth,
             height);
