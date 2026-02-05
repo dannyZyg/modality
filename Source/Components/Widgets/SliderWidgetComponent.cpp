@@ -1,5 +1,4 @@
 #include "Components/Widgets/SliderWidgetComponent.h"
-#include "juce_gui_basics/juce_gui_basics.h"
 
 SliderWidgetComponent::SliderWidgetComponent()
 {
@@ -12,6 +11,15 @@ SliderWidgetComponent::SliderWidgetComponent (double _min, double _max, double _
     setup();
 }
 
+SliderWidgetComponent::SliderWidgetComponent (const juce::String& _title, juce::Value valueToBindTo, double _min, double _max)
+    : min (_min), max (_max), initial (static_cast<double> (valueToBindTo.getValue())), title (_title)
+{
+    setup();
+    // Bind the slider's value object to the provided juce::Value
+    // This creates two-way binding - changes to slider update ValueTree and vice versa
+    horizontalSlider.getValueObject().referTo (valueToBindTo);
+}
+
 void SliderWidgetComponent::setup()
 {
     interval = max / 100.0;
@@ -19,7 +27,7 @@ void SliderWidgetComponent::setup()
     horizontalSlider.setSliderStyle (juce::Slider::SliderStyle::LinearHorizontal);
     horizontalSlider.setRange (min, max, interval);
     horizontalSlider.setValue (initial);
-    //horizontalSlider.addListener (this);
+    horizontalSlider.addListener (this);
     addAndMakeVisible (horizontalSlider);
 }
 
@@ -34,15 +42,10 @@ void SliderWidgetComponent::paint (juce::Graphics& g)
 
     if (isSelected())
     {
-        g.setColour (juce::Colours::aqua); // Or juce::Colours::red, juce::Colours::blue, etc.
+        g.setColour (juce::Colours::aqua);
 
-        // Define border thickness
-        float borderThickness = 2.0f; // Adjust as needed
-
-        // Get the bounds of the component
+        float borderThickness = 2.0f;
         juce::Rectangle<int> bounds = getLocalBounds();
-
-        // Option A: Square/Rectangular Border
         g.drawRect (bounds.toFloat(), borderThickness);
     }
 }
@@ -84,8 +87,10 @@ void SliderWidgetComponent::sliderValueChanged (juce::Slider* slider)
 {
     if (slider == &horizontalSlider)
     {
-        DBG ("Horizontal Slider Value: " << horizontalSlider.getValue());
-        sliderCallback (horizontalSlider.getValue());
+        if (sliderCallback)
+        {
+            sliderCallback (horizontalSlider.getValue());
+        }
     }
 }
 

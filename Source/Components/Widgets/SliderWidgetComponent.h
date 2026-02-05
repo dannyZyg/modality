@@ -8,13 +8,15 @@ public:
     //==============================================================================
     SliderWidgetComponent();
     SliderWidgetComponent (double _min, double _max, double _initial, juce::String _title);
+
+    // Value-bound constructor - binds slider to a ValueTree property
+    SliderWidgetComponent (const juce::String& _title, juce::Value valueToBindTo, double _min, double _max);
+
     virtual ~SliderWidgetComponent() override;
 
     void setup();
 
-    // Component overrides
     bool keyPressed (const juce::KeyPress& key) override;
-    //void focusGained (FocusChangeType cause) override;
     void paint (juce::Graphics&) override;
     void resized() override;
     void sliderValueChanged (juce::Slider* slider) override;

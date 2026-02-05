@@ -1,5 +1,6 @@
 #include "Components/ModifierMenuComponent.h"
 #include "Data/Modifier.h"
+#include "Data/ModifierRegistry.h"
 #include <JuceHeader.h>
 
 //==============================================================================
@@ -288,7 +289,9 @@ bool ModifierMenuComponent::handleModifierChange (ModifierType t)
         }
         else
         {
-            completeMessage = "Added " + getModifierName (t) + " modifier to " + juce::String (numModifiersAdded) + " notes.";
+            auto* def = ModifierRegistry::getInstance().getDefinition (t);
+            juce::String modName = def ? def->displayName : t.toString();
+            completeMessage = "Added " + modName + " modifier to " + juce::String (numModifiersAdded) + " notes.";
         }
     }
 
@@ -302,7 +305,9 @@ bool ModifierMenuComponent::handleModifierChange (ModifierType t)
         }
         else
         {
-            completeMessage = "Removed " + getModifierName (t) + " modifier to " + juce::String (numModifiersAdded) + " notes.";
+            auto* defRemove = ModifierRegistry::getInstance().getDefinition (t);
+            juce::String modNameRemove = defRemove ? defRemove->displayName : t.toString();
+            completeMessage = "Removed " + modNameRemove + " modifier from " + juce::String (numModifiersAdded) + " notes.";
         }
     }
 

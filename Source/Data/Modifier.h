@@ -1,139 +1,56 @@
 #pragma once
 
-#include "Components/Widgets/ISelectableWidget.h"
-#include "Components/Widgets/SliderWidgetComponent.h"
-#include "juce_core/juce_core.h"
+#include "Data/Parameter.h"
 #include <JuceHeader.h>
-#include <memory>
 
-enum class ModifierType
-{
-    randomTrigger,
-    randomVelocity,
-    randomOctaveShift
-};
+// Type alias - used throughout codebase
+using ModifierType = juce::Identifier;
 
-enum class ParamWidgetType
+namespace ModifierIDs
 {
-    slider,
-    toggle
-};
+#define DECLARE_ID(name) inline const juce::Identifier name { #name };
 
-struct Param
+// Modifier types
+DECLARE_ID (randomTrigger)
+DECLARE_ID (randomOctaveShift)
+DECLARE_ID (randomVelocity)
+
+// Parameter IDs
+DECLARE_ID (randomTriggerProbability)
+DECLARE_ID (randomOctaveShiftRange)
+DECLARE_ID (randomOctaveShiftProbability)
+DECLARE_ID (randomVelocityProbability)
+DECLARE_ID (randomVelocityRange)
+
+#undef DECLARE_ID
+} // namespace ModifierIDs
+
+struct ParamDefinition
 {
-    ParamWidgetType type;
-    double value;
+    juce::Identifier id;
+    juce::String displayName;
+    ParamWidgetType widgetType;
+    double defaultVal;
     double min;
     double max;
 };
 
-static std::map<std::string, Param> randomTriggerParams = {
-    { "Trigger Probability", Param { ParamWidgetType::slider, 0.5, 0.0, 1.0 } }
-};
-
-static std::map<std::string, Param> randomOctaveShiftParams = {
-    { "Octave Shift Probability", Param { ParamWidgetType::slider, 0.5, 0.0, 1.0 } },
-    { "Octave Range", Param { ParamWidgetType::slider, 0.5, 0.0, 1.0 } },
-};
-
-static std::map<std::string, Param> randomVelocityParams = {
-    { "Velocity Probability", Param { ParamWidgetType::slider, 0.5, 0.0, 1.0 } },
-    { "Velocity Range", Param { ParamWidgetType::slider, 0.5, 0.0, 1.0 } },
-};
-
-static std::map<ModifierType, std::map<std::string, Param>> modifierTypeToParams = {
-    { ModifierType::randomTrigger, randomTriggerParams },
-    { ModifierType::randomOctaveShift, randomOctaveShiftParams },
-    { ModifierType::randomVelocity, randomVelocityParams },
-};
-
-[[maybe_unused]] static const juce::String getModifierName (ModifierType t)
-{
-    switch (t)
-    {
-        case ModifierType::randomTrigger:
-            return "Random Trigger";
-        case ModifierType::randomVelocity:
-            return "Random Velocity";
-        case ModifierType::randomOctaveShift:
-            return "Random Octave Shift";
-        default:
-            return "Unknown";
-    }
-}
-
-[[maybe_unused]] static const juce::String getParamWidgetClass (ParamWidgetType t)
-{
-    switch (t)
-    {
-        case ParamWidgetType::slider:
-            return "Random Trigger";
-        case ParamWidgetType::toggle:
-            return "Random Octave Shift";
-        default:
-            return "Unknown";
-    }
-}
-
-[[maybe_unused]] static const std::unique_ptr<ISelectableWidget> createParamWidget (const Param& param, const juce::String& title)
-{
-    switch (param.type)
-    {
-        case ParamWidgetType::slider:
-            return std::make_unique<SliderWidgetComponent> (param.min, param.max, param.value, title);
-        case ParamWidgetType::toggle:
-            return nullptr;
-        default:
-            return nullptr;
-    }
-}
-
-[[maybe_unused]] static const std::vector<std::unique_ptr<ISelectableWidget>> createParamWidgets (ModifierType type)
-{
-    std::vector<std::unique_ptr<ISelectableWidget>> widgets;
-
-    auto outerMapIt = modifierTypeToParams.find (type);
-
-    if (outerMapIt != modifierTypeToParams.end())
-    {
-        const auto& innerMap = outerMapIt->second;
-
-        for (const auto& paramPair : innerMap)
-        {
-            auto widget = createParamWidget (paramPair.second, paramPair.first);
-            if (widget != nullptr)
-            {
-                widgets.push_back (std::move (widget));
-            }
-        }
-    }
-    return widgets;
-}
-
 class Modifier
 {
 public:
-    Modifier (ModifierType t);
+    explicit Modifier (const juce::Identifier& type);
+    explicit Modifier (juce::ValueTree existingState);
 
-    std::map<std::string, Param> parameters;
+    juce::Identifier getType() const;
+    juce::var getValue (const juce::Identifier& paramId) const;
+    void setValue (const juce::Identifier& paramId, const juce::var& value);
 
-    // std::vector<std::string> getParameterNames() const;
-    bool hasParameter (const std::string& key) const;
-    void setModifierValue (const std::string& key, double v);
-    double getModifierValue (const std::string key) const;
+    juce::ValueTree& getState();
+    const juce::ValueTree& getState() const;
 
-    const ModifierType getType() const;
-
-    bool operator== (const Modifier& other) const
-    {
-        return type == other.type;
-    }
-
-    bool operator< (const Modifier& other) const
-    {
-        return type < other.type;
-    }
+    // For std::set ordering - compares by type only (one modifier per type per note)
+    bool operator< (const Modifier& other) const;
 
 private:
-    ModifierType type;
+    juce::ValueTree state;
 };

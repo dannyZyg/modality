@@ -1,49 +1,42 @@
 #include "Modifier.h"
+#include "ModifierRegistry.h"
 
-Modifier::Modifier (ModifierType t) : type (t)
+Modifier::Modifier (const juce::Identifier& type)
 {
-    auto iterator = modifierTypeToParams.find (type);
-
-    if (iterator != modifierTypeToParams.end())
-    {
-        parameters = iterator->second;
-    }
+    state = ModifierRegistry::getInstance().createDefaultState (type);
 }
 
-bool Modifier::hasParameter (const std::string& key) const
+Modifier::Modifier (juce::ValueTree existingState)
+    : state (std::move (existingState))
 {
-    auto it = parameters.find (key);
-    if (it != parameters.end())
-    {
-        return true;
-    }
-    return false;
 }
 
-void Modifier::setModifierValue (const std::string& key, double v)
+juce::Identifier Modifier::getType() const
 {
-    if (hasParameter (key))
-    {
-        auto param = parameters.at (key);
-        param.value = std::move (v);
-    }
-    else
-    {
-        throw std::invalid_argument ("Invalid parameter name: " + key);
-    }
+    return state.getType();
 }
 
-const ModifierType Modifier::getType() const { return type; }
-
-double Modifier::getModifierValue (const std::string key) const
+juce::var Modifier::getValue (const juce::Identifier& paramId) const
 {
-    try
-    {
-        return parameters.at (key).value;
-    }
-    catch (const std::out_of_range& e)
-    {
-        std::cerr << "Error: Parameter '" << key << "' not found. " << e.what() << std::endl;
-        return {};
-    }
+    return state.getProperty (paramId, 0.0);
+}
+
+void Modifier::setValue (const juce::Identifier& paramId, const juce::var& value)
+{
+    state.setProperty (paramId, value, nullptr);
+}
+
+juce::ValueTree& Modifier::getState()
+{
+    return state;
+}
+
+const juce::ValueTree& Modifier::getState() const
+{
+    return state;
+}
+
+bool Modifier::operator< (const Modifier& other) const
+{
+    return getType().toString() < other.getType().toString();
 }

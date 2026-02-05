@@ -65,6 +65,12 @@ private:
     std::unique_ptr<MenuNode> sequenceSettingsMenuRoot;
     std::unique_ptr<MenuNode> modifierMenuRoot;
 
+    // Temporary modifier states for menu widgets
+    // TODO: These should eventually bind to actual modifiers on selected notes
+    juce::ValueTree randomTriggerState;
+    juce::ValueTree randomVelocityState;
+    juce::ValueTree randomOctaveShiftState;
+
     std::unique_ptr<MenuNode> createHelpMenuTree();
 
     void showModifierMenu (juce::Point<int> position);

@@ -50,15 +50,23 @@ void ContextualMenuComponent::displayMenu (MenuNode* rootNode)
         return;
 
     // Clear menu history
-    static_cast<void> (backStack.empty());
+    while (! backStack.empty())
+        backStack.pop();
 
     currentMenuNode = rootNode;
     setVisible (true);
     repaint();
     showMessage ("Menu displayed. Press Escape to exit.", 2000);
 
-    // This needs to be called after the component has a valid size and is visible, otherwise focus won't be gained!
+    // // This needs to be called after the component has a valid size and is visible, otherwise focus won't be gained!
+    // if (currentMenuNode->component)
+    // {
+    //     currentMenuNode->component->grabKeyboardFocus();
+    // }
+    // else
+    // {
     grabKeyboardFocus();
+    // }
 }
 
 void ContextualMenuComponent::paint (juce::Graphics& g)

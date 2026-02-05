@@ -8,12 +8,13 @@
   ==============================================================================
 */
 
+#pragma once
+
 #include "Data/Modifier.h"
 #include "Data/Scale.h"
 #include "Data/Timeline.h"
 #include <JuceHeader.h>
 #include <random>
-#pragma once
 
 // === Struct to Represent MIDI Notes ===
 struct MidiNote

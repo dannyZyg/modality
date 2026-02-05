@@ -1,13 +1,14 @@
 #include "MainComponent.h"
 #include "Components/MidlineComponent.h"
+#include "Components/ModifierComponentFactory.h"
 #include "Components/PaginatedSettingsComponent.h"
 #include "Components/ShortcutInfoComponent.h"
 #include "Components/Widgets/ISelectableWidget.h"
 #include "Data/AppSettings.h"
 #include "Data/MenuNode.h"
 #include "Data/Modifier.h"
+#include "Data/ModifierRegistry.h"
 #include "Data/Selection.h"
-#include "juce_gui_basics/juce_gui_basics.h"
 #include <memory>
 #include <utility>
 
@@ -82,9 +83,17 @@ MainComponent::MainComponent() : sequenceComponent (cursor, transport),
     // Mod Menu
     modifierMenuRoot = std::make_unique<MenuNode> ("Modifiers");
 
-    std::vector<std::unique_ptr<ISelectableWidget>> widgets = createParamWidgets (ModifierType::randomTrigger);
-    std::vector<std::unique_ptr<ISelectableWidget>> widgetsVel = createParamWidgets (ModifierType::randomVelocity);
-    std::vector<std::unique_ptr<ISelectableWidget>> widgetsOct = createParamWidgets (ModifierType::randomOctaveShift);
+    // Create temporary ValueTree states for the menu widgets
+    // In a real implementation, these would bind to actual modifiers on selected notes
+    auto& registry = ModifierRegistry::getInstance();
+
+    randomTriggerState = registry.createDefaultState (ModifierIDs::randomTrigger);
+    randomVelocityState = registry.createDefaultState (ModifierIDs::randomVelocity);
+    randomOctaveShiftState = registry.createDefaultState (ModifierIDs::randomOctaveShift);
+
+    auto widgets = ModifierComponentFactory::createWidgets (ModifierIDs::randomTrigger, randomTriggerState);
+    auto widgetsVel = ModifierComponentFactory::createWidgets (ModifierIDs::randomVelocity, randomVelocityState);
+    auto widgetsOct = ModifierComponentFactory::createWidgets (ModifierIDs::randomOctaveShift, randomOctaveShiftState);
 
     auto randomTriggerModComponent = std::make_unique<PaginatedSettingsComponent> (std::move (widgets));
     auto velocityModComponent = std::make_unique<PaginatedSettingsComponent> (std::move (widgetsVel));
