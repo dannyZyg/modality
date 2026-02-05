@@ -62,11 +62,11 @@ void Note::setVelocity (int v)
     velocity = v;
 }
 
-std::optional<MidiNote> Note::asMidiNote (Timeline t, Scale s, double tempo)
+std::optional<MidiNote> Note::asMidiNote (Timeline t, [[maybe_unused]] Scale s, double tempo)
 {
     double start = t.convertBarPositionToSeconds (getStartTime(), tempo);
     double dur = t.convertDivisionToSeconds (getDuration(), tempo);
-    auto midi = MidiNote (start, 64 + getDegree(), velocity, dur);
+    auto midi = MidiNote (start, static_cast<int> (64 + getDegree()), velocity, dur);
 
     return ModifierApplicator::getInstance().applyModifiers (modifiers, std::move (midi));
 }

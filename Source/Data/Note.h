@@ -34,6 +34,11 @@ public:
     Note (double deg, double time, double dur);
     ~Note();
 
+    Note (const Note&) = default;
+    Note& operator= (const Note&) = default;
+    Note (Note&&) = default;
+    Note& operator= (Note&&) = default;
+
     double getDegree() const;
     double getDuration() const;
     double getOctave() const;
