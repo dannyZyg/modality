@@ -72,8 +72,8 @@ bool Sequence::isMuted() const
     return muted;
 }
 
-// Create a reusable predicate
-auto Sequence::makeNotePredicate (double minTime, double maxTime, double minDegree, double maxDegree)
+// Create a reusable predicate to filter notes
+auto Sequence::isNoteWithin (double minTime, double maxTime, double minDegree, double maxDegree)
 {
     return [=] (const auto& note)
     {
@@ -88,7 +88,7 @@ std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Sequence::findNotes (
     double maxDegree)
 {
     std::vector<std::reference_wrapper<std::unique_ptr<Note>>> result;
-    auto predicate = makeNotePredicate (minTime, maxTime, minDegree, maxDegree);
+    auto predicate = isNoteWithin (minTime, maxTime, minDegree, maxDegree);
 
     for (auto& note : notes)
     {
@@ -107,7 +107,7 @@ void Sequence::removeNotes (
     double minDegree,
     double maxDegree)
 {
-    auto predicate = makeNotePredicate (minTime, maxTime, minDegree, maxDegree);
+    auto predicate = isNoteWithin (minTime, maxTime, minDegree, maxDegree);
     notes.erase (
         std::remove_if (notes.begin(), notes.end(), predicate),
         notes.end());

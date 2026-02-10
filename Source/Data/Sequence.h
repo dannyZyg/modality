@@ -89,7 +89,7 @@ public:
     TimePoint getPrevTimelineStep (const TimePoint& tp, double division);
 
 private:
-    auto makeNotePredicate (double minTime, double maxTime, double minDegree, double maxDegree);
+    auto isNoteWithin (double minTime, double maxTime, double minDegree, double maxDegree);
 
     Timeline timeline { 0.0, lengthBeats };
     Scale scale { "Natural Minor" };

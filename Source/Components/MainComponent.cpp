@@ -576,7 +576,7 @@ void MainComponent::setupKeyboardShortcuts()
 
         Shortcut (
             juce::KeyPress ('x'),
-            { Mode::normal, Mode::insert },
+            { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
                 cursor.removeNotesAtCursor();
