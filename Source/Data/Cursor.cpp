@@ -381,7 +381,7 @@ int Cursor::removeModifier (ModifierType t)
     {
         if (auto mod = (*note.get()).getModifier (t))
         {
-            (*note.get()).removeModifier (*mod);
+            (*note.get()).removeModifier (mod->getType());
         }
     }
 

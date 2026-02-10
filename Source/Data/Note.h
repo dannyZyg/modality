@@ -13,8 +13,21 @@
 #include "Data/Modifier.h"
 #include "Data/Scale.h"
 #include "Data/Timeline.h"
+#include "juce_data_structures/juce_data_structures.h"
 #include <JuceHeader.h>
 #include <random>
+
+namespace NoteIDs
+{
+#define DECLARE_ID(name) inline const juce::Identifier name { #name };
+DECLARE_ID (Note)
+DECLARE_ID (degree)
+DECLARE_ID (startTime)
+DECLARE_ID (duration)
+DECLARE_ID (octave)
+DECLARE_ID (velocity)
+#undef DECLARE_ID
+} // namespace NoteIDs
 
 // === Struct to Represent MIDI Notes ===
 struct MidiNote
@@ -31,7 +44,9 @@ struct MidiNote
 class Note
 {
 public:
-    Note (double deg, double time, double dur);
+    Note (double deg = 0.0, double time = 0.0, double dur = Division::sixteenth);
+    explicit Note (juce::ValueTree existingState);
+
     ~Note();
 
     Note (const Note&) = default;
@@ -44,26 +59,20 @@ public:
     double getOctave() const;
     double getStartTime() const;
     int getVelocity() const;
-    void setVelocity (int v);
-    void shiftDegreeUp();
-    void shiftDegreeDown();
-    void shiftEarlier (double step);
-    void shiftLater (double step);
+    void setVelocity (int v, juce::UndoManager* undoManager = nullptr);
+    void shiftDegreeUp (juce::UndoManager* undoManager = nullptr);
+    void shiftDegreeDown (juce::UndoManager* undoManager = nullptr);
+    void shiftEarlier (double step, juce::UndoManager* undoManager = nullptr);
+    void shiftLater (double step, juce::UndoManager* undoManager = nullptr);
 
-    void addModifier (Modifier m);
-    bool removeModifier (Modifier m);
+    void addModifier (Modifier m, UndoManager* undoManager = nullptr);
+    bool removeModifier (ModifierType type, UndoManager* undoManager = nullptr);
     std::optional<Modifier> getModifier (ModifierType type);
 
     bool hasAnyModifier();
     std::optional<MidiNote> asMidiNote (Timeline t, Scale s, double tempo);
 
 private:
-    double degree = 0.0;
-    double startTime = 0.0;
-    double octave = 0;
-    int velocity = 100;
-    double duration = Division::sixteenth;
-
-    std::set<Modifier> modifiers;
+    juce::ValueTree state;
     std::mt19937 randomGenerator;
 };

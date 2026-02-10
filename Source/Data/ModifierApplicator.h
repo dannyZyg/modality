@@ -48,6 +48,19 @@ public:
         return current;
     }
 
+    // Apply multiple modifiers in sequence
+    std::optional<MidiNote> applyModifiers (const std::vector<Modifier>& mods, MidiNote note) const
+    {
+        std::optional<MidiNote> current = std::move (note);
+        for (const auto& mod : mods)
+        {
+            if (! current)
+                return std::nullopt;
+            current = applyModifier (mod, std::move (*current));
+        }
+        return current;
+    }
+
 private:
     ModifierApplicator() {}
 
