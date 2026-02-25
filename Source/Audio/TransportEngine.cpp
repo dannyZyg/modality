@@ -34,11 +34,11 @@ size_t TransportEngine::getNumTracks() const
 // === Per-Track Scheduling ===
 
 void TransportEngine::scheduleTrack (size_t trackIndex,
-                                      const std::vector<MidiNote>& notes,
-                                      double loopStartTime,
-                                      double loopLengthSeconds,
-                                      juce::MidiOutput* output,
-                                      int midiChannel)
+                                     const std::vector<MidiNote>& notes,
+                                     double loopStartTime,
+                                     double loopLengthSeconds,
+                                     juce::MidiOutput* output,
+                                     int midiChannel)
 {
     if (trackIndex >= numActiveTracks.load())
         return;
@@ -52,23 +52,34 @@ void TransportEngine::scheduleTrack (size_t trackIndex,
     state.cachedMidiChannel = midiChannel;
     state.loopLengthSeconds.store (loopLengthSeconds);
 
-    // Schedule all notes in the pattern
+    // Collect all events for this track (UI thread - allocation is safe here)
+    std::vector<ScheduledEvent> events;
+    events.reserve (notes.size() * 2); // Each note produces 2 events (on + off)
+
     for (const auto& note : notes)
     {
         double noteStartTime = loopStartTime + note.startTime;
         double noteEndTime = noteStartTime + note.duration;
 
-        // Schedule note-on
-        writeEvent (ScheduledEvent {
+        events.push_back (ScheduledEvent {
             noteStartTime,
             juce::MidiMessage::noteOn (midiChannel, note.noteNumber, static_cast<juce::uint8> (note.velocity)),
             output });
 
-        // Schedule note-off
-        writeEvent (ScheduledEvent {
+        events.push_back (ScheduledEvent {
             noteEndTime,
             juce::MidiMessage::noteOff (midiChannel, note.noteNumber),
             output });
+    }
+
+    // Sort by timestamp to ensure correct playback order for polyphonic notes
+    std::sort (events.begin(), events.end(), [] (const ScheduledEvent& a, const ScheduledEvent& b)
+               { return a.timestamp < b.timestamp; });
+
+    // Write to FIFO in sorted order
+    for (const auto& event : events)
+    {
+        writeEvent (event);
     }
 }
 
@@ -191,13 +202,6 @@ void TransportEngine::processBlock (double currentPosition, double bufferDuratio
                     event.output->sendMessageNow (event.message);
                 }
                 ++totalConsumed;
-            }
-            else
-            {
-                // Events beyond buffer window - stop processing
-                // (we process all events in order, so once we hit one beyond
-                // the window, remaining events are also beyond)
-                return false;
             }
         }
         return true; // Processed all events in range
