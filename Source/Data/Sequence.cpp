@@ -9,9 +9,13 @@
 */
 
 #include "Sequence.h"
+#include "Data/Timeline.h"
 
-Sequence::Sequence()
+Sequence::Sequence() : timeline (0, defaultLengthBeats)
 {
+    state.setProperty (SequenceIDs::midiChannel, 1, nullptr);
+    state.setProperty (SequenceIDs::midiOutputId, "", nullptr);
+    state.setProperty (SequenceIDs::lengthBeats, defaultLengthBeats, nullptr);
 }
 
 Sequence::~Sequence()
@@ -21,26 +25,24 @@ Sequence::~Sequence()
 double Sequence::getLengthSeconds (double tempo) const
 {
     double secondsPerBeat = 60.0 / tempo;
-    return lengthBeats * secondsPerBeat;
+    return getLengthBeats() * secondsPerBeat;
 }
 
-void Sequence::setLengthBeats (float beats)
+void Sequence::setLengthBeats (double beats, juce::UndoManager* undoManager)
 {
-    lengthBeats = beats;
+    state.setProperty (SequenceIDs::lengthBeats, beats, undoManager);
     // Recreate timeline with new bounds
-    timeline = Timeline (0.0, static_cast<double> (lengthBeats));
+    timeline = Timeline (0.0, beats);
 }
 
-// === MIDI Configuration Accessors ===
+double Sequence::getLengthBeats() const { return static_cast<double> (state.getProperty (SequenceIDs::lengthBeats)); }
 
-void Sequence::setMidiChannel (int channel)
-{
-    midiChannel = juce::jlimit (1, 16, channel);
-}
+int Sequence::getMidiChannel() const { return static_cast<int> (state.getProperty (SequenceIDs::midiChannel)); }
 
-int Sequence::getMidiChannel() const
+void Sequence::setMidiChannel (int channel, juce::UndoManager* undoManager)
 {
-    return midiChannel;
+    int midiChannel = juce::jlimit (1, 16, channel);
+    state.setProperty (SequenceIDs::midiChannel, midiChannel, undoManager);
 }
 
 void Sequence::setMidiOutputId (const juce::String& outputId)

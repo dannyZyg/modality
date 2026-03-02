@@ -11,6 +11,17 @@
 #pragma once
 #include "Data/Note.h"
 
+namespace SequenceIDs
+{
+#define DECLARE_ID(name) inline const juce::Identifier name { #name };
+DECLARE_ID (lengthBeats)
+DECLARE_ID (midiChannel)
+DECLARE_ID (midiOutputId)
+#undef DECLARE_ID
+} // namespace SequenceIDs
+
+static constexpr double defaultLengthBeats = 4.0f;
+
 class Sequence
 {
 public:
@@ -18,18 +29,16 @@ public:
     ~Sequence();
 
     double getLengthSeconds (double tempo) const;
-    void setLengthBeats (float beats);
+    double getLengthBeats() const;
+    void setLengthBeats (double beats, juce::UndoManager* undoManager = nullptr);
 
-    /**
-     * MIDI output device identifier.
-     * Empty string means use the default output device.
-     */
+    // MIDI output device identifier. Empty string means use the default output device.
     juce::String midiOutputId = "";
 
     bool enabled = true;
     bool muted = false;
 
-    void setMidiChannel (int channel);
+    void setMidiChannel (int channel, juce::UndoManager* undoManager = nullptr);
     int getMidiChannel() const;
     void setMidiOutputId (const juce::String& outputId);
     const juce::String& getMidiOutputId() const;
@@ -62,9 +71,8 @@ public:
 private:
     auto isNoteWithin (double minTime, double maxTime, double minDegree, double maxDegree);
 
-    float lengthBeats = 4.0f;
-    int midiChannel = 1;
+    juce::ValueTree state;
 
-    Timeline timeline { 0.0, lengthBeats };
+    Timeline timeline;
     Scale scale { "Natural Minor" };
 };
