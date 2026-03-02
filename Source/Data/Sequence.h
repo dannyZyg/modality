@@ -17,27 +17,8 @@ public:
     Sequence();
     ~Sequence();
 
-    // === Timing Configuration ===
-    float lengthBeats = 4.0f;
-
-    /**
-     * Get the length of this sequence in seconds at a specific tempo.
-     *
-     * @param tempo Tempo in BPM (global tempo from Transport)
-     */
     double getLengthSeconds (double tempo) const;
-
-    /**
-     * Set the length in beats. This affects the timeline bounds.
-     */
     void setLengthBeats (float beats);
-
-    // === MIDI Output Configuration ===
-
-    /**
-     * MIDI channel for this sequence (1-16).
-     */
-    int midiChannel = 1;
 
     /**
      * MIDI output device identifier.
@@ -45,21 +26,11 @@ public:
      */
     juce::String midiOutputId = "";
 
-    /**
-     * Whether this sequence is enabled for playback.
-     */
     bool enabled = true;
-
-    /**
-     * Whether this sequence is muted (still processes but doesn't output).
-     */
     bool muted = false;
-
-    // === Accessors for MIDI config ===
 
     void setMidiChannel (int channel);
     int getMidiChannel() const;
-
     void setMidiOutputId (const juce::String& outputId);
     const juce::String& getMidiOutputId() const;
 
@@ -90,6 +61,9 @@ public:
 
 private:
     auto isNoteWithin (double minTime, double maxTime, double minDegree, double maxDegree);
+
+    float lengthBeats = 4.0f;
+    int midiChannel = 1;
 
     Timeline timeline { 0.0, lengthBeats };
     Scale scale { "Natural Minor" };

@@ -9,8 +9,8 @@
 */
 
 #include "SequenceComponent.h"
-#include "Audio/Transport.h"
 #include "AppColours.h"
+#include "Audio/Transport.h"
 #include "CoordinateUtils.h"
 #include <JuceHeader.h>
 
@@ -35,8 +35,8 @@ void SequenceComponent::paint (juce::Graphics& g)
 
     const auto& selectedSequence = cursor.getSelectedSequence();
     double tempoBPM = transport.getTempo();
-    double secondsPerBeat = 60.0 / tempoBPM;
-    double sequenceDurationInSeconds = selectedSequence.lengthBeats * secondsPerBeat;
+
+    double sequenceDurationInSeconds = selectedSequence.getLengthSeconds (tempoBPM);
 
     if (sequenceDurationInSeconds > 0)
     {

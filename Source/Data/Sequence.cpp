@@ -20,7 +20,8 @@ Sequence::~Sequence()
 
 double Sequence::getLengthSeconds (double tempo) const
 {
-    return (static_cast<double> (lengthBeats) / tempo) * 60.0;
+    double secondsPerBeat = 60.0 / tempo;
+    return lengthBeats * secondsPerBeat;
 }
 
 void Sequence::setLengthBeats (float beats)
