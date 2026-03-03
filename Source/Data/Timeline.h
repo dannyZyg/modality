@@ -1,6 +1,16 @@
 #pragma once
 #include <JuceHeader.h>
 
+namespace TimelineIDs
+{
+#define DECLARE_ID(name) inline const juce::Identifier name { #name };
+DECLARE_ID (value)
+DECLARE_ID (stepSize)
+DECLARE_ID (upperBound)
+DECLARE_ID (lowerBound)
+#undef DECLARE_ID
+} // namespace TimelineIDs
+
 class TimePoint
 {
 public:
@@ -77,8 +87,12 @@ public:
 
     double clampValue (double newValue);
 
+    juce::ValueTree& getState();
+
     double getLowerBound() const;
     double getUpperBound() const;
+    void setLowerBound (double lowerBound, juce::UndoManager* undoManager = nullptr);
+    void setUpperBound (double upperBound, juce::UndoManager* undoManager = nullptr);
 
     TimePoint getNextStep (const TimePoint& tp);
     TimePoint getNextStep (const TimePoint& tp, double division);
@@ -87,6 +101,8 @@ public:
     TimePoint getPrevStep (const TimePoint& tp, double division);
 
     double getStepSize() const;
+    void setStepSize (double stepSize, juce::UndoManager* undoManager = nullptr);
+
     double getSmallestStepSize() const;
 
     void increaseStepSize();
@@ -99,8 +115,5 @@ public:
     const double sizeAtCurrentStepSize() const;
 
 private:
-    double stepSize = Division::quarter;
-    double value;
-    double lowerBound;
-    double upperBound;
+    juce::ValueTree state;
 };

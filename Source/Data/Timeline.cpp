@@ -5,23 +5,46 @@ TimePoint::TimePoint (double init)
     value = init;
 }
 
-Timeline::Timeline (double lower, double upper) : lowerBound (lower), upperBound (upper) {}
+Timeline::Timeline (double lower, double upper) : state ("Timeline")
+{
+    setStepSize (Division::quarter, nullptr);
+    state.setProperty (TimelineIDs::lowerBound, lower, nullptr);
+    state.setProperty (TimelineIDs::upperBound, upper, nullptr);
+}
+
+juce::ValueTree& Timeline::getState() { return state; }
 
 double Timeline::clampValue (double newValue)
 {
-    return std::clamp (newValue, lowerBound, upperBound);
+    return std::clamp (newValue, getLowerBound(), getUpperBound());
 }
 
-double Timeline::getLowerBound() const { return lowerBound; }
-double Timeline::getUpperBound() const { return upperBound; }
+double Timeline::getLowerBound() const { return state.getProperty (TimelineIDs::lowerBound); }
 
-double Timeline::getStepSize() const { return stepSize; }
+void Timeline::setLowerBound (double lowerBound, juce::UndoManager* undoManager)
+{
+    state.setProperty (TimelineIDs::lowerBound, lowerBound, undoManager);
+}
+
+double Timeline::getUpperBound() const { return state.getProperty (TimelineIDs::upperBound); }
+
+void Timeline::setUpperBound (double upperBound, juce::UndoManager* undoManager)
+{
+    state.setProperty (TimelineIDs::upperBound, upperBound, undoManager);
+}
+
+double Timeline::getStepSize() const { return state.getProperty (TimelineIDs::stepSize); }
+
+void Timeline::setStepSize (double stepSize, juce::UndoManager* undoManager)
+{
+    state.setProperty (TimelineIDs::stepSize, stepSize, undoManager);
+}
 
 double Timeline::getSmallestStepSize() const { return Division::thirtysecond; }
 
 TimePoint Timeline::getNextStep (const TimePoint& tp)
 {
-    return getNextStep (tp, stepSize);
+    return getNextStep (tp, getStepSize());
 }
 
 TimePoint Timeline::getNextStep (const TimePoint& tp, double division)
@@ -36,7 +59,7 @@ TimePoint Timeline::getNextStep (const TimePoint& tp, double division)
 
 TimePoint Timeline::getPrevStep (const TimePoint& tp)
 {
-    return getPrevStep (tp, stepSize);
+    return getPrevStep (tp, getStepSize());
 }
 
 TimePoint Timeline::getPrevStep (const TimePoint& tp, double division)
@@ -69,12 +92,12 @@ double Timeline::convertDivisionToSeconds (double division, double tempo)
 
 void Timeline::increaseStepSize()
 {
-    stepSize = Division::getNextLarger (stepSize);
+    setStepSize (Division::getNextLarger (getStepSize()));
 }
 
 void Timeline::decreaseStepSize()
 {
-    stepSize = Division::getNextSmaller (stepSize);
+    setStepSize (Division::getNextSmaller (getStepSize()));
 }
 
 const double Timeline::size() const
@@ -86,5 +109,5 @@ const double Timeline::size() const
 const double Timeline::sizeAtCurrentStepSize() const
 {
     // The number of potential steps at the current step size
-    return getUpperBound() / stepSize;
+    return getUpperBound() / getStepSize();
 }

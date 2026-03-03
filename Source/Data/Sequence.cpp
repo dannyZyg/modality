@@ -16,6 +16,7 @@ Sequence::Sequence() : timeline (0, defaultLengthBeats)
     state.setProperty (SequenceIDs::midiChannel, 1, nullptr);
     state.setProperty (SequenceIDs::midiOutputId, "", nullptr);
     state.setProperty (SequenceIDs::lengthBeats, defaultLengthBeats, nullptr);
+    state.addChild (timeline.getState(), -1, nullptr);
 }
 
 Sequence::~Sequence()
@@ -31,8 +32,8 @@ double Sequence::getLengthSeconds (double tempo) const
 void Sequence::setLengthBeats (double beats, juce::UndoManager* undoManager)
 {
     state.setProperty (SequenceIDs::lengthBeats, beats, undoManager);
-    // Recreate timeline with new bounds
-    timeline = Timeline (0.0, beats);
+    // update timeline with new bounds
+    timeline.setUpperBound (beats, undoManager);
 }
 
 double Sequence::getLengthBeats() const { return static_cast<double> (state.getProperty (SequenceIDs::lengthBeats)); }
