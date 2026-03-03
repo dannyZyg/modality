@@ -17,6 +17,7 @@ Sequence::Sequence() : timeline (0, defaultLengthBeats)
     state.setProperty (SequenceIDs::midiOutputId, "", nullptr);
     state.setProperty (SequenceIDs::lengthBeats, defaultLengthBeats, nullptr);
     state.addChild (timeline.getState(), -1, nullptr);
+    state.addChild (scale.getState(), -1, nullptr);
 }
 
 Sequence::~Sequence()

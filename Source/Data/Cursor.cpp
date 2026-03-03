@@ -108,7 +108,7 @@ void Cursor::move (Direction d, Selection::MoveMode moveMode)
 
     if (moveMode == Selection::MoveMode::shift)
     {
-        double stepSize = d == Direction::left || d == Direction::right ? getCurrentTimeline().getStepSize() : getCurrentScale().getStepSize();
+        double stepSize = d == Direction::left || d == Direction::right ? getCurrentTimeline().getStepSize() : getCurrentScale().getSmallestStepSize();
         visualSelection.moveSelection (stepSize, d);
     }
     else if (moveMode == Selection::MoveMode::extend)
@@ -320,7 +320,7 @@ std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesAtPo
     auto minTime = p.xTimepoint.value;
     auto maxTime = p.xTimepoint.value + t.getStepSize();
     auto minDegree = p.yDegree.value;
-    auto maxDegree = p.yDegree.value + s.getStepSize();
+    auto maxDegree = p.yDegree.value + s.getSmallestStepSize();
 
     return getSelectedSequence().findNotes (minTime, maxTime, minDegree, maxDegree);
 }

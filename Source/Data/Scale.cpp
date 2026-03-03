@@ -5,21 +5,65 @@ Degree::Degree (double init)
     value = init;
 }
 
-Scale::Scale (const std::string& name)
+Scale::Scale (const juce::String& name) : state ("Scale")
+{
+    setScale (name);
+}
+
+juce::ValueTree& Scale::getState() { return state; }
+
+void Scale::setScale (juce::String scaleName, juce::UndoManager* undoManager)
 {
     // Find the matching scale definition
-    auto it = std::find_if (scaleDefinitions.begin(), scaleDefinitions.end(), [&name] (const auto& def)
-                            { return def.first == name; });
+    auto scaleDef = std::find_if (scaleDefinitions.begin(), scaleDefinitions.end(), [&scaleName] (const auto& def)
+                                  { return def.first == scaleName; });
 
-    if (it != scaleDefinitions.end())
+    if (scaleDef != scaleDefinitions.end())
     {
-        degrees = it->second;
+        setName (scaleDef->first, undoManager);
+        setDegrees (scaleDef->second, undoManager);
     }
+}
+
+juce::String Scale::getName() const
+{
+    return state.getProperty (ScaleIDs::name);
+}
+
+void Scale::setName (juce::String name, juce::UndoManager* undoManager)
+{
+    state.setProperty (ScaleIDs::name, name, undoManager);
+}
+
+void Scale::setDegrees (std::vector<double> newDegrees, juce::UndoManager* undoManager)
+{
+    juce::Array<var> degreesAsVar;
+
+    for (const auto& item : newDegrees)
+    {
+        degreesAsVar.add (item);
+    }
+    state.setProperty (ScaleIDs::degrees, degreesAsVar, undoManager);
+}
+
+std::vector<double> Scale::getDegrees() const
+{
+    std::vector<double> result;
+
+    if (auto* arr = state.getProperty (ScaleIDs::degrees).getArray())
+    {
+        for (const auto& item : *arr)
+        {
+            result.push_back (static_cast<double> (item));
+        }
+    }
+    return result;
 }
 
 const Degree Scale::getHigher (const Degree& d) const
 {
     auto descendingDegrees = getDescendingDegrees();
+    auto degrees = getDegrees();
 
     if (d.value >= 0.0)
     {
@@ -53,6 +97,7 @@ const Degree Scale::getLower (const Degree& d) const
 {
     // Get the descending scale degrees
     auto descendingDegrees = getDescendingDegrees();
+    auto degrees = getDegrees();
 
     if (d.value > 0.0)
     {
@@ -86,6 +131,7 @@ const Degree Scale::getLower (const Degree& d) const
 
 double Scale::getUpperBound() const
 {
+    auto degrees = getDegrees();
     if (! degrees.empty())
     {
         return degrees.back();
@@ -105,6 +151,7 @@ double Scale::getLowerBound() const
 
 double Scale::getSmallestStepSize() const
 {
+    auto degrees = getDegrees();
     double smallest = std::numeric_limits<double>::max();
     for (size_t i = 1; i < degrees.size(); ++i)
     {
@@ -114,13 +161,9 @@ double Scale::getSmallestStepSize() const
     return smallest;
 }
 
-double Scale::getStepSize() const
-{
-    return getSmallestStepSize();
-}
-
 double Scale::size() const
 {
+    auto degrees = getDegrees();
     if (! degrees.empty())
     {
         return degrees.back() - (-degrees.back()) + 1;
@@ -131,6 +174,7 @@ double Scale::size() const
 std::vector<double> Scale::getDescendingDegrees() const
 {
     std::vector<double> descending;
+    auto degrees = getDegrees();
     if (degrees.empty())
         return descending;
 

@@ -23,7 +23,7 @@ public:
     static float getStepHeight (float screenHeight, const Scale& scale)
     {
         double totalDegreeRange = scale.getUpperBound() - scale.getLowerBound();
-        return static_cast<float> ((scale.stepSize / totalDegreeRange) * screenHeight);
+        return static_cast<float> ((scale.getSmallestStepSize() / totalDegreeRange) * screenHeight);
     }
 
     // Convert musical time to screen X coordinate
