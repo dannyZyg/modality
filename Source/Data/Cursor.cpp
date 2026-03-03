@@ -244,9 +244,11 @@ std::vector<MidiNote> Cursor::extractMidiSequence (size_t seqIndex, double tempo
 {
     std::vector<MidiNote> midiClip;
 
-    for (auto& n : getSequence (seqIndex).notes)
+    auto& seq = getSequence (seqIndex);
+
+    for (auto& n : seq.notes)
     {
-        auto midi = n->asMidiNote (getCurrentTimeline(), getCurrentScale(), tempo);
+        auto midi = n->asMidiNote (seq.getTimeline(), seq.getScale(), tempo);
 
         if (midi)
         {
