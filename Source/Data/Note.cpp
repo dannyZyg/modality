@@ -30,6 +30,8 @@ Note::Note (juce::ValueTree existingState)
 
 Note::~Note() {}
 
+juce::ValueTree& Note::getState() { return state; }
+
 double Note::getDegree() const { return static_cast<double> (state.getProperty (NoteIDs::degree)); }
 
 double Note::getDuration() const { return static_cast<double> (state.getProperty (NoteIDs::duration)); }

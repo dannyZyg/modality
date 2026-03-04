@@ -9,19 +9,56 @@
 */
 
 #include "Sequence.h"
+#include "Data/Note.h"
 #include "Data/Timeline.h"
+#include "juce_core/juce_core.h"
 
-Sequence::Sequence() : timeline (0, defaultLengthBeats)
+Sequence::Sequence() : state (SequenceIDs::Sequence), notesState (NotesStateIDs::NotesState), timeline (0, defaultLengthBeats)
 {
     state.setProperty (SequenceIDs::midiChannel, 1, nullptr);
     state.setProperty (SequenceIDs::midiOutputId, "", nullptr);
     state.setProperty (SequenceIDs::lengthBeats, defaultLengthBeats, nullptr);
     state.addChild (timeline.getState(), -1, nullptr);
     state.addChild (scale.getState(), -1, nullptr);
+    state.addChild (notesState, -1, nullptr);
+    state.addListener (this);
 }
 
 Sequence::~Sequence()
 {
+    state.removeListener (this);
+}
+
+void Sequence::insertNote (juce::ValueTree& v, juce::UndoManager* undoManager)
+{
+    jassert (v.hasType (NoteIDs::Note));
+
+    // Only add the note if we don't have something in that space yet
+    if (isExistingNote (v))
+    {
+        return;
+    }
+
+    notesState.addChild (v, -1, undoManager);
+}
+
+bool Sequence::isExistingNote (juce::ValueTree newNote)
+{
+    for (int i = 0; i < notesState.getNumChildren(); ++i)
+    {
+        auto existingNote = notesState.getChild (i);
+        double existingDegree = static_cast<double> (existingNote.getProperty (NoteIDs::degree));
+        double existingStartTime = static_cast<double> (existingNote.getProperty (NoteIDs::startTime));
+
+        double newDegree = static_cast<double> (newNote.getProperty (NoteIDs::degree));
+        double newStartTime = static_cast<double> (newNote.getProperty (NoteIDs::startTime));
+
+        if (juce::approximatelyEqual (existingDegree, newDegree) && juce::approximatelyEqual (existingStartTime, newStartTime))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 double Sequence::getLengthSeconds (double tempo) const
@@ -82,7 +119,7 @@ auto Sequence::isNoteWithin (double minTime, double maxTime, double minDegree, d
 {
     return [=] (const auto& note)
     {
-        return note->getStartTime() >= minTime && note->getStartTime() < maxTime && note->getDegree() >= minDegree && note->getDegree() <= maxDegree;
+        return Note::isWithinRange (note->getState(), minTime, maxTime, minDegree, maxDegree);
     };
 }
 
@@ -112,10 +149,37 @@ void Sequence::removeNotes (
     double minDegree,
     double maxDegree)
 {
-    auto predicate = isNoteWithin (minTime, maxTime, minDegree, maxDegree);
-    notes.erase (
-        std::remove_if (notes.begin(), notes.end(), predicate),
-        notes.end());
+    for (int i = notesState.getNumChildren() - 1; i >= 0; --i)
+    {
+        juce::ValueTree noteChild = notesState.getChild (i);
+        auto isWithinRange = Note::isWithinRange (noteChild, minTime, maxTime, minDegree, maxDegree);
+
+        if (isWithinRange)
+        {
+            notesState.removeChild (noteChild, nullptr);
+        }
+    }
+}
+
+void Sequence::valueTreeChildAdded (ValueTree& parentTree,
+                                    ValueTree& childWhichHasBeenAdded)
+{
+    if (parentTree.hasType (NotesStateIDs::NotesState))
+    {
+        auto note = std::make_unique<Note> (childWhichHasBeenAdded);
+        notes.emplace_back (std::move (note));
+    }
+}
+
+void Sequence::valueTreeChildRemoved (ValueTree& parentTree,
+                                      ValueTree& childWhichHasBeenRemoved,
+                                      [[maybe_unused]] int indexFromWhichChildWasRemoved)
+{
+    if (parentTree.hasType (NotesStateIDs::NotesState))
+    {
+        std::erase_if (notes, [&] (const auto& note)
+                       { return note->getState() == childWhichHasBeenRemoved; });
+    }
 }
 
 const Timeline& Sequence::getTimeline() const { return timeline; }

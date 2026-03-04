@@ -54,6 +54,14 @@ public:
     Note (Note&&) = default;
     Note& operator= (Note&&) = default;
 
+    static bool isWithinRange (juce::ValueTree state, double minTime, double maxTime, double minDegree, double maxDegree)
+    {
+        double startTime = static_cast<double> (state.getProperty (NoteIDs::startTime));
+        double degree = static_cast<double> (state.getProperty (NoteIDs::degree));
+        return startTime >= minTime && startTime < maxTime && degree >= minDegree && degree <= maxDegree;
+    }
+
+    juce::ValueTree& getState();
     double getDegree() const;
     double getDuration() const;
     double getOctave() const;

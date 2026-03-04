@@ -9,6 +9,7 @@
 */
 
 #include "Cursor.h"
+#include "Data/Note.h"
 #include "Data/Selection.h"
 
 Cursor::Cursor() : randomGenerator (std::random_device()())
@@ -260,8 +261,13 @@ std::vector<MidiNote> Cursor::extractMidiSequence (size_t seqIndex, double tempo
 
 void Cursor::insertNote()
 {
-    auto note = std::make_unique<Note> (cursorPosition.yDegree.value, cursorPosition.xTimepoint.value, getCurrentTimeline().getStepSize());
-    getSelectedSequence().notes.emplace_back (std::move (note));
+    juce::ValueTree noteState (NoteIDs::Note);
+
+    noteState.setProperty (NoteIDs::degree, cursorPosition.yDegree.value, nullptr);
+    noteState.setProperty (NoteIDs::startTime, cursorPosition.xTimepoint.value, nullptr);
+    noteState.setProperty (NoteIDs::duration, getCurrentTimeline().getStepSize(), nullptr);
+
+    getSelectedSequence().insertNote (noteState);
 }
 
 void Cursor::removeNotesAtCursor()

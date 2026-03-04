@@ -14,15 +14,23 @@
 namespace SequenceIDs
 {
 #define DECLARE_ID(name) inline const juce::Identifier name { #name };
+DECLARE_ID (Sequence)
 DECLARE_ID (lengthBeats)
 DECLARE_ID (midiChannel)
 DECLARE_ID (midiOutputId)
 #undef DECLARE_ID
 } // namespace SequenceIDs
 
+namespace NotesStateIDs
+{
+#define DECLARE_ID(name) inline const juce::Identifier name { #name };
+DECLARE_ID (NotesState)
+#undef DECLARE_ID
+} // namespace NotesStateIDs
+
 static constexpr double defaultLengthBeats = 4.0f;
 
-class Sequence
+class Sequence : juce::ValueTree::Listener
 {
 public:
     Sequence();
@@ -51,8 +59,17 @@ public:
 
     std::vector<std::unique_ptr<Note>> notes;
 
+    void valueTreeChildAdded (ValueTree& parentTree,
+                              ValueTree& childWhichHasBeenAdded);
+
+    void valueTreeChildRemoved (ValueTree& parentTree,
+                                ValueTree& childWhichHasBeenRemoved,
+                                int indexFromWhichChildWasRemoved);
+
     std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotes (double minTime, double maxTime, double minDegree, double maxDegree);
     void removeNotes (double minTime, double maxTime, double minDegree, double maxDegree);
+    void insertNote (juce::ValueTree& v, juce::UndoManager* undoManager = nullptr);
+    bool isExistingNote (juce::ValueTree noteState);
 
     const Timeline& getTimeline() const;
     const Scale& getScale() const;
@@ -72,6 +89,7 @@ private:
     auto isNoteWithin (double minTime, double maxTime, double minDegree, double maxDegree);
 
     juce::ValueTree state;
+    juce::ValueTree notesState;
 
     Timeline timeline;
     Scale scale { "Natural Minor" };
