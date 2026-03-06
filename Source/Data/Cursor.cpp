@@ -12,9 +12,8 @@
 #include "Data/Note.h"
 #include "Data/Selection.h"
 
-Cursor::Cursor() : randomGenerator (std::random_device()())
+Cursor::Cursor (Composition& comp) : composition (comp), randomGenerator (std::random_device()())
 {
-    createSequence();
     selectSequence (0);
 }
 
@@ -22,11 +21,7 @@ Cursor::~Cursor() {}
 
 void Cursor::createSequence()
 {
-    for (int i = 0; i < numInitialSequences; i++)
-    {
-        auto sequence = std::make_unique<Sequence>();
-        sequences.emplace_back (std::move (sequence));
-    }
+    //TODO
 }
 
 void Cursor::selectSequence (size_t index)
@@ -222,18 +217,7 @@ void Cursor::previewStep()
 
 Sequence& Cursor::getSequence (size_t index) const
 {
-    if (index >= sequences.size())
-    {
-        std::string m = "Seq index out of bounds: " + std::to_string (index);
-        juce::Logger::writeToLog (m);
-        throw std::out_of_range (m);
-    }
-    return *sequences[index];
-}
-
-const std::vector<std::unique_ptr<Sequence>>& Cursor::getSequences() const
-{
-    return sequences;
+    return composition.getSequence (index);
 }
 
 Sequence& Cursor::getSelectedSequence() const
@@ -241,31 +225,13 @@ Sequence& Cursor::getSelectedSequence() const
     return getSequence (selectedSeqIndex);
 }
 
-std::vector<MidiNote> Cursor::extractMidiSequence (size_t seqIndex, double tempo)
-{
-    std::vector<MidiNote> midiClip;
-
-    auto& seq = getSequence (seqIndex);
-
-    for (auto& n : seq.notes)
-    {
-        auto midi = n->asMidiNote (seq.getTimeline(), seq.getScale(), tempo);
-
-        if (midi)
-        {
-            midiClip.emplace_back (*midi);
-        }
-    }
-    return midiClip;
-}
-
 void Cursor::insertNote()
 {
     juce::ValueTree noteState (NoteIDs::Note);
 
-    noteState.setProperty (NoteIDs::degree, cursorPosition.yDegree.value, nullptr);
-    noteState.setProperty (NoteIDs::startTime, cursorPosition.xTimepoint.value, nullptr);
-    noteState.setProperty (NoteIDs::duration, getCurrentTimeline().getStepSize(), nullptr);
+    noteState.setProperty (NoteIDs::Degree, cursorPosition.yDegree.value, nullptr);
+    noteState.setProperty (NoteIDs::StartTime, cursorPosition.xTimepoint.value, nullptr);
+    noteState.setProperty (NoteIDs::Duration, getCurrentTimeline().getStepSize(), nullptr);
 
     getSelectedSequence().insertNote (noteState);
 }

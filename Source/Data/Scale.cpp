@@ -1,13 +1,28 @@
 #include "Scale.h"
+#include "juce_data_structures/juce_data_structures.h"
+#include <utility>
 
 Degree::Degree (double init)
 {
     value = init;
 }
 
-Scale::Scale (const juce::String& name) : state ("Scale")
+Scale::Scale (const juce::String& name) : state (ScaleIDs::Scale)
 {
     setScale (name);
+}
+
+Scale::Scale (juce::ValueTree existingState)
+{
+    if (existingState.isValid())
+    {
+        state = std::move (existingState);
+    }
+    else
+    {
+        state = juce::ValueTree (ScaleIDs::Scale);
+        setScale ("Major");
+    }
 }
 
 juce::ValueTree& Scale::getState() { return state; }
@@ -27,12 +42,12 @@ void Scale::setScale (juce::String scaleName, juce::UndoManager* undoManager)
 
 juce::String Scale::getName() const
 {
-    return state.getProperty (ScaleIDs::name);
+    return state.getProperty (ScaleIDs::Name);
 }
 
 void Scale::setName (juce::String name, juce::UndoManager* undoManager)
 {
-    state.setProperty (ScaleIDs::name, name, undoManager);
+    state.setProperty (ScaleIDs::Name, name, undoManager);
 }
 
 void Scale::setDegrees (std::vector<double> newDegrees, juce::UndoManager* undoManager)
@@ -43,14 +58,14 @@ void Scale::setDegrees (std::vector<double> newDegrees, juce::UndoManager* undoM
     {
         degreesAsVar.add (item);
     }
-    state.setProperty (ScaleIDs::degrees, degreesAsVar, undoManager);
+    state.setProperty (ScaleIDs::Degrees, degreesAsVar, undoManager);
 }
 
 std::vector<double> Scale::getDegrees() const
 {
     std::vector<double> result;
 
-    if (auto* arr = state.getProperty (ScaleIDs::degrees).getArray())
+    if (auto* arr = state.getProperty (ScaleIDs::Degrees).getArray())
     {
         for (const auto& item : *arr)
         {

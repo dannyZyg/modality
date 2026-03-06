@@ -1,13 +1,15 @@
 #pragma once
+#include "juce_data_structures/juce_data_structures.h"
 #include <JuceHeader.h>
 
 namespace TimelineIDs
 {
 #define DECLARE_ID(name) inline const juce::Identifier name { #name };
-DECLARE_ID (value)
-DECLARE_ID (stepSize)
-DECLARE_ID (upperBound)
-DECLARE_ID (lowerBound)
+DECLARE_ID (Timeline)
+DECLARE_ID (Value)
+DECLARE_ID (StepSize)
+DECLARE_ID (UpperBound)
+DECLARE_ID (LowerBound)
 #undef DECLARE_ID
 } // namespace TimelineIDs
 
@@ -84,6 +86,7 @@ class Timeline
 {
 public:
     Timeline (double lower, double upper);
+    explicit Timeline (juce::ValueTree existingState);
 
     double clampValue (double newValue);
 

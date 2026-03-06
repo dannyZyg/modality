@@ -1,11 +1,10 @@
 #include "SequenceSelectionComponent.h"
-#include "juce_core/system/juce_PlatformDefs.h"
 #include "juce_graphics/juce_graphics.h"
 #include <JuceHeader.h>
 
 //==============================================================================
-SequenceSelectionComponent::SequenceSelectionComponent (const Cursor& c)
-    : cursor (c)
+SequenceSelectionComponent::SequenceSelectionComponent (const Cursor& curs, const Composition& comp)
+    : cursor (curs), composition (comp)
 {
 }
 
@@ -19,7 +18,7 @@ void SequenceSelectionComponent::paint (juce::Graphics& g)
     // g.setColour (juce::Colours::blue);
     // g.fillRect (bounds);
 
-    const auto& sequences = cursor.getSequences();
+    const auto& sequences = composition.getSequences();
     const Sequence& selectedSequence = cursor.getSelectedSequence();
 
     float padding = 20.0f;

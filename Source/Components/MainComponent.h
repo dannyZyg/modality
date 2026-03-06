@@ -9,6 +9,7 @@
 #include "Components/SequenceComponent.h"
 #include "Components/SequenceSelectionComponent.h"
 #include "Components/StatusBarComponent.h"
+#include "Data/Composition.h"
 #include "Data/Cursor.h"
 #include "Data/KeyboardShortcutManager.h"
 #include <JuceHeader.h>
@@ -36,6 +37,7 @@ public:
 
 private:
     //==============================================================================
+    Composition composition;
 
     // Unified transport control (owns tempo, play state, MIDI scheduling)
     Transport transport;

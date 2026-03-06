@@ -8,6 +8,7 @@
   ==============================================================================
 */
 
+#include "Data/Composition.h"
 #include "Data/Scale.h"
 #include "Data/Selection.h"
 #include "Data/Timeline.h"
@@ -29,7 +30,7 @@ enum class Mode
 class Cursor
 {
 public:
-    Cursor();
+    Cursor (Composition& comp);
     ~Cursor();
 
     void createSequence();
@@ -60,12 +61,8 @@ public:
     Sequence& getSequence (size_t index) const;
     Sequence& getSelectedSequence() const;
 
-    const std::vector<std::unique_ptr<Sequence>>& getSequences() const;
-
     void previewNote();
     void previewStep();
-
-    std::vector<MidiNote> extractMidiSequence (size_t seqIndex, double tempo);
 
     Position cursorPosition;
 
@@ -103,12 +100,11 @@ public:
     Scale& getCurrentScale();
 
 private:
+    Composition& composition;
+
     std::mt19937 randomGenerator;
 
     Mode mode = Mode::normal;
-
-    int numInitialSequences = 4;
-    std::vector<std::unique_ptr<Sequence>> sequences;
 
     size_t selectedSeqIndex = 0;
     size_t selectedStepIndex = 0;

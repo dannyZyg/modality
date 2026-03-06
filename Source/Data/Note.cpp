@@ -15,11 +15,11 @@
 
 Note::Note (double deg, double time, double dur) : state (NoteIDs::Note)
 {
-    state.setProperty (NoteIDs::degree, deg, nullptr);
-    state.setProperty (NoteIDs::startTime, time, nullptr);
-    state.setProperty (NoteIDs::duration, dur, nullptr);
-    state.setProperty (NoteIDs::velocity, 100, nullptr);
-    state.setProperty (NoteIDs::octave, 0.0, nullptr);
+    state.setProperty (NoteIDs::Degree, deg, nullptr);
+    state.setProperty (NoteIDs::StartTime, time, nullptr);
+    state.setProperty (NoteIDs::Duration, dur, nullptr);
+    state.setProperty (NoteIDs::Velocity, 100, nullptr);
+    state.setProperty (NoteIDs::Octave, 0.0, nullptr);
 }
 
 Note::Note (juce::ValueTree existingState)
@@ -32,36 +32,36 @@ Note::~Note() {}
 
 juce::ValueTree& Note::getState() { return state; }
 
-double Note::getDegree() const { return static_cast<double> (state.getProperty (NoteIDs::degree)); }
+double Note::getDegree() const { return static_cast<double> (state.getProperty (NoteIDs::Degree)); }
 
-double Note::getDuration() const { return static_cast<double> (state.getProperty (NoteIDs::duration)); }
+double Note::getDuration() const { return static_cast<double> (state.getProperty (NoteIDs::Duration)); }
 
-double Note::getOctave() const { return static_cast<double> (state.getProperty (NoteIDs::octave)); }
+double Note::getOctave() const { return static_cast<double> (state.getProperty (NoteIDs::Octave)); }
 
-double Note::getStartTime() const { return static_cast<double> (state.getProperty (NoteIDs::startTime)); }
+double Note::getStartTime() const { return static_cast<double> (state.getProperty (NoteIDs::StartTime)); }
 
 void Note::shiftDegreeUp (juce::UndoManager* undoManager)
 {
     double current = getDegree();
-    state.setProperty (NoteIDs::degree, current + 1.0, undoManager);
+    state.setProperty (NoteIDs::Degree, current + 1.0, undoManager);
 }
 
 void Note::shiftDegreeDown (juce::UndoManager* undoManager)
 {
     double current = getDegree();
-    state.setProperty (NoteIDs::degree, current - 1.0, undoManager);
+    state.setProperty (NoteIDs::Degree, current - 1.0, undoManager);
 }
 
 void Note::shiftEarlier (double step, juce::UndoManager* undoManager)
 {
     double current = getStartTime();
-    state.setProperty (NoteIDs::startTime, current - step, undoManager);
+    state.setProperty (NoteIDs::StartTime, current - step, undoManager);
 }
 
 void Note::shiftLater (double step, juce::UndoManager* undoManager)
 {
     double current = getStartTime();
-    state.setProperty (NoteIDs::startTime, current + step, undoManager);
+    state.setProperty (NoteIDs::StartTime, current + step, undoManager);
 }
 
 void Note::addModifier (Modifier m, UndoManager* undoManager)
@@ -94,11 +94,11 @@ std::optional<Modifier> Note::getModifier (ModifierType type)
 
 bool Note::hasAnyModifier() { return state.getNumChildren() > 0; }
 
-int Note::getVelocity() const { return static_cast<int> (state.getProperty (NoteIDs::velocity)); }
+int Note::getVelocity() const { return static_cast<int> (state.getProperty (NoteIDs::Velocity)); }
 
 void Note::setVelocity (int v, juce::UndoManager* undoManager)
 {
-    state.setProperty (NoteIDs::velocity, v, undoManager);
+    state.setProperty (NoteIDs::Velocity, v, undoManager);
 }
 
 std::optional<MidiNote> Note::asMidiNote (Timeline t, [[maybe_unused]] Scale s, double tempo)

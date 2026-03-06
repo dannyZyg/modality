@@ -10,18 +10,49 @@
 
 #include "Sequence.h"
 #include "Data/Note.h"
+#include "Data/Scale.h"
 #include "Data/Timeline.h"
 #include "juce_core/juce_core.h"
+#include "juce_data_structures/juce_data_structures.h"
 
-Sequence::Sequence() : state (SequenceIDs::Sequence), notesState (NotesStateIDs::NotesState), timeline (0, defaultLengthBeats)
+Sequence::Sequence() : Sequence (juce::ValueTree()) {}
+
+Sequence::Sequence (juce::ValueTree existingState) : state (existingState.isValid() ? std::move (existingState) : juce::ValueTree (SequenceIDs::Sequence)),
+                                                     timeline (state.getChildWithName (TimelineIDs::Timeline)),
+                                                     scale (state.getChildWithName (ScaleIDs::Scale))
 {
-    state.setProperty (SequenceIDs::midiChannel, 1, nullptr);
-    state.setProperty (SequenceIDs::midiOutputId, "", nullptr);
-    state.setProperty (SequenceIDs::lengthBeats, defaultLengthBeats, nullptr);
-    state.addChild (timeline.getState(), -1, nullptr);
-    state.addChild (scale.getState(), -1, nullptr);
-    state.addChild (notesState, -1, nullptr);
+    // ensure properties exist
+    if (! state.hasProperty (SequenceIDs::MidiChannel))
+        setMidiChannel (1);
+
+    if (! state.hasProperty (SequenceIDs::LengthBeats))
+        setLengthBeats (defaultLengthBeats);
+
+    if (! state.hasProperty (SequenceIDs::MidiOutputId))
+        setMidiOutputId ("");
+
+    // ensure child trees exist
+    if (! state.getChildWithName (TimelineIDs::Timeline).isValid())
+        state.addChild (timeline.getState(), -1, nullptr);
+
+    if (! state.getChildWithName (ScaleIDs::Scale).isValid())
+        state.addChild (scale.getState(), -1, nullptr);
+
+    if (! state.getChildWithName (SequenceIDs::Notes).isValid())
+        state.addChild (juce::ValueTree (SequenceIDs::Notes), -1, nullptr);
+
+    auto notesState = getNotesState();
+    for (int i = 0; i < notesState.getNumChildren(); ++i)
+    {
+        insertNote (notesState.getChild (i), nullptr);
+    }
+
     state.addListener (this);
+}
+
+juce::ValueTree Sequence::ensureChildrenExist (juce::ValueTree s)
+{
+    return s;
 }
 
 Sequence::~Sequence()
@@ -29,7 +60,14 @@ Sequence::~Sequence()
     state.removeListener (this);
 }
 
-void Sequence::insertNote (juce::ValueTree& v, juce::UndoManager* undoManager)
+juce::ValueTree& Sequence::getState() { return state; }
+
+juce::ValueTree Sequence::getNotesState()
+{
+    return state.getChildWithName (SequenceIDs::Notes);
+}
+
+void Sequence::insertNote (juce::ValueTree v, juce::UndoManager* undoManager)
 {
     jassert (v.hasType (NoteIDs::Note));
 
@@ -39,19 +77,21 @@ void Sequence::insertNote (juce::ValueTree& v, juce::UndoManager* undoManager)
         return;
     }
 
-    notesState.addChild (v, -1, undoManager);
+    getNotesState().addChild (v, -1, undoManager);
 }
 
 bool Sequence::isExistingNote (juce::ValueTree newNote)
 {
+    auto notesState = getNotesState();
+
     for (int i = 0; i < notesState.getNumChildren(); ++i)
     {
         auto existingNote = notesState.getChild (i);
-        double existingDegree = static_cast<double> (existingNote.getProperty (NoteIDs::degree));
-        double existingStartTime = static_cast<double> (existingNote.getProperty (NoteIDs::startTime));
+        double existingDegree = static_cast<double> (existingNote.getProperty (NoteIDs::Degree));
+        double existingStartTime = static_cast<double> (existingNote.getProperty (NoteIDs::StartTime));
 
-        double newDegree = static_cast<double> (newNote.getProperty (NoteIDs::degree));
-        double newStartTime = static_cast<double> (newNote.getProperty (NoteIDs::startTime));
+        double newDegree = static_cast<double> (newNote.getProperty (NoteIDs::Degree));
+        double newStartTime = static_cast<double> (newNote.getProperty (NoteIDs::StartTime));
 
         if (juce::approximatelyEqual (existingDegree, newDegree) && juce::approximatelyEqual (existingStartTime, newStartTime))
         {
@@ -69,29 +109,29 @@ double Sequence::getLengthSeconds (double tempo) const
 
 void Sequence::setLengthBeats (double beats, juce::UndoManager* undoManager)
 {
-    state.setProperty (SequenceIDs::lengthBeats, beats, undoManager);
+    state.setProperty (SequenceIDs::LengthBeats, beats, undoManager);
     // update timeline with new bounds
     timeline.setUpperBound (beats, undoManager);
 }
 
-double Sequence::getLengthBeats() const { return static_cast<double> (state.getProperty (SequenceIDs::lengthBeats)); }
+double Sequence::getLengthBeats() const { return static_cast<double> (state.getProperty (SequenceIDs::LengthBeats)); }
 
-int Sequence::getMidiChannel() const { return static_cast<int> (state.getProperty (SequenceIDs::midiChannel)); }
+int Sequence::getMidiChannel() const { return static_cast<int> (state.getProperty (SequenceIDs::MidiChannel)); }
 
 void Sequence::setMidiChannel (int channel, juce::UndoManager* undoManager)
 {
     int midiChannel = juce::jlimit (1, 16, channel);
-    state.setProperty (SequenceIDs::midiChannel, midiChannel, undoManager);
+    state.setProperty (SequenceIDs::MidiChannel, midiChannel, undoManager);
 }
 
-void Sequence::setMidiOutputId (const juce::String& outputId)
+void Sequence::setMidiOutputId (const juce::String& outputId, juce::UndoManager* undoManager)
 {
-    midiOutputId = outputId;
+    state.setProperty (SequenceIDs::MidiOutputId, outputId, undoManager);
 }
 
-const juce::String& Sequence::getMidiOutputId() const
+juce::String Sequence::getMidiOutputId() const
 {
-    return midiOutputId;
+    return state.getProperty (SequenceIDs::MidiOutputId);
 }
 
 void Sequence::setEnabled (bool isEnabled)
@@ -149,6 +189,8 @@ void Sequence::removeNotes (
     double minDegree,
     double maxDegree)
 {
+    auto notesState = getNotesState();
+
     for (int i = notesState.getNumChildren() - 1; i >= 0; --i)
     {
         juce::ValueTree noteChild = notesState.getChild (i);
@@ -164,7 +206,7 @@ void Sequence::removeNotes (
 void Sequence::valueTreeChildAdded (ValueTree& parentTree,
                                     ValueTree& childWhichHasBeenAdded)
 {
-    if (parentTree.hasType (NotesStateIDs::NotesState))
+    if (parentTree.hasType (SequenceIDs::Notes))
     {
         auto note = std::make_unique<Note> (childWhichHasBeenAdded);
         notes.emplace_back (std::move (note));
@@ -175,7 +217,7 @@ void Sequence::valueTreeChildRemoved (ValueTree& parentTree,
                                       ValueTree& childWhichHasBeenRemoved,
                                       [[maybe_unused]] int indexFromWhichChildWasRemoved)
 {
-    if (parentTree.hasType (NotesStateIDs::NotesState))
+    if (parentTree.hasType (SequenceIDs::Notes))
     {
         std::erase_if (notes, [&] (const auto& note)
                        { return note->getState() == childWhichHasBeenRemoved; });

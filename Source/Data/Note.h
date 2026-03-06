@@ -21,11 +21,11 @@ namespace NoteIDs
 {
 #define DECLARE_ID(name) inline const juce::Identifier name { #name };
 DECLARE_ID (Note)
-DECLARE_ID (degree)
-DECLARE_ID (startTime)
-DECLARE_ID (duration)
-DECLARE_ID (octave)
-DECLARE_ID (velocity)
+DECLARE_ID (Degree)
+DECLARE_ID (StartTime)
+DECLARE_ID (Duration)
+DECLARE_ID (Octave)
+DECLARE_ID (Velocity)
 #undef DECLARE_ID
 } // namespace NoteIDs
 
@@ -56,8 +56,8 @@ public:
 
     static bool isWithinRange (juce::ValueTree state, double minTime, double maxTime, double minDegree, double maxDegree)
     {
-        double startTime = static_cast<double> (state.getProperty (NoteIDs::startTime));
-        double degree = static_cast<double> (state.getProperty (NoteIDs::degree));
+        double startTime = static_cast<double> (state.getProperty (NoteIDs::StartTime));
+        double degree = static_cast<double> (state.getProperty (NoteIDs::Degree));
         return startTime >= minTime && startTime < maxTime && degree >= minDegree && degree <= maxDegree;
     }
 

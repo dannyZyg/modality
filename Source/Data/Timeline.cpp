@@ -1,15 +1,29 @@
 #include "Timeline.h"
+#include "juce_core/juce_core.h"
+#include "juce_data_structures/juce_data_structures.h"
+#include <utility>
 
 TimePoint::TimePoint (double init)
 {
     value = init;
 }
 
-Timeline::Timeline (double lower, double upper) : state ("Timeline")
+Timeline::Timeline (double lower, double upper) : Timeline (juce::ValueTree())
 {
-    setStepSize (Division::quarter, nullptr);
-    state.setProperty (TimelineIDs::lowerBound, lower, nullptr);
-    state.setProperty (TimelineIDs::upperBound, upper, nullptr);
+    setLowerBound (lower);
+    setUpperBound (upper);
+}
+
+Timeline::Timeline (juce::ValueTree existingState) : state (existingState.isValid() ? std::move (existingState) : juce::ValueTree (TimelineIDs::Timeline))
+{
+    if (! state.hasProperty (TimelineIDs::StepSize))
+        setStepSize (Division::quarter, nullptr);
+
+    if (! state.hasProperty (TimelineIDs::LowerBound))
+        setLowerBound (0.0);
+
+    if (! state.hasProperty (TimelineIDs::UpperBound))
+        setUpperBound (4.0);
 }
 
 juce::ValueTree& Timeline::getState() { return state; }
@@ -19,25 +33,25 @@ double Timeline::clampValue (double newValue)
     return std::clamp (newValue, getLowerBound(), getUpperBound());
 }
 
-double Timeline::getLowerBound() const { return state.getProperty (TimelineIDs::lowerBound); }
+double Timeline::getLowerBound() const { return state.getProperty (TimelineIDs::LowerBound); }
 
 void Timeline::setLowerBound (double lowerBound, juce::UndoManager* undoManager)
 {
-    state.setProperty (TimelineIDs::lowerBound, lowerBound, undoManager);
+    state.setProperty (TimelineIDs::LowerBound, lowerBound, undoManager);
 }
 
-double Timeline::getUpperBound() const { return state.getProperty (TimelineIDs::upperBound); }
+double Timeline::getUpperBound() const { return state.getProperty (TimelineIDs::UpperBound); }
 
 void Timeline::setUpperBound (double upperBound, juce::UndoManager* undoManager)
 {
-    state.setProperty (TimelineIDs::upperBound, upperBound, undoManager);
+    state.setProperty (TimelineIDs::UpperBound, upperBound, undoManager);
 }
 
-double Timeline::getStepSize() const { return state.getProperty (TimelineIDs::stepSize); }
+double Timeline::getStepSize() const { return state.getProperty (TimelineIDs::StepSize); }
 
 void Timeline::setStepSize (double stepSize, juce::UndoManager* undoManager)
 {
-    state.setProperty (TimelineIDs::stepSize, stepSize, undoManager);
+    state.setProperty (TimelineIDs::StepSize, stepSize, undoManager);
 }
 
 double Timeline::getSmallestStepSize() const { return Division::thirtysecond; }

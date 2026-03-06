@@ -11,16 +11,16 @@ namespace ModifierIDs
 #define DECLARE_ID(name) inline const juce::Identifier name { #name };
 
 // Modifier types
-DECLARE_ID (randomTrigger)
-DECLARE_ID (randomOctaveShift)
-DECLARE_ID (randomVelocity)
+DECLARE_ID (RandomTrigger)
+DECLARE_ID (RandomOctaveShift)
+DECLARE_ID (RandomVelocity)
 
 // Parameter IDs
-DECLARE_ID (randomTriggerProbability)
-DECLARE_ID (randomOctaveShiftRange)
-DECLARE_ID (randomOctaveShiftProbability)
-DECLARE_ID (randomVelocityProbability)
-DECLARE_ID (randomVelocityRange)
+DECLARE_ID (RandomTriggerProbability)
+DECLARE_ID (RandomOctaveShiftRange)
+DECLARE_ID (RandomOctaveShiftProbability)
+DECLARE_ID (RandomVelocityProbability)
+DECLARE_ID (RandomVelocityRange)
 
 #undef DECLARE_ID
 } // namespace ModifierIDs

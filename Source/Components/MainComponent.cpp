@@ -3,7 +3,6 @@
 #include "Components/ModifierComponentFactory.h"
 #include "Components/PaginatedSettingsComponent.h"
 #include "Components/ShortcutInfoComponent.h"
-#include "Components/Widgets/ISelectableWidget.h"
 #include "Data/AppSettings.h"
 #include "Data/MenuNode.h"
 #include "Data/Modifier.h"
@@ -13,12 +12,14 @@
 #include <utility>
 
 //==============================================================================
-MainComponent::MainComponent() : sequenceComponent (cursor, transport),
+MainComponent::MainComponent() : cursor (composition),
+                                 sequenceComponent (cursor, transport),
                                  cursorComponent (cursor),
                                  midlineComponent (cursor),
                                  statusBarComponent (cursor),
                                  modifierMenuComponent (cursor),
-                                 sequenceSelectionComponent (cursor)
+                                 sequenceSelectionComponent (cursor, composition)
+
 {
     AppSettings::getInstance().initialise ("Modality");
 
@@ -87,13 +88,13 @@ MainComponent::MainComponent() : sequenceComponent (cursor, transport),
     // In a real implementation, these would bind to actual modifiers on selected notes
     auto& registry = ModifierRegistry::getInstance();
 
-    randomTriggerState = registry.createDefaultState (ModifierIDs::randomTrigger);
-    randomVelocityState = registry.createDefaultState (ModifierIDs::randomVelocity);
-    randomOctaveShiftState = registry.createDefaultState (ModifierIDs::randomOctaveShift);
+    randomTriggerState = registry.createDefaultState (ModifierIDs::RandomTrigger);
+    randomVelocityState = registry.createDefaultState (ModifierIDs::RandomVelocity);
+    randomOctaveShiftState = registry.createDefaultState (ModifierIDs::RandomOctaveShift);
 
-    auto widgets = ModifierComponentFactory::createWidgets (ModifierIDs::randomTrigger, randomTriggerState);
-    auto widgetsVel = ModifierComponentFactory::createWidgets (ModifierIDs::randomVelocity, randomVelocityState);
-    auto widgetsOct = ModifierComponentFactory::createWidgets (ModifierIDs::randomOctaveShift, randomOctaveShiftState);
+    auto widgets = ModifierComponentFactory::createWidgets (ModifierIDs::RandomTrigger, randomTriggerState);
+    auto widgetsVel = ModifierComponentFactory::createWidgets (ModifierIDs::RandomVelocity, randomVelocityState);
+    auto widgetsOct = ModifierComponentFactory::createWidgets (ModifierIDs::RandomOctaveShift, randomOctaveShiftState);
 
     auto randomTriggerModComponent = std::make_unique<PaginatedSettingsComponent> (std::move (widgets));
     auto velocityModComponent = std::make_unique<PaginatedSettingsComponent> (std::move (widgetsVel));
@@ -138,7 +139,7 @@ void MainComponent::update()
 
 void MainComponent::checkAndScheduleTracks()
 {
-    size_t numTracks = cursor.getSequences().size();
+    size_t numTracks = composition.getSequences().size();
 
     for (size_t i = 0; i < numTracks; ++i)
     {
@@ -196,10 +197,10 @@ void MainComponent::start()
     transport.reset();
 
     // Set up track count based on number of sequences
-    transport.setNumTracks (cursor.getSequences().size());
+    transport.setNumTracks (composition.getSequences().size());
 
     // Schedule all tracks for the first loop iteration
-    size_t numTracks = cursor.getSequences().size();
+    size_t numTracks = composition.getSequences().size();
     for (size_t i = 0; i < numTracks; ++i)
     {
         scheduleTrack (i);
@@ -240,13 +241,14 @@ void MainComponent::scheduleTrack (size_t trackIndex)
     }
 
     // Extract MIDI notes using global tempo
-    auto notes = cursor.extractMidiSequence (trackIndex, tempo);
+    auto notes = composition.extractMidiSequence (trackIndex, tempo);
 
     // Get timing from the sequence (using global tempo)
     double loopStartTime = transport.getTrackNextLoopStartTime (trackIndex);
     double loopLengthSeconds = seq.getLengthSeconds (tempo);
     int midiChannel = seq.getMidiChannel();
 
+    DBG ("MIDI CHAN: " + String (midiChannel));
     // Schedule the track
     transport.scheduleTrack (trackIndex, notes, loopStartTime, loopLengthSeconds, output, midiChannel);
 

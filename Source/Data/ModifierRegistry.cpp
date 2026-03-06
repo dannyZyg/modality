@@ -56,20 +56,20 @@ juce::ValueTree ModifierRegistry::createDefaultState (const juce::Identifier& ty
 // ============================================
 namespace
 {
-static bool reg1 = ModifierRegistry::getInstance().registerModifier ({ ModifierIDs::randomTrigger,
+static bool reg1 = ModifierRegistry::getInstance().registerModifier ({ ModifierIDs::RandomTrigger,
                                                                        "Random Trigger",
                                                                        juce::Identifier ("sliderPanel"),
-                                                                       { { ModifierIDs::randomTriggerProbability, "Probability", ParamWidgetType::slider, 0.5, 0.0, 1.0 } } });
+                                                                       { { ModifierIDs::RandomTriggerProbability, "Probability", ParamWidgetType::slider, 0.5, 0.0, 1.0 } } });
 
-static bool reg2 = ModifierRegistry::getInstance().registerModifier ({ ModifierIDs::randomOctaveShift,
+static bool reg2 = ModifierRegistry::getInstance().registerModifier ({ ModifierIDs::RandomOctaveShift,
                                                                        "Random Octave",
                                                                        juce::Identifier ("sliderPanel"),
-                                                                       { { ModifierIDs::randomOctaveShiftProbability, "Probability", ParamWidgetType::slider, 0.5, 0.0, 1.0 },
-                                                                         { ModifierIDs::randomOctaveShiftRange, "Range", ParamWidgetType::slider, 2.0, 1.0, 4.0 } } });
+                                                                       { { ModifierIDs::RandomOctaveShiftProbability, "Probability", ParamWidgetType::slider, 0.5, 0.0, 1.0 },
+                                                                         { ModifierIDs::RandomOctaveShiftRange, "Range", ParamWidgetType::slider, 2.0, 1.0, 4.0 } } });
 
-static bool reg3 = ModifierRegistry::getInstance().registerModifier ({ ModifierIDs::randomVelocity,
+static bool reg3 = ModifierRegistry::getInstance().registerModifier ({ ModifierIDs::RandomVelocity,
                                                                        "Random Velocity",
                                                                        juce::Identifier ("sliderPanel"),
-                                                                       { { ModifierIDs::randomVelocityProbability, "Probability", ParamWidgetType::slider, 0.5, 0.0, 1.0 },
-                                                                         { ModifierIDs::randomVelocityRange, "Range", ParamWidgetType::slider, 0.5, 0.0, 1.0 } } });
+                                                                       { { ModifierIDs::RandomVelocityProbability, "Probability", ParamWidgetType::slider, 0.5, 0.0, 1.0 },
+                                                                         { ModifierIDs::RandomVelocityRange, "Range", ParamWidgetType::slider, 0.5, 0.0, 1.0 } } });
 } // namespace

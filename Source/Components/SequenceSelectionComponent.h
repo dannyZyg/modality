@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Data/Composition.h"
 #include "Data/Cursor.h"
 #include <JuceHeader.h>
 
@@ -12,7 +13,7 @@ class SequenceSelectionComponent : public juce::Component
 {
 public:
     //==============================================================================
-    SequenceSelectionComponent (const Cursor& c);
+    SequenceSelectionComponent (const Cursor& curs, const Composition& comp);
     ~SequenceSelectionComponent() override;
 
     void paint (juce::Graphics& g) override;
@@ -21,6 +22,7 @@ public:
 
 private:
     const Cursor& cursor;
+    const Composition& composition;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SequenceSelectionComponent)
 };

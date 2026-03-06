@@ -6,8 +6,9 @@
 namespace ScaleIDs
 {
 #define DECLARE_ID(name) inline const juce::Identifier name { #name };
-DECLARE_ID (name)
-DECLARE_ID (degrees)
+DECLARE_ID (Scale)
+DECLARE_ID (Name)
+DECLARE_ID (Degrees)
 #undef DECLARE_ID
 } // namespace ScaleIDs
 
@@ -29,7 +30,8 @@ public:
 class Scale
 {
 public:
-    Scale (const juce::String& name);
+    explicit Scale (const juce::String& name);
+    explicit Scale (juce::ValueTree existingState);
 
     double getLowerBound() const;
     double getUpperBound() const;

@@ -10,23 +10,18 @@
 
 #pragma once
 #include "Data/Note.h"
+#include "juce_data_structures/juce_data_structures.h"
 
 namespace SequenceIDs
 {
 #define DECLARE_ID(name) inline const juce::Identifier name { #name };
 DECLARE_ID (Sequence)
-DECLARE_ID (lengthBeats)
-DECLARE_ID (midiChannel)
-DECLARE_ID (midiOutputId)
+DECLARE_ID (Notes)
+DECLARE_ID (LengthBeats)
+DECLARE_ID (MidiChannel)
+DECLARE_ID (MidiOutputId)
 #undef DECLARE_ID
 } // namespace SequenceIDs
-
-namespace NotesStateIDs
-{
-#define DECLARE_ID(name) inline const juce::Identifier name { #name };
-DECLARE_ID (NotesState)
-#undef DECLARE_ID
-} // namespace NotesStateIDs
 
 static constexpr double defaultLengthBeats = 4.0f;
 
@@ -34,22 +29,22 @@ class Sequence : juce::ValueTree::Listener
 {
 public:
     Sequence();
+    explicit Sequence (juce::ValueTree existingState);
     ~Sequence();
+
+    juce::ValueTree& getState();
 
     double getLengthSeconds (double tempo) const;
     double getLengthBeats() const;
     void setLengthBeats (double beats, juce::UndoManager* undoManager = nullptr);
-
-    // MIDI output device identifier. Empty string means use the default output device.
-    juce::String midiOutputId = "";
 
     bool enabled = true;
     bool muted = false;
 
     void setMidiChannel (int channel, juce::UndoManager* undoManager = nullptr);
     int getMidiChannel() const;
-    void setMidiOutputId (const juce::String& outputId);
-    const juce::String& getMidiOutputId() const;
+    void setMidiOutputId (const juce::String& outputId, juce::UndoManager* undoManager = nullptr);
+    juce::String getMidiOutputId() const;
 
     void setEnabled (bool isEnabled);
     bool isEnabled() const;
@@ -68,7 +63,7 @@ public:
 
     std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotes (double minTime, double maxTime, double minDegree, double maxDegree);
     void removeNotes (double minTime, double maxTime, double minDegree, double maxDegree);
-    void insertNote (juce::ValueTree& v, juce::UndoManager* undoManager = nullptr);
+    void insertNote (juce::ValueTree v, juce::UndoManager* undoManager = nullptr);
     bool isExistingNote (juce::ValueTree noteState);
 
     const Timeline& getTimeline() const;
@@ -86,10 +81,11 @@ public:
     TimePoint getPrevTimelineStep (const TimePoint& tp, double division);
 
 private:
+    juce::ValueTree ensureChildrenExist (juce::ValueTree s);
     auto isNoteWithin (double minTime, double maxTime, double minDegree, double maxDegree);
 
     juce::ValueTree state;
-    juce::ValueTree notesState;
+    juce::ValueTree getNotesState();
 
     Timeline timeline;
     Scale scale { "Natural Minor" };
