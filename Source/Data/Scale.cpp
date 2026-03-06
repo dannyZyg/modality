@@ -1,5 +1,6 @@
 #include "Scale.h"
 #include "juce_data_structures/juce_data_structures.h"
+#include <algorithm>
 #include <utility>
 
 Degree::Degree (double init)
@@ -12,17 +13,10 @@ Scale::Scale (const juce::String& name) : state (ScaleIDs::Scale)
     setScale (name);
 }
 
-Scale::Scale (juce::ValueTree existingState)
+Scale::Scale (juce::ValueTree existingState) : state (existingState.isValid() ? std::move (existingState) : juce::ValueTree (ScaleIDs::Scale))
 {
-    if (existingState.isValid())
-    {
-        state = std::move (existingState);
-    }
-    else
-    {
-        state = juce::ValueTree (ScaleIDs::Scale);
+    if (! state.hasProperty (ScaleIDs::Name))
         setScale ("Major");
-    }
 }
 
 juce::ValueTree& Scale::getState() { return state; }
