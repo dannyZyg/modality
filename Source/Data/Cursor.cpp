@@ -232,6 +232,7 @@ void Cursor::insertNote()
     noteState.setProperty (NoteIDs::Degree, cursorPosition.yDegree.value, nullptr);
     noteState.setProperty (NoteIDs::StartTime, cursorPosition.xTimepoint.value, nullptr);
     noteState.setProperty (NoteIDs::Duration, getCurrentTimeline().getStepSize(), nullptr);
+    noteState.setProperty (NoteIDs::Velocity, 100, nullptr);
 
     getSelectedSequence().insertNote (noteState);
 }

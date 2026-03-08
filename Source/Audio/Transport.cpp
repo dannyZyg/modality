@@ -8,6 +8,7 @@
 */
 
 #include "Transport.h"
+#include "juce_core/system/juce_PlatformDefs.h"
 
 Transport::Transport()
 {
@@ -73,7 +74,6 @@ void Transport::start()
 void Transport::stop()
 {
     transportSource.stop();
-    clearScheduledEvents();
 }
 
 bool Transport::isPlaying() const
@@ -163,14 +163,11 @@ void Transport::audioDeviceIOCallbackWithContext (
     juce::AudioBuffer<float> tempBuffer (outputChannelData, numOutputChannels, numSamples);
     transportSource.getNextAudioBlock (juce::AudioSourceChannelInfo (tempBuffer));
 
-    if (! isPlaying())
-        return;
-
     double currentPosition = getCurrentPosition();
     double bufferDuration = static_cast<double> (numSamples) / sampleRate;
 
     // Process MIDI events - realtime safe, no allocations
-    engine.processBlock (currentPosition, bufferDuration);
+    engine.processBlock (currentPosition, bufferDuration, isPlaying());
 }
 
 void Transport::audioDeviceAboutToStart (juce::AudioIODevice* device)

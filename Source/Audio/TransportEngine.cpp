@@ -8,6 +8,8 @@
 */
 
 #include "TransportEngine.h"
+#include "juce_core/juce_core.h"
+#include "juce_core/system/juce_PlatformDefs.h"
 #include <algorithm>
 
 TransportEngine::TransportEngine()
@@ -173,8 +175,31 @@ void TransportEngine::reset()
 
 // === Audio Thread Processing ===
 
-void TransportEngine::processBlock (double currentPosition, double bufferDuration)
+void TransportEngine::processBlock (double currentPosition, double bufferDuration, bool isPlaying)
 {
+    // check if transport has just stopped
+    if (wasPlaying.load() && ! isPlaying)
+    {
+        DBG ("wasPlaying && !isPlaying: met");
+        for (size_t i = 0; i < numActiveTracks.load(); ++i)
+        {
+            auto& trackState = trackStates[i];
+            if (trackState.cachedOutput != nullptr)
+            {
+                juce::Logger::writeToLog ("Sending All Notes Off on channel " + juce::String (trackState.cachedMidiChannel));
+                // send note off messages to active channels
+                trackState.cachedOutput->sendMessageNow (juce::MidiMessage::allNotesOff (trackState.cachedMidiChannel));
+                trackState.cachedOutput->sendMessageNow (juce::MidiMessage::allSoundOff (trackState.cachedMidiChannel));
+            }
+        }
+        clearScheduledEvents();
+    }
+
+    wasPlaying.store (isPlaying);
+
+    if (! isPlaying)
+        return;
+
     double bufferEndTime = currentPosition + bufferDuration;
 
     // Read events from the FIFO that fall within this buffer's time window

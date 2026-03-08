@@ -122,9 +122,11 @@ public:
      * @param currentPosition Current transport position in seconds
      * @param bufferDuration Duration of the audio buffer in seconds
      */
-    void processBlock (double currentPosition, double bufferDuration);
+    void processBlock (double currentPosition, double bufferDuration, bool isPlaying);
 
 private:
+    std::atomic<bool> wasPlaying { false };
+
     // Lock-free event queue
     std::array<ScheduledEvent, MAX_EVENTS> eventBuffer;
     juce::AbstractFifo fifo { MAX_EVENTS };

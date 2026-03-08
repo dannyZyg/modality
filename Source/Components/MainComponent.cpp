@@ -190,9 +190,6 @@ void MainComponent::resized()
 
 void MainComponent::start()
 {
-    // Stop any currently playing notes on all open outputs
-    midiOutputManager.sendAllNotesOff();
-
     // Reset transport - all tracks start from beat 0
     transport.reset();
 
@@ -248,7 +245,6 @@ void MainComponent::scheduleTrack (size_t trackIndex)
     double loopLengthSeconds = seq.getLengthSeconds (tempo);
     int midiChannel = seq.getMidiChannel();
 
-    DBG ("MIDI CHAN: " + String (midiChannel));
     // Schedule the track
     transport.scheduleTrack (trackIndex, notes, loopStartTime, loopLengthSeconds, output, midiChannel);
 
@@ -259,10 +255,6 @@ void MainComponent::scheduleTrack (size_t trackIndex)
 void MainComponent::stop()
 {
     transport.stop();
-
-    // Stop all notes on all outputs
-    midiOutputManager.sendAllNotesOff();
-
     juce::Logger::writeToLog ("Transport Stopped");
 }
 
