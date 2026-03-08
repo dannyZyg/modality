@@ -42,24 +42,28 @@ double Note::getStartTime() const { return static_cast<double> (state.getPropert
 
 void Note::shiftDegreeUp (juce::UndoManager* undoManager)
 {
+    undoManager->beginNewTransaction ("shiftDegreeUp");
     double current = getDegree();
     state.setProperty (NoteIDs::Degree, current + 1.0, undoManager);
 }
 
 void Note::shiftDegreeDown (juce::UndoManager* undoManager)
 {
+    undoManager->beginNewTransaction ("shiftDegreeDown");
     double current = getDegree();
     state.setProperty (NoteIDs::Degree, current - 1.0, undoManager);
 }
 
 void Note::shiftEarlier (double step, juce::UndoManager* undoManager)
 {
+    undoManager->beginNewTransaction ("shiftEarlier");
     double current = getStartTime();
     state.setProperty (NoteIDs::StartTime, current - step, undoManager);
 }
 
 void Note::shiftLater (double step, juce::UndoManager* undoManager)
 {
+    undoManager->beginNewTransaction ("shiftLater");
     double current = getStartTime();
     state.setProperty (NoteIDs::StartTime, current + step, undoManager);
 }

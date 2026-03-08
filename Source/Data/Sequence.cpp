@@ -77,6 +77,7 @@ void Sequence::insertNote (juce::ValueTree v, juce::UndoManager* undoManager)
         return;
     }
 
+    undoManager->beginNewTransaction ("insertNote");
     getNotesState().addChild (v, -1, undoManager);
 }
 
@@ -187,8 +188,11 @@ void Sequence::removeNotes (
     double minTime,
     double maxTime,
     double minDegree,
-    double maxDegree)
+    double maxDegree,
+    juce::UndoManager* undoManager)
 {
+    undoManager->beginNewTransaction ("removeNotes");
+
     auto notesState = getNotesState();
 
     for (int i = notesState.getNumChildren() - 1; i >= 0; --i)
@@ -198,7 +202,7 @@ void Sequence::removeNotes (
 
         if (isWithinRange)
         {
-            notesState.removeChild (noteChild, nullptr);
+            notesState.removeChild (noteChild, undoManager);
         }
     }
 }

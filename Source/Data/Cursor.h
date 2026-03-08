@@ -39,6 +39,9 @@ public:
     void jumpToStart();
     void jumpToEnd();
 
+    void undo();
+    void redo();
+
     void move (Direction d, Selection::MoveMode moveMode = Selection::MoveMode::extend);
 
     void moveCursorSelection (Direction d);
@@ -101,6 +104,8 @@ public:
 
 private:
     Composition& composition;
+
+    juce::UndoManager undoManager;
 
     std::mt19937 randomGenerator;
 

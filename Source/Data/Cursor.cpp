@@ -30,6 +30,16 @@ void Cursor::selectSequence (size_t index)
     selectNote (0);
 }
 
+void Cursor::undo()
+{
+    undoManager.undo();
+}
+
+void Cursor::redo()
+{
+    undoManager.redo();
+}
+
 void Cursor::selectNote (size_t nIndex)
 {
     selectedNoteIndex = nIndex;
@@ -60,16 +70,16 @@ void Cursor::moveNotesInSelection (Direction d)
                 switch (d)
                 {
                     case Direction::left:
-                        note->shiftEarlier (seq.getTimeline().getStepSize());
+                        note->shiftEarlier (seq.getTimeline().getStepSize(), &undoManager);
                         break;
                     case Direction::right:
-                        note->shiftLater (seq.getTimeline().getStepSize());
+                        note->shiftLater (seq.getTimeline().getStepSize(), &undoManager);
                         break;
                     case Direction::up:
-                        note->shiftDegreeUp();
+                        note->shiftDegreeUp (&undoManager);
                         break;
                     case Direction::down:
-                        note->shiftDegreeDown();
+                        note->shiftDegreeDown (&undoManager);
                         break;
                     default:
                         break;
@@ -234,7 +244,7 @@ void Cursor::insertNote()
     noteState.setProperty (NoteIDs::Duration, getCurrentTimeline().getStepSize(), nullptr);
     noteState.setProperty (NoteIDs::Velocity, 100, nullptr);
 
-    getSelectedSequence().insertNote (noteState);
+    getSelectedSequence().insertNote (noteState, &undoManager);
 }
 
 void Cursor::removeNotesAtCursor()
@@ -246,7 +256,7 @@ void Cursor::removeNotesAtCursor()
         double timeStart = cursorPosition.xTimepoint.value;
         double timeEnd = timeStart + getCurrentTimeline().getStepSize();
 
-        getSelectedSequence().removeNotes (timeStart, timeEnd, degMin, degMax);
+        getSelectedSequence().removeNotes (timeStart, timeEnd, degMin, degMax, &undoManager);
     }
     else if (isVisualLineMode() || isVisualBlockMode())
     {
@@ -255,7 +265,7 @@ void Cursor::removeNotesAtCursor()
         double timeStart = visualSelection.getEarliestPosition().xTimepoint.value;
         double timeEnd = visualSelection.getLatestPosition().xTimepoint.value + getCurrentTimeline().getStepSize();
 
-        getSelectedSequence().removeNotes (timeStart, timeEnd, degMin, degMax);
+        getSelectedSequence().removeNotes (timeStart, timeEnd, degMin, degMax, &undoManager);
     }
 }
 

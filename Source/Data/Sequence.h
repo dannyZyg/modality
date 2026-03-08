@@ -62,7 +62,7 @@ public:
                                 int indexFromWhichChildWasRemoved);
 
     std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotes (double minTime, double maxTime, double minDegree, double maxDegree);
-    void removeNotes (double minTime, double maxTime, double minDegree, double maxDegree);
+    void removeNotes (double minTime, double maxTime, double minDegree, double maxDegree, juce::UndoManager* undoManager);
     void insertNote (juce::ValueTree v, juce::UndoManager* undoManager = nullptr);
     bool isExistingNote (juce::ValueTree noteState);
 

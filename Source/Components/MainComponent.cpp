@@ -437,6 +437,28 @@ void MainComponent::setupKeyboardShortcuts()
             "Move visual selection up"),
 
         Shortcut (
+            juce::KeyPress ('u'),
+            { Mode::normal },
+            [this]()
+            {
+                cursor.undo();
+                return true;
+            },
+            "Undo",
+            "Undo last cursor action"),
+
+        Shortcut (
+            juce::KeyPress::createFromDescription ("control+r"),
+            { Mode::normal },
+            [this]()
+            {
+                cursor.redo();
+                return true;
+            },
+            "Redo",
+            "Redo last undone cursor action"),
+
+        Shortcut (
             juce::KeyPress ('d'),
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
