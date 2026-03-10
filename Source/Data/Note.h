@@ -41,7 +41,7 @@ struct MidiNote
         : startTime (t), noteNumber (note), velocity (vel), duration (dur) {}
 };
 
-class Note
+class Note : juce::ValueTree::Listener
 {
 public:
     Note (double deg = 0.0, double time = 0.0, double dur = Division::sixteenth);
@@ -67,11 +67,10 @@ public:
     double getOctave() const;
     double getStartTime() const;
     int getVelocity() const;
+
     void setVelocity (int v, juce::UndoManager* undoManager = nullptr);
-    void shiftDegreeUp (juce::UndoManager* undoManager = nullptr);
-    void shiftDegreeDown (juce::UndoManager* undoManager = nullptr);
-    void shiftEarlier (double step, juce::UndoManager* undoManager = nullptr);
-    void shiftLater (double step, juce::UndoManager* undoManager = nullptr);
+    void setDegree (double value, juce::UndoManager* undoManager = nullptr);
+    void setStartTime (double value, juce::UndoManager* undoManager = nullptr);
 
     void addModifier (Modifier m, UndoManager* undoManager = nullptr);
     bool removeModifier (ModifierType type, UndoManager* undoManager = nullptr);

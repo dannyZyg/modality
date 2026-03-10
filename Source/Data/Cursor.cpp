@@ -10,7 +10,11 @@
 
 #include "Cursor.h"
 #include "Data/Note.h"
+#include "Data/Scale.h"
 #include "Data/Selection.h"
+#include "juce_core/system/juce_PlatformDefs.h"
+#include "juce_data_structures/juce_data_structures.h"
+#include <ios>
 
 Cursor::Cursor (Composition& comp) : composition (comp), randomGenerator (std::random_device()())
 {
@@ -59,32 +63,58 @@ void Cursor::moveCursorSelection (Direction d)
 
 void Cursor::moveNotesInSelection (Direction d)
 {
+    auto& seq = getSelectedSequence();
+    std::vector<Note*> notesToMove;
+
+    // Collect notes first, then move. Otherwise we are continually adding the notes we have just moved.
     for (const Position& pos : getVisualSelectionPositions())
     {
-        auto& seq = getSelectedSequence();
         for (auto& note : seq.notes)
         {
             if (Division::isEqual (pos.xTimepoint.value, note->getStartTime())
                 && Division::isEqual (pos.yDegree.value, note->getDegree()))
             {
-                switch (d)
-                {
-                    case Direction::left:
-                        note->shiftEarlier (seq.getTimeline().getStepSize(), &undoManager);
-                        break;
-                    case Direction::right:
-                        note->shiftLater (seq.getTimeline().getStepSize(), &undoManager);
-                        break;
-                    case Direction::up:
-                        note->shiftDegreeUp (&undoManager);
-                        break;
-                    case Direction::down:
-                        note->shiftDegreeDown (&undoManager);
-                        break;
-                    default:
-                        break;
-                }
+                notesToMove.push_back (note.get());
             }
+        }
+    }
+
+    for (auto* note : notesToMove)
+    {
+        switch (d)
+        {
+            case Direction::left:
+            {
+                //TODO needs bounds checking
+                double newStartTime = note->getStartTime() - seq.getTimeline().getStepSize();
+                note->setStartTime (newStartTime, &undoManager);
+                break;
+            }
+            case Direction::right:
+            {
+                //TODO needs bounds checking
+                double newStartTime = note->getStartTime() + seq.getTimeline().getStepSize();
+                note->setStartTime (newStartTime, &undoManager);
+                break;
+            }
+            case Direction::up:
+            {
+                //TODO needs bounds checking?
+                Degree currentDeg = note->getDegree();
+                Degree higherDeg = seq.getScale().getHigher (currentDeg);
+                note->setDegree (higherDeg.value, &undoManager);
+                break;
+            }
+            case Direction::down:
+            {
+                //TODO needs bounds checking?
+                Degree currentDeg = note->getDegree();
+                Degree lowerDeg = seq.getScale().getLower (currentDeg);
+                note->setDegree (lowerDeg.value, &undoManager);
+                break;
+            }
+            default:
+                break;
         }
     }
 }
@@ -114,8 +144,7 @@ void Cursor::move (Direction d, Selection::MoveMode moveMode)
 
     if (moveMode == Selection::MoveMode::shift)
     {
-        double stepSize = d == Direction::left || d == Direction::right ? getCurrentTimeline().getStepSize() : getCurrentScale().getSmallestStepSize();
-        visualSelection.moveSelection (stepSize, d);
+        visualSelection.moveSelection (getCurrentTimeline(), getCurrentScale(), d);
     }
     else if (moveMode == Selection::MoveMode::extend)
     {
@@ -126,7 +155,7 @@ void Cursor::move (Direction d, Selection::MoveMode moveMode)
 
         if (isVisualBlockMode())
         {
-            visualSelection.addToVisualBlockSelection (cursorPosition);
+            visualSelection.addToVisualBlockSelection (cursorPosition, getCurrentTimeline(), getCurrentScale());
         }
     }
 }
@@ -170,7 +199,7 @@ void Cursor::enableVisualLineMode()
 void Cursor::enableVisualBlockMode()
 {
     mode = Mode::visualBlock;
-    visualSelection.addToVisualBlockSelection (cursorPosition);
+    visualSelection.addToVisualBlockSelection (cursorPosition, getCurrentTimeline(), getCurrentScale());
 }
 
 void Cursor::enableInsertMode()
@@ -245,6 +274,7 @@ void Cursor::insertNote()
     noteState.setProperty (NoteIDs::Velocity, 100, nullptr);
 
     getSelectedSequence().insertNote (noteState, &undoManager);
+    DBG ("Inserted" + noteState.toXmlString());
 }
 
 void Cursor::removeNotesAtCursor()

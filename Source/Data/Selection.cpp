@@ -1,4 +1,5 @@
 #include "Selection.h"
+#include "Data/Scale.h"
 
 const std::vector<Position>& Selection::getPositions() const
 {
@@ -22,12 +23,12 @@ void Selection::toggleLineMode()
     }
 }
 
-void Selection::addToVisualLineSelection (Position p, Timeline t, Scale s)
+void Selection::addToVisualLineSelection (Position pos, Timeline& timeline, Scale& scale)
 {
     // If this is the first position, it becomes both cursor and anchor
     if (positions.empty())
     {
-        anchor = p;
+        anchor = pos;
     }
 
     // Clear existing selection
@@ -36,16 +37,16 @@ void Selection::addToVisualLineSelection (Position p, Timeline t, Scale s)
     if (lineMode == VisualLineMode::horizontal)
     {
         // Get the range of rows to fill (between anchor and cursor)
-        double minDegree = std::min (anchor.yDegree.value, p.yDegree.value);
-        double maxDegree = std::max (anchor.yDegree.value, p.yDegree.value);
+        double minDegree = std::min (anchor.yDegree.value, pos.yDegree.value);
+        double maxDegree = std::max (anchor.yDegree.value, pos.yDegree.value);
 
         // For each row in the range...
-        for (double d = minDegree; d <= maxDegree; d += s.getSmallestStepSize())
+        for (double d = minDegree; d <= maxDegree; d += scale.getSmallestStepSize())
         {
             // Fill the entire row
-            for (auto i = t.getLowerBound(); i < t.size() - 1; ++i)
+            for (auto i = timeline.getLowerBound(); i < timeline.size() - 1; ++i)
             {
-                auto time = i * t.getSmallestStepSize();
+                auto time = i * timeline.getSmallestStepSize();
                 positions.emplace_back (Position { TimePoint { time }, Degree { d } });
             }
         }
@@ -53,29 +54,29 @@ void Selection::addToVisualLineSelection (Position p, Timeline t, Scale s)
     else if (lineMode == VisualLineMode::vertical)
     {
         // Get the range of columns to fill (between anchor and cursor)
-        double minTime = std::min (anchor.xTimepoint.value, p.xTimepoint.value);
-        double maxTime = std::max (anchor.xTimepoint.value, p.xTimepoint.value);
+        double minTime = std::min (anchor.xTimepoint.value, pos.xTimepoint.value);
+        double maxTime = std::max (anchor.xTimepoint.value, pos.xTimepoint.value);
 
         // For each column in the range...
-        for (double time = minTime; time <= maxTime; time += t.getSmallestStepSize())
+        for (double time = minTime; time <= maxTime; time += timeline.getSmallestStepSize())
         {
             // Fill the entire column
-            for (auto i = s.getLowerBound(); i < s.size() - 1; ++i)
+            for (auto i = scale.getLowerBound(); i < scale.size() - 1; ++i)
             {
-                auto deg = i * s.getSmallestStepSize();
+                auto deg = i * scale.getSmallestStepSize();
                 positions.emplace_back (Position { TimePoint { time }, Degree { deg } });
             }
         }
     }
 }
 
-void Selection::addToVisualBlockSelection (Position p)
+void Selection::addToVisualBlockSelection (Position pos, Timeline& timeline, Scale& scale)
 {
     // If this is the first position, it becomes both cursor and anchor
     if (positions.empty())
     {
-        positions.push_back (p);
-        anchor = p;
+        positions.push_back (pos);
+        anchor = pos;
         return;
     }
 
@@ -83,18 +84,23 @@ void Selection::addToVisualBlockSelection (Position p)
     positions.clear();
 
     // Calculate boundaries between anchor and cursor
-    double minTime = std::min (anchor.xTimepoint.value, p.xTimepoint.value);
-    double maxTime = std::max (anchor.xTimepoint.value, p.xTimepoint.value);
-    double minDegree = std::min (anchor.yDegree.value, p.yDegree.value);
-    double maxDegree = std::max (anchor.yDegree.value, p.yDegree.value);
+    double minTime = std::min (anchor.xTimepoint.value, pos.xTimepoint.value);
+    double maxTime = std::max (anchor.xTimepoint.value, pos.xTimepoint.value);
+    double minDegree = std::min (anchor.yDegree.value, pos.yDegree.value);
+    double maxDegree = std::max (anchor.yDegree.value, pos.yDegree.value);
 
     // Fill in all positions in the rectangle
-    for (double t = minTime; t <= maxTime; t += Division::thirtysecond)
+    for (double t = minTime; t <= maxTime; t += timeline.getStepSize())
     {
-        for (double d = minDegree; d <= maxDegree; d += Division::thirtysecond)
+        Degree currentDegree (minDegree);
+
+        while (currentDegree.value <= maxDegree)
         {
-            Position newPos { TimePoint { t }, Degree { d } };
-            positions.push_back (newPos);
+            positions.push_back (Position { TimePoint { t }, Degree { currentDegree } });
+            Degree nextDegree = scale.getHigher (currentDegree);
+            if (juce::approximatelyEqual (nextDegree.value, currentDegree.value))
+                break;
+            currentDegree = nextDegree;
         }
     }
 }
@@ -198,23 +204,23 @@ Position Selection::getOppositeCorner (Position p)
     return Position {};
 }
 
-void Selection::moveSelection (double step, Direction d)
+void Selection::moveSelection (const Timeline& timeline, const Scale& scale, Direction d)
 {
     for (auto& p : positions)
     {
         switch (d)
         {
             case Direction::left:
-                p.xTimepoint.value -= step;
+                p.xTimepoint.value -= timeline.getStepSize();
                 break;
             case Direction::right:
-                p.xTimepoint.value += step;
+                p.xTimepoint.value += timeline.getStepSize();
                 break;
             case Direction::up:
-                p.yDegree.value += step;
+                p.yDegree = scale.getHigher (p.yDegree.value);
                 break;
             case Direction::down:
-                p.yDegree.value -= step;
+                p.yDegree = scale.getLower (p.yDegree.value);
                 break;
             default:
                 break;

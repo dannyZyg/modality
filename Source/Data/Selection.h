@@ -1,5 +1,6 @@
 #include "Data/Scale.h"
 #include "Data/Timeline.h"
+#include "juce_core/juce_core.h"
 #include <JuceHeader.h>
 #pragma once
 
@@ -37,8 +38,8 @@ public:
 
     void clear();
 
-    void addToVisualLineSelection (Position p, Timeline t, Scale s);
-    void addToVisualBlockSelection (Position p);
+    void addToVisualLineSelection (Position p, Timeline& t, Scale& s);
+    void addToVisualBlockSelection (Position p, Timeline& t, Scale& s);
     void addToSelection (Position p);
     void removeFromSelection (Position p);
 
@@ -49,7 +50,7 @@ public:
     Position getLowestPosition();
     Position getOppositeCorner (Position p);
 
-    void moveSelection (double step, Direction d);
+    void moveSelection (const Timeline& timeline, const Scale& scale, Direction d);
 
     void toggleLineMode();
 

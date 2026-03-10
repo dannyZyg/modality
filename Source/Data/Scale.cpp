@@ -77,10 +77,11 @@ const Degree Scale::getHigher (const Degree& d) const
     if (d.value >= 0.0)
     {
         // For zero or positive values, find in ascending sequence
-        auto it = std::lower_bound (degrees.begin(), degrees.end(), d.value);
-        if (it != degrees.end() && std::next (it) != degrees.end())
+        auto it = std::upper_bound (degrees.begin(), degrees.end(), d.value);
+
+        if (it != degrees.end())
         {
-            return Degree (*std::next (it));
+            return Degree (*it);
         }
         return Degree (d.value); // At highest value, stay there
     }

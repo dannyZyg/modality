@@ -32,40 +32,29 @@ Note::~Note() {}
 
 juce::ValueTree& Note::getState() { return state; }
 
-double Note::getDegree() const { return static_cast<double> (state.getProperty (NoteIDs::Degree)); }
+double Note::getDegree() const { return state.getProperty (NoteIDs::Degree); }
 
-double Note::getDuration() const { return static_cast<double> (state.getProperty (NoteIDs::Duration)); }
+double Note::getDuration() const { return state.getProperty (NoteIDs::Duration); }
 
-double Note::getOctave() const { return static_cast<double> (state.getProperty (NoteIDs::Octave)); }
+double Note::getOctave() const { return state.getProperty (NoteIDs::Octave); }
 
-double Note::getStartTime() const { return static_cast<double> (state.getProperty (NoteIDs::StartTime)); }
+double Note::getStartTime() const { return state.getProperty (NoteIDs::StartTime); }
 
-void Note::shiftDegreeUp (juce::UndoManager* undoManager)
+int Note::getVelocity() const { return state.getProperty (NoteIDs::Velocity); }
+
+void Note::setStartTime (double value, juce::UndoManager* undoManager)
 {
-    undoManager->beginNewTransaction ("shiftDegreeUp");
-    double current = getDegree();
-    state.setProperty (NoteIDs::Degree, current + 1.0, undoManager);
+    state.setProperty (NoteIDs::StartTime, value, undoManager);
 }
 
-void Note::shiftDegreeDown (juce::UndoManager* undoManager)
+void Note::setDegree (double value, juce::UndoManager* undoManager)
 {
-    undoManager->beginNewTransaction ("shiftDegreeDown");
-    double current = getDegree();
-    state.setProperty (NoteIDs::Degree, current - 1.0, undoManager);
+    state.setProperty (NoteIDs::Degree, value, undoManager);
 }
 
-void Note::shiftEarlier (double step, juce::UndoManager* undoManager)
+void Note::setVelocity (int v, juce::UndoManager* undoManager)
 {
-    undoManager->beginNewTransaction ("shiftEarlier");
-    double current = getStartTime();
-    state.setProperty (NoteIDs::StartTime, current - step, undoManager);
-}
-
-void Note::shiftLater (double step, juce::UndoManager* undoManager)
-{
-    undoManager->beginNewTransaction ("shiftLater");
-    double current = getStartTime();
-    state.setProperty (NoteIDs::StartTime, current + step, undoManager);
+    state.setProperty (NoteIDs::Velocity, v, undoManager);
 }
 
 void Note::addModifier (Modifier m, UndoManager* undoManager)
@@ -97,13 +86,6 @@ std::optional<Modifier> Note::getModifier (ModifierType type)
 }
 
 bool Note::hasAnyModifier() { return state.getNumChildren() > 0; }
-
-int Note::getVelocity() const { return static_cast<int> (state.getProperty (NoteIDs::Velocity)); }
-
-void Note::setVelocity (int v, juce::UndoManager* undoManager)
-{
-    state.setProperty (NoteIDs::Velocity, v, undoManager);
-}
 
 std::optional<MidiNote> Note::asMidiNote (Timeline t, [[maybe_unused]] Scale s, double tempo)
 {
