@@ -39,7 +39,7 @@ public:
     void clear();
 
     void addToVisualLineSelection (Position p, Timeline& t, Scale& s);
-    void addToVisualBlockSelection (Position p, Timeline& t, Scale& s);
+    void addToVisualBlockSelection (Position p, Timeline& t, Scale& s, bool shouldWrap);
     void addToSelection (Position p);
     void removeFromSelection (Position p);
 
@@ -50,7 +50,8 @@ public:
     Position getLowestPosition();
     Position getOppositeCorner (Position p);
 
-    void moveSelection (const Timeline& timeline, const Scale& scale, Direction d);
+    void moveSelection (const Timeline& timeline, const Scale& scale, Direction dir, bool shouldWrap);
+    bool canSelectionMove (const Timeline& timeline, const Scale& scale, Direction dir);
 
     void toggleLineMode();
 

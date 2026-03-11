@@ -42,7 +42,7 @@ public:
     void undo();
     void redo();
 
-    void move (Direction d, Selection::MoveMode moveMode = Selection::MoveMode::extend);
+    void move (Direction dir, Selection::MoveMode moveMode = Selection::MoveMode::extend);
 
     void moveCursorSelection (Direction d);
     void moveNotesInSelection (Direction d);
@@ -118,6 +118,8 @@ private:
     void selectNote (size_t nIndex);
 
     Selection visualSelection;
+
+    bool shouldWrap { true };
 
     std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesAtPosition (Position& p, Timeline& t, Scale& s);
 };

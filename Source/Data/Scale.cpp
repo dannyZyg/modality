@@ -69,7 +69,7 @@ std::vector<double> Scale::getDegrees() const
     return result;
 }
 
-const Degree Scale::getHigher (const Degree& d) const
+const Degree Scale::getHigher (const Degree& d, bool shouldWrap) const
 {
     auto descendingDegrees = getDescendingDegrees();
     auto degrees = getDegrees();
@@ -83,6 +83,10 @@ const Degree Scale::getHigher (const Degree& d) const
         {
             return Degree (*it);
         }
+
+        if (shouldWrap)
+            return Degree (getLowerBound());
+
         return Degree (d.value); // At highest value, stay there
     }
     else
@@ -103,7 +107,7 @@ const Degree Scale::getHigher (const Degree& d) const
     }
 }
 
-const Degree Scale::getLower (const Degree& d) const
+const Degree Scale::getLower (const Degree& d, bool shouldWrap) const
 {
     // Get the descending scale degrees
     auto descendingDegrees = getDescendingDegrees();
@@ -135,6 +139,10 @@ const Degree Scale::getLower (const Degree& d) const
         {
             return Degree (*std::next (it));
         }
+
+        if (shouldWrap)
+            return Degree (getUpperBound());
+
         return Degree (d.value); // At lowest value, stay there
     }
 }

@@ -8,7 +8,6 @@
 */
 
 #include "Transport.h"
-#include "juce_core/system/juce_PlatformDefs.h"
 
 Transport::Transport()
 {

@@ -180,7 +180,6 @@ void TransportEngine::processBlock (double currentPosition, double bufferDuratio
     // check if transport has just stopped
     if (wasPlaying.load() && ! isPlaying)
     {
-        DBG ("wasPlaying && !isPlaying: met");
         for (size_t i = 0; i < numActiveTracks.load(); ++i)
         {
             auto& trackState = trackStates[i];

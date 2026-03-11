@@ -97,11 +97,11 @@ public:
     void setLowerBound (double lowerBound, juce::UndoManager* undoManager = nullptr);
     void setUpperBound (double upperBound, juce::UndoManager* undoManager = nullptr);
 
-    TimePoint getNextStep (const TimePoint& tp);
-    TimePoint getNextStep (const TimePoint& tp, double division);
+    TimePoint getNextStep (const TimePoint& tp, bool shouldWrap) const;
+    TimePoint getNextStep (const TimePoint& tp, double division, bool shouldWrap) const;
 
-    TimePoint getPrevStep (const TimePoint& tp);
-    TimePoint getPrevStep (const TimePoint& tp, double division);
+    TimePoint getPrevStep (const TimePoint& tp, bool shouldWrap) const;
+    TimePoint getPrevStep (const TimePoint& tp, double division, bool shouldWrap) const;
 
     double getStepSize() const;
     void setStepSize (double stepSize, juce::UndoManager* undoManager = nullptr);

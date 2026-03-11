@@ -56,32 +56,42 @@ void Timeline::setStepSize (double stepSize, juce::UndoManager* undoManager)
 
 double Timeline::getSmallestStepSize() const { return Division::thirtysecond; }
 
-TimePoint Timeline::getNextStep (const TimePoint& tp)
+TimePoint Timeline::getNextStep (const TimePoint& tp, bool shouldWrap) const
 {
-    return getNextStep (tp, getStepSize());
+    return getNextStep (tp, getStepSize(), shouldWrap);
 }
 
-TimePoint Timeline::getNextStep (const TimePoint& tp, double division)
+TimePoint Timeline::getNextStep (const TimePoint& tp, double division, bool shouldWrap) const
 {
     double newVal = tp.value + division;
 
     if (newVal > getUpperBound() - division)
-        return 0.0;
+    {
+        if (shouldWrap)
+            return 0.0;
+        else
+            return getUpperBound() - division;
+    }
 
     return TimePoint (newVal);
 }
 
-TimePoint Timeline::getPrevStep (const TimePoint& tp)
+TimePoint Timeline::getPrevStep (const TimePoint& tp, bool shouldWrap) const
 {
-    return getPrevStep (tp, getStepSize());
+    return getPrevStep (tp, getStepSize(), shouldWrap);
 }
 
-TimePoint Timeline::getPrevStep (const TimePoint& tp, double division)
+TimePoint Timeline::getPrevStep (const TimePoint& tp, double division, bool shouldWrap) const
 {
     double newVal = tp.value - division;
 
     if (newVal < getLowerBound())
-        return getUpperBound() - division;
+    {
+        if (shouldWrap)
+            return getUpperBound() - division;
+        else
+            return 0.0;
+    }
 
     return TimePoint (newVal);
 }

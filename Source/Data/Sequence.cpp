@@ -245,23 +245,3 @@ void Sequence::decreaseTimelineStepSize()
 {
     timeline.decreaseStepSize();
 }
-
-TimePoint Sequence::getNextTimelineStep (const TimePoint& tp)
-{
-    return timeline.getNextStep (tp);
-}
-
-TimePoint Sequence::getNextTimelineStep (const TimePoint& tp, double division)
-{
-    return timeline.getNextStep (tp, division);
-}
-
-TimePoint Sequence::getPrevTimelineStep (const TimePoint& tp)
-{
-    return timeline.getPrevStep (tp);
-}
-
-TimePoint Sequence::getPrevTimelineStep (const TimePoint& tp, double division)
-{
-    return timeline.getPrevStep (tp, division);
-}

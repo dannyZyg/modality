@@ -70,7 +70,7 @@ void Selection::addToVisualLineSelection (Position pos, Timeline& timeline, Scal
     }
 }
 
-void Selection::addToVisualBlockSelection (Position pos, Timeline& timeline, Scale& scale)
+void Selection::addToVisualBlockSelection (Position pos, Timeline& timeline, Scale& scale, bool shouldWrap)
 {
     // If this is the first position, it becomes both cursor and anchor
     if (positions.empty())
@@ -97,7 +97,7 @@ void Selection::addToVisualBlockSelection (Position pos, Timeline& timeline, Sca
         while (currentDegree.value <= maxDegree)
         {
             positions.push_back (Position { TimePoint { t }, Degree { currentDegree } });
-            Degree nextDegree = scale.getHigher (currentDegree);
+            Degree nextDegree = scale.getHigher (currentDegree, shouldWrap);
             if (juce::approximatelyEqual (nextDegree.value, currentDegree.value))
                 break;
             currentDegree = nextDegree;
@@ -204,26 +204,75 @@ Position Selection::getOppositeCorner (Position p)
     return Position {};
 }
 
-void Selection::moveSelection (const Timeline& timeline, const Scale& scale, Direction d)
+void Selection::moveSelection (const Timeline& timeline, const Scale& scale, Direction dir, bool shouldWrap)
 {
+    // When not wrapping, check if the entire block can move
+    if (! shouldWrap)
+    {
+        if (! canSelectionMove (timeline, scale, dir))
+            return;
+    }
+
     for (auto& p : positions)
     {
-        switch (d)
+        switch (dir)
         {
             case Direction::left:
-                p.xTimepoint.value -= timeline.getStepSize();
+                p.xTimepoint = timeline.getPrevStep (p.xTimepoint, shouldWrap);
                 break;
             case Direction::right:
-                p.xTimepoint.value += timeline.getStepSize();
+                p.xTimepoint = timeline.getNextStep (p.xTimepoint, shouldWrap);
                 break;
             case Direction::up:
-                p.yDegree = scale.getHigher (p.yDegree.value);
+                p.yDegree = scale.getHigher (p.yDegree.value, shouldWrap);
                 break;
             case Direction::down:
-                p.yDegree = scale.getLower (p.yDegree.value);
+                p.yDegree = scale.getLower (p.yDegree.value, shouldWrap);
                 break;
             default:
                 break;
         }
+    }
+}
+
+bool Selection::canSelectionMove (const Timeline& timeline, const Scale& scale, Direction dir)
+{
+    bool shouldWrap = false;
+    switch (dir)
+    {
+        case Direction::left:
+        {
+            TimePoint earliest = getEarliestPosition().xTimepoint;
+            TimePoint afterMove = timeline.getPrevStep (earliest, shouldWrap);
+            if (Division::isEqual (earliest.value, afterMove.value))
+                return false;
+            return true;
+        }
+        case Direction::right:
+        {
+            TimePoint latest = getLatestPosition().xTimepoint;
+            TimePoint afterMove = timeline.getNextStep (latest, shouldWrap);
+            if (Division::isEqual (latest.value, afterMove.value))
+                return false;
+            return true;
+        }
+        case Direction::up:
+        {
+            Degree highest = getHighestPosition().yDegree;
+            Degree afterMove = scale.getHigher (highest, shouldWrap);
+            if (Division::isEqual (highest.value, afterMove.value))
+                return false;
+            return true;
+        }
+        case Direction::down:
+        {
+            Degree lowest = getLowestPosition().yDegree;
+            Degree afterMove = scale.getLower (lowest, shouldWrap);
+            if (Division::isEqual (lowest.value, afterMove.value))
+                return false;
+            return true;
+        }
+        default:
+            return true;
     }
 }

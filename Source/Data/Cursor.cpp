@@ -12,9 +12,8 @@
 #include "Data/Note.h"
 #include "Data/Scale.h"
 #include "Data/Selection.h"
-#include "juce_core/system/juce_PlatformDefs.h"
+#include "Data/Timeline.h"
 #include "juce_data_structures/juce_data_structures.h"
-#include <ios>
 
 Cursor::Cursor (Composition& comp) : composition (comp), randomGenerator (std::random_device()())
 {
@@ -57,6 +56,10 @@ bool Cursor::isSequenceSelected (const Sequence& otherSequence) const
 
 void Cursor::moveCursorSelection (Direction d)
 {
+    // Check if the selection can move before doing anything
+    if (! shouldWrap && ! visualSelection.canSelectionMove (getCurrentTimeline(), getCurrentScale(), d))
+        return;
+
     moveNotesInSelection (d);
     move (d, Selection::MoveMode::shift);
 }
@@ -85,31 +88,29 @@ void Cursor::moveNotesInSelection (Direction d)
         {
             case Direction::left:
             {
-                //TODO needs bounds checking
-                double newStartTime = note->getStartTime() - seq.getTimeline().getStepSize();
-                note->setStartTime (newStartTime, &undoManager);
+                TimePoint currentTime (note->getStartTime());
+                TimePoint newTime = seq.getTimeline().getPrevStep (currentTime, shouldWrap);
+                note->setStartTime (newTime.value, &undoManager);
                 break;
             }
             case Direction::right:
             {
-                //TODO needs bounds checking
-                double newStartTime = note->getStartTime() + seq.getTimeline().getStepSize();
-                note->setStartTime (newStartTime, &undoManager);
+                TimePoint currentTime (note->getStartTime());
+                TimePoint newTime = seq.getTimeline().getNextStep (currentTime, shouldWrap);
+                note->setStartTime (newTime.value, &undoManager);
                 break;
             }
             case Direction::up:
             {
-                //TODO needs bounds checking?
                 Degree currentDeg = note->getDegree();
-                Degree higherDeg = seq.getScale().getHigher (currentDeg);
+                Degree higherDeg = seq.getScale().getHigher (currentDeg, shouldWrap);
                 note->setDegree (higherDeg.value, &undoManager);
                 break;
             }
             case Direction::down:
             {
-                //TODO needs bounds checking?
                 Degree currentDeg = note->getDegree();
-                Degree lowerDeg = seq.getScale().getLower (currentDeg);
+                Degree lowerDeg = seq.getScale().getLower (currentDeg, shouldWrap);
                 note->setDegree (lowerDeg.value, &undoManager);
                 break;
             }
@@ -122,21 +123,21 @@ void Cursor::moveNotesInSelection (Direction d)
 // Moves the cursor and relevant cursor selection
 // If in a visual mode, new notes will be added to the selection if they fall within the boundary
 // TODO: Also remove notes from selection?
-void Cursor::move (Direction d, Selection::MoveMode moveMode)
+void Cursor::move (Direction dir, Selection::MoveMode moveMode)
 {
-    switch (d)
+    switch (dir)
     {
         case Direction::left:
-            cursorPosition.xTimepoint = getSelectedSequence().getPrevTimelineStep (cursorPosition.xTimepoint);
+            cursorPosition.xTimepoint = getCurrentTimeline().getPrevStep (cursorPosition.xTimepoint, shouldWrap);
             break;
         case Direction::right:
-            cursorPosition.xTimepoint = getSelectedSequence().getNextTimelineStep (cursorPosition.xTimepoint);
+            cursorPosition.xTimepoint = getCurrentTimeline().getNextStep (cursorPosition.xTimepoint, shouldWrap);
             break;
         case Direction::up:
-            cursorPosition.yDegree = getCurrentScale().getHigher (cursorPosition.yDegree);
+            cursorPosition.yDegree = getCurrentScale().getHigher (cursorPosition.yDegree, shouldWrap);
             break;
         case Direction::down:
-            cursorPosition.yDegree = getCurrentScale().getLower (cursorPosition.yDegree);
+            cursorPosition.yDegree = getCurrentScale().getLower (cursorPosition.yDegree, shouldWrap);
             break;
         default:
             break;
@@ -144,7 +145,7 @@ void Cursor::move (Direction d, Selection::MoveMode moveMode)
 
     if (moveMode == Selection::MoveMode::shift)
     {
-        visualSelection.moveSelection (getCurrentTimeline(), getCurrentScale(), d);
+        visualSelection.moveSelection (getCurrentTimeline(), getCurrentScale(), dir, shouldWrap);
     }
     else if (moveMode == Selection::MoveMode::extend)
     {
@@ -155,7 +156,7 @@ void Cursor::move (Direction d, Selection::MoveMode moveMode)
 
         if (isVisualBlockMode())
         {
-            visualSelection.addToVisualBlockSelection (cursorPosition, getCurrentTimeline(), getCurrentScale());
+            visualSelection.addToVisualBlockSelection (cursorPosition, getCurrentTimeline(), getCurrentScale(), shouldWrap);
         }
     }
 }
@@ -172,12 +173,12 @@ void Cursor::jumpToEnd()
 
 void Cursor::jumpForwardBeat()
 {
-    cursorPosition.xTimepoint.value = getSelectedSequence().getNextTimelineStep (cursorPosition.xTimepoint.value, Division::whole).value;
+    cursorPosition.xTimepoint = getCurrentTimeline().getNextStep (cursorPosition.xTimepoint.value, Division::whole, shouldWrap);
 }
 
 void Cursor::jumpBackBeat()
 {
-    cursorPosition.xTimepoint.value = getSelectedSequence().getPrevTimelineStep (cursorPosition.xTimepoint.value, Division::whole).value;
+    cursorPosition.xTimepoint = getCurrentTimeline().getPrevStep (cursorPosition.xTimepoint.value, Division::whole, shouldWrap);
 }
 
 void Cursor::enableNormalMode()
@@ -199,7 +200,7 @@ void Cursor::enableVisualLineMode()
 void Cursor::enableVisualBlockMode()
 {
     mode = Mode::visualBlock;
-    visualSelection.addToVisualBlockSelection (cursorPosition, getCurrentTimeline(), getCurrentScale());
+    visualSelection.addToVisualBlockSelection (cursorPosition, getCurrentTimeline(), getCurrentScale(), shouldWrap);
 }
 
 void Cursor::enableInsertMode()
@@ -274,7 +275,6 @@ void Cursor::insertNote()
     noteState.setProperty (NoteIDs::Velocity, 100, nullptr);
 
     getSelectedSequence().insertNote (noteState, &undoManager);
-    DBG ("Inserted" + noteState.toXmlString());
 }
 
 void Cursor::removeNotesAtCursor()

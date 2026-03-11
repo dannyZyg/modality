@@ -74,12 +74,6 @@ public:
     void increaseTimelineStepSize();
     void decreaseTimelineStepSize();
 
-    TimePoint getNextTimelineStep (const TimePoint& tp);
-    TimePoint getNextTimelineStep (const TimePoint& tp, double division);
-
-    TimePoint getPrevTimelineStep (const TimePoint& tp);
-    TimePoint getPrevTimelineStep (const TimePoint& tp, double division);
-
 private:
     juce::ValueTree ensureChildrenExist (juce::ValueTree s);
     auto isNoteWithin (double minTime, double maxTime, double minDegree, double maxDegree);
