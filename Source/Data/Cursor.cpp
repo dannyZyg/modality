@@ -66,6 +66,7 @@ void Cursor::moveCursorSelection (Direction d)
 
 void Cursor::moveNotesInSelection (Direction d)
 {
+    undoManager.beginNewTransaction ("moveNotesInSelection");
     auto& seq = getSelectedSequence();
     std::vector<Note*> notesToMove;
 
