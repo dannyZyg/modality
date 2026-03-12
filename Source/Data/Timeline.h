@@ -88,12 +88,14 @@ public:
     Timeline (double lower, double upper);
     explicit Timeline (juce::ValueTree existingState);
 
+    double wrapTime (double time);
     double clampValue (double newValue);
 
     juce::ValueTree& getState();
 
     double getLowerBound() const;
     double getUpperBound() const;
+    bool isWithinBounds (const double time) const;
     void setLowerBound (double lowerBound, juce::UndoManager* undoManager = nullptr);
     void setUpperBound (double upperBound, juce::UndoManager* undoManager = nullptr);
 

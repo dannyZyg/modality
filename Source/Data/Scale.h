@@ -35,6 +35,8 @@ public:
 
     double getLowerBound() const;
     double getUpperBound() const;
+    int getStepsBetween (const Degree& from, const Degree& to) const;
+    std::optional<Degree> applySteps (const Degree& from, int steps, bool shouldWrap) const;
 
     const Degree getHigher (const Degree& d, bool shouldWrap) const;
     const Degree getLower (const Degree& d, bool shouldWrap) const;

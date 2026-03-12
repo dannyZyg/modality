@@ -216,3 +216,76 @@ std::vector<double> Scale::getDescendingDegrees() const
 
     return descending;
 }
+
+int Scale::getStepsBetween (const Degree& from, const Degree& to) const
+{
+    if (juce::approximatelyEqual (from.value, to.value))
+        return 0;
+
+    bool goingUp = to.value > from.value;
+    int steps = 0;
+    Degree current = from;
+
+    const int maxIterations = 100;
+
+    if (goingUp)
+    {
+        for (int i = 0; i < maxIterations; ++i)
+        {
+            Degree next = getHigher (current, false);
+
+            if (juce::approximatelyEqual (next.value, current.value))
+                break;
+
+            steps++;
+            current = next;
+
+            if (juce::approximatelyEqual (current.value, to.value))
+                return steps;
+        }
+    }
+    else
+    {
+        for (int i = 0; i < maxIterations; ++i)
+        {
+            Degree next = getLower (current, false);
+
+            if (juce::approximatelyEqual (next.value, current.value))
+                break;
+
+            steps--;
+            current = next;
+
+            if (juce::approximatelyEqual (current.value, to.value))
+                return steps;
+        }
+    }
+
+    return steps;
+}
+
+std::optional<Degree> Scale::applySteps (const Degree& from, int steps, bool shouldWrap) const
+{
+    Degree current = from;
+    if (steps > 0)
+    {
+        for (int i = 0; i < steps; ++i)
+        {
+            Degree next = getHigher (current, shouldWrap);
+            if (! shouldWrap && juce::approximatelyEqual (next.value, current.value))
+                return std::nullopt;
+            current = next;
+        }
+    }
+    else if (steps < 0)
+    {
+        for (int i = 0; i > steps; --i)
+        {
+            Degree next = getLower (current, shouldWrap);
+            if (! shouldWrap && juce::approximatelyEqual (next.value, current.value))
+                return std::nullopt;
+            current = next;
+        }
+    }
+    return current;
+}

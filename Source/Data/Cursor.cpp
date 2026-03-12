@@ -423,3 +423,92 @@ Scale& Cursor::getCurrentScale()
 {
     return getSelectedSequence().getScale();
 }
+
+void Cursor::yankNotes (double originTimepoint, double originDegree)
+{
+    auto notes = findNotesForCursorMode();
+
+    clipboard = juce::ValueTree (CursorIDs::YankModeNotes);
+
+    juce::ValueTree yankedNotes (CursorIDs::YankedNotes);
+    clipboard.addChild (yankedNotes, -1, nullptr);
+
+    for (auto note : notes)
+    {
+        juce::ValueTree yankedNoteState = note.get()->getState().createCopy();
+
+        // calculate time offset
+        double noteStartTime = note.get()->getStartTime();
+        double timeOffset = noteStartTime - originTimepoint;
+        yankedNoteState.setProperty (CursorIDs::YankedNoteTimepointOffset, timeOffset, nullptr);
+
+        // calculate degree offset
+        Degree noteDegree = note.get()->getDegree();
+        int degreeSteps = getCurrentScale().getStepsBetween (originDegree, noteDegree);
+        yankedNoteState.setProperty (CursorIDs::YankedNoteDegreeOffset, degreeSteps, nullptr);
+
+        yankedNotes.addChild (yankedNoteState, -1, nullptr);
+    }
+}
+
+void Cursor::yank (juce::Identifier yankMode)
+{
+    if (yankMode == CursorIDs::YankModeNotes)
+    {
+        // TODO when in visual modes this should be the top left vector of the selection.
+        yankNotes (cursorPosition.xTimepoint.value, cursorPosition.yDegree.value);
+    }
+    enableNormalMode();
+}
+
+void Cursor::paste()
+{
+    if (! clipboard.hasType (CursorIDs::YankModeNotes))
+        return;
+
+    auto yankedNotes = clipboard.getChildWithName (CursorIDs::YankedNotes);
+
+    if (! yankedNotes.isValid())
+        return;
+
+    undoManager.beginNewTransaction ("paste");
+
+    for (auto note : yankedNotes)
+    {
+        double timepointOffset = note.getProperty (CursorIDs::YankedNoteTimepointOffset);
+        int degreeOffset = note.getProperty (CursorIDs::YankedNoteDegreeOffset);
+
+        double newStartTime = cursorPosition.xTimepoint.value + timepointOffset;
+
+        if (shouldWrap)
+        {
+            newStartTime = getCurrentTimeline().wrapTime (newStartTime);
+        }
+        else
+        {
+            if (! getCurrentTimeline().isWithinBounds (newStartTime))
+                continue;
+        }
+
+        std::optional<Degree> newDegreeOpt = getCurrentScale().applySteps (cursorPosition.yDegree, degreeOffset, shouldWrap);
+
+        if (! newDegreeOpt.has_value())
+            continue;
+
+        Degree newDegree = newDegreeOpt.value();
+
+        juce::ValueTree pastedNote = note.createCopy();
+        pastedNote.setProperty (NoteIDs::StartTime, newStartTime, nullptr);
+        pastedNote.setProperty (NoteIDs::Degree, newDegree.value, nullptr);
+        // remove properties related to the yank
+        pastedNote.removeProperty (CursorIDs::YankedNoteTimepointOffset, nullptr);
+        pastedNote.removeProperty (CursorIDs::YankedNoteDegreeOffset, nullptr);
+
+        getSelectedSequence().insertNote (pastedNote, &undoManager);
+    }
+}
+
+juce::ValueTree Cursor::getClipboard()
+{
+    return clipboard;
+}

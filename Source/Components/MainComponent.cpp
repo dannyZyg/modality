@@ -4,6 +4,7 @@
 #include "Components/PaginatedSettingsComponent.h"
 #include "Components/ShortcutInfoComponent.h"
 #include "Data/AppSettings.h"
+#include "Data/Cursor.h"
 #include "Data/MenuNode.h"
 #include "Data/Modifier.h"
 #include "Data/ModifierRegistry.h"
@@ -457,6 +458,28 @@ void MainComponent::setupKeyboardShortcuts()
             },
             "Redo",
             "Redo last undone cursor action"),
+
+        Shortcut (
+            juce::KeyPress ('y'),
+            { Mode::normal, Mode::visualBlock, Mode::visualLine },
+            [this]()
+            {
+                cursor.yank (CursorIDs::YankModeNotes);
+                return true;
+            },
+            "Yank",
+            "Yank (copy) items selected by the cursor contextually"),
+
+        Shortcut (
+            juce::KeyPress ('p'),
+            { Mode::normal, Mode::visualBlock, Mode::visualLine },
+            [this]()
+            {
+                cursor.paste();
+                return true;
+            },
+            "Paste",
+            "Paste yanked items relative to the cursor position"),
 
         Shortcut (
             juce::KeyPress ('d'),

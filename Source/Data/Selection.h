@@ -1,6 +1,5 @@
 #include "Data/Scale.h"
 #include "Data/Timeline.h"
-#include "juce_core/juce_core.h"
 #include <JuceHeader.h>
 #pragma once
 

@@ -18,6 +18,17 @@
 #include <random>
 #pragma once
 
+namespace CursorIDs
+{
+#define DECLARE_ID(name) inline const juce::Identifier name { #name };
+DECLARE_ID (YankModeNotes)
+DECLARE_ID (YankModeModifiers)
+DECLARE_ID (YankedNotes)
+DECLARE_ID (YankedNoteTimepointOffset)
+DECLARE_ID (YankedNoteDegreeOffset)
+#undef DECLARE_ID
+} // namespace CursorIDs
+
 enum class Mode
 {
     normal,
@@ -85,6 +96,10 @@ public:
     void increaseTimelineStepSize();
     void decreaseTimelineStepSize();
 
+    void yankNotes (double originTimepoint, double originDegree);
+    void yank (juce::Identifier yankMode);
+    void paste();
+
     void toggleLineMode();
 
     const std::vector<Position>& getVisualSelectionPositions() const;
@@ -101,6 +116,8 @@ public:
     const Scale& getCurrentScale() const;
     Timeline& getCurrentTimeline();
     Scale& getCurrentScale();
+
+    juce::ValueTree getClipboard();
 
 private:
     Composition& composition;
@@ -122,4 +139,6 @@ private:
     bool shouldWrap { true };
 
     std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesAtPosition (Position& p, Timeline& t, Scale& s);
+
+    juce::ValueTree clipboard;
 };

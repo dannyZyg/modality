@@ -26,6 +26,17 @@ Timeline::Timeline (juce::ValueTree existingState) : state (existingState.isVali
         setUpperBound (4.0);
 }
 
+double Timeline::wrapTime (double time)
+{
+    double upper = getUpperBound();
+    double lower = getLowerBound();
+    double range = upper - lower;
+    double wrapped = fmod (time - lower, range);
+    if (wrapped < 0)
+        wrapped += range;
+    return lower + wrapped;
+}
+
 juce::ValueTree& Timeline::getState() { return state; }
 
 double Timeline::clampValue (double newValue)
@@ -134,4 +145,9 @@ const double Timeline::sizeAtCurrentStepSize() const
 {
     // The number of potential steps at the current step size
     return getUpperBound() / getStepSize();
+}
+
+bool Timeline::isWithinBounds (const double time) const
+{
+    return time >= getLowerBound() && time < getUpperBound();
 }
