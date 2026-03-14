@@ -13,6 +13,7 @@
 #include "Data/Scale.h"
 #include "Data/Selection.h"
 #include "Data/Timeline.h"
+#include "juce_core/system/juce_PlatformDefs.h"
 #include "juce_data_structures/juce_data_structures.h"
 
 Cursor::Cursor (Composition& comp) : composition (comp), randomGenerator (std::random_device()())
@@ -379,11 +380,16 @@ int Cursor::addModifier (ModifierType t)
 {
     auto notes = findNotesForCursorMode();
 
+    if (notes.size() == 0)
+        return 0;
+
+    undoManager.beginNewTransaction ("addModifier");
+
     Modifier m = Modifier { t };
 
     for (auto& note : notes)
     {
-        (*note.get()).addModifier (m);
+        (*note.get()).addModifier (m, &undoManager);
     }
 
     return static_cast<int> (notes.size());

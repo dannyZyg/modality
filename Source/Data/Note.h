@@ -13,7 +13,6 @@
 #include "Data/Modifier.h"
 #include "Data/Scale.h"
 #include "Data/Timeline.h"
-#include "juce_data_structures/juce_data_structures.h"
 #include <JuceHeader.h>
 #include <random>
 

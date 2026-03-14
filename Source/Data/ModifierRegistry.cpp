@@ -58,17 +58,20 @@ namespace
 {
 static bool reg1 = ModifierRegistry::getInstance().registerModifier ({ ModifierIDs::RandomTrigger,
                                                                        "Random Trigger",
+                                                                       "r",
                                                                        juce::Identifier ("sliderPanel"),
                                                                        { { ModifierIDs::RandomTriggerProbability, "Probability", ParamWidgetType::slider, 0.5, 0.0, 1.0 } } });
 
 static bool reg2 = ModifierRegistry::getInstance().registerModifier ({ ModifierIDs::RandomOctaveShift,
                                                                        "Random Octave",
+                                                                       "o",
                                                                        juce::Identifier ("sliderPanel"),
                                                                        { { ModifierIDs::RandomOctaveShiftProbability, "Probability", ParamWidgetType::slider, 0.5, 0.0, 1.0 },
                                                                          { ModifierIDs::RandomOctaveShiftRange, "Range", ParamWidgetType::slider, 2.0, 1.0, 4.0 } } });
 
 static bool reg3 = ModifierRegistry::getInstance().registerModifier ({ ModifierIDs::RandomVelocity,
                                                                        "Random Velocity",
+                                                                       "v",
                                                                        juce::Identifier ("sliderPanel"),
                                                                        { { ModifierIDs::RandomVelocityProbability, "Probability", ParamWidgetType::slider, 0.5, 0.0, 1.0 },
                                                                          { ModifierIDs::RandomVelocityRange, "Range", ParamWidgetType::slider, 0.5, 0.0, 1.0 } } });

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Data/Parameter.h"
+#include "juce_core/juce_core.h"
 #include <JuceHeader.h>
 
 // Type alias - used throughout codebase
@@ -23,6 +24,13 @@ DECLARE_ID (RandomVelocityProbability)
 DECLARE_ID (RandomVelocityRange)
 
 #undef DECLARE_ID
+
+inline const std::array<juce::Identifier, 3> AllTypes = {
+    RandomTrigger,
+    RandomOctaveShift,
+    RandomVelocity
+};
+
 } // namespace ModifierIDs
 
 struct ParamDefinition

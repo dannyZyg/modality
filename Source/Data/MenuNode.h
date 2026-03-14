@@ -2,6 +2,7 @@
 
 #include "juce_gui_basics/juce_gui_basics.h"
 #include <JuceHeader.h>
+#include <functional>
 #include <memory>
 
 // Represents one level/page in the menu tree
@@ -20,4 +21,8 @@ struct MenuNode
         : title (t), navShortcut (k), component (std::move (c)) {}
 
     MenuNode* addChild (std::unique_ptr<MenuNode> child);
+
+    std::function<void()> onEnter;
+
+    void setComponent (std::unique_ptr<juce::Component> c);
 };

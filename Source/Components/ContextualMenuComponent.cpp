@@ -1,4 +1,5 @@
 #include "Components/ContextualMenuComponent.h"
+#include "juce_core/system/juce_PlatformDefs.h"
 #include "juce_graphics/juce_graphics.h"
 
 //==============================================================================
@@ -163,6 +164,10 @@ void ContextualMenuComponent::navigateTo (MenuNode* childNode)
 
     backStack.push (currentMenuNode); // Push current node onto the stack
     currentMenuNode = childNode; // Move to the child node
+
+    // Fire the callback
+    if (childNode->onEnter)
+        childNode->onEnter();
 
     if (currentMenuNode->children.size() == 0 && currentMenuNode->component)
     {

@@ -9,8 +9,14 @@ struct ModifierDefinition
 {
     juce::Identifier type;
     juce::String displayName;
+    juce::String navShortcutDescription;
     juce::Identifier componentType; // UI component key (e.g., "sliderPanel")
     std::vector<ParamDefinition> params;
+
+    juce::KeyPress getNavShortcut() const
+    {
+        return juce::KeyPress::createFromDescription (navShortcutDescription);
+    }
 };
 
 class ModifierRegistry

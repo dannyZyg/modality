@@ -1,14 +1,12 @@
 #include "MainComponent.h"
 #include "Components/MidlineComponent.h"
-#include "Components/ModifierComponentFactory.h"
-#include "Components/PaginatedSettingsComponent.h"
+#include "Components/Modifiers/ModifierMenuManager.h"
 #include "Components/ShortcutInfoComponent.h"
 #include "Data/AppSettings.h"
 #include "Data/Cursor.h"
 #include "Data/MenuNode.h"
-#include "Data/Modifier.h"
-#include "Data/ModifierRegistry.h"
 #include "Data/Selection.h"
+#include "juce_core/juce_core.h"
 #include <memory>
 #include <utility>
 
@@ -18,8 +16,9 @@ MainComponent::MainComponent() : cursor (composition),
                                  cursorComponent (cursor),
                                  midlineComponent (cursor),
                                  statusBarComponent (cursor),
-                                 modifierMenuComponent (cursor),
-                                 sequenceSelectionComponent (cursor, composition)
+                                 sequenceSelectionComponent (cursor, composition),
+                                 modifierMenuManager (cursor, [this] (juce::String message, int timeout)
+                                                      { contextualMenuComponent.showMessage (message, timeout); })
 
 {
     AppSettings::getInstance().initialise ("Modality");
@@ -37,8 +36,6 @@ MainComponent::MainComponent() : cursor (composition),
     addAndMakeVisible (sequenceComponent);
     addAndMakeVisible (statusBarComponent);
     addAndMakeVisible (sequenceSelectionComponent);
-
-    addChildComponent (modifierMenuComponent);
 
     // Initialise audio and register Transport as the audio callback
     deviceManager.initialise (0, 2, nullptr, true);
@@ -81,33 +78,6 @@ MainComponent::MainComponent() : cursor (composition),
     auto deviceSub = std::make_unique<MenuNode> ("Device Sub Menu", juce::KeyPress::createFromDescription ("s"));
 
     deviceNodePtr->addChild (std::move (deviceSub));
-
-    // Mod Menu
-    modifierMenuRoot = std::make_unique<MenuNode> ("Modifiers");
-
-    // Create temporary ValueTree states for the menu widgets
-    // In a real implementation, these would bind to actual modifiers on selected notes
-    auto& registry = ModifierRegistry::getInstance();
-
-    randomTriggerState = registry.createDefaultState (ModifierIDs::RandomTrigger);
-    randomVelocityState = registry.createDefaultState (ModifierIDs::RandomVelocity);
-    randomOctaveShiftState = registry.createDefaultState (ModifierIDs::RandomOctaveShift);
-
-    auto widgets = ModifierComponentFactory::createWidgets (ModifierIDs::RandomTrigger, randomTriggerState);
-    auto widgetsVel = ModifierComponentFactory::createWidgets (ModifierIDs::RandomVelocity, randomVelocityState);
-    auto widgetsOct = ModifierComponentFactory::createWidgets (ModifierIDs::RandomOctaveShift, randomOctaveShiftState);
-
-    auto randomTriggerModComponent = std::make_unique<PaginatedSettingsComponent> (std::move (widgets));
-    auto velocityModComponent = std::make_unique<PaginatedSettingsComponent> (std::move (widgetsVel));
-    auto octaveModComponent = std::make_unique<PaginatedSettingsComponent> (std::move (widgetsOct));
-
-    auto randomTriggerModNode = std::make_unique<MenuNode> ("Random Trigger", juce::KeyPress::createFromDescription ("t"), std::move (randomTriggerModComponent));
-    auto velocityModNode = std::make_unique<MenuNode> ("Velocity", juce::KeyPress::createFromDescription ("v"), std::move (velocityModComponent));
-    auto octaveModNode = std::make_unique<MenuNode> ("Octave", juce::KeyPress::createFromDescription ("o"), std::move (octaveModComponent));
-
-    [[maybe_unused]] MenuNode* randomTriggerModNodePtr = modifierMenuRoot->addChild (std::move (randomTriggerModNode));
-    [[maybe_unused]] MenuNode* velocityModNodePtr = modifierMenuRoot->addChild (std::move (velocityModNode));
-    [[maybe_unused]] MenuNode* octaveModNodePtr = modifierMenuRoot->addChild (std::move (octaveModNode));
 }
 
 MainComponent::~MainComponent()
@@ -180,8 +150,6 @@ void MainComponent::resized()
     auto xPos = getWidth() / 2 - (menuWidth / 2);
     auto yPos = (getHeight() - menuHeight) / 2;
     juce::Point<int> position = juce::Point<int> (static_cast<int> (xPos), static_cast<int> (yPos));
-
-    modifierMenuComponent.setBounds (position.x, position.y, static_cast<int> (getWidth() * 0.6), 200);
 
     contextualMenuComponent.setBounds (position.x, position.y, static_cast<int> (getWidth() * 0.6), static_cast<int> (menuHeight));
 
@@ -269,24 +237,6 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
     return false; // Key not handled
 }
 
-void MainComponent::showModifierMenu (juce::Point<int> position)
-{
-    // Set position relative to parent component
-    modifierMenuComponent.setBounds (position.x, position.y, static_cast<int> (getWidth() * 0.6), 200);
-    modifierMenuComponent.setVisible (true);
-
-    if (cursor.findNotesForCursorMode().empty())
-    {
-        modifierMenuComponent.showMessage ("No notes at cursor");
-    }
-}
-
-void MainComponent::hideModifierMenu()
-{
-    modifierMenuComponent.setVisible (false);
-    grabKeyboardFocus();
-}
-
 void MainComponent::setupKeyboardShortcuts()
 {
     std::vector<Shortcut> shortcuts = {
@@ -295,16 +245,8 @@ void MainComponent::setupKeyboardShortcuts()
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
-                if (modifierMenuComponent.isVisible())
-                {
-                    hideModifierMenu();
-                    return true;
-                }
-                else
-                {
-                    cursor.enableNormalMode();
-                    return true;
-                }
+                cursor.enableNormalMode();
+                return true;
             },
             "Exit",
             "Exit current menu or return to normal mode"),
@@ -629,7 +571,7 @@ void MainComponent::setupKeyboardShortcuts()
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
-                contextualMenuComponent.displayMenu (modifierMenuRoot.get());
+                contextualMenuComponent.displayMenu (modifierMenuManager.getMenuNodeRoot());
                 return true;
             },
             "Modifiers",

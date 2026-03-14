@@ -5,7 +5,7 @@
 #include "Components/ContextualMenuComponent.h"
 #include "Components/CursorComponent.h"
 #include "Components/MidlineComponent.h"
-#include "Components/ModifierMenuComponent.h"
+#include "Components/Modifiers/ModifierMenuManager.h"
 #include "Components/SequenceComponent.h"
 #include "Components/SequenceSelectionComponent.h"
 #include "Components/StatusBarComponent.h"
@@ -56,8 +56,9 @@ private:
     CursorComponent cursorComponent;
     MidlineComponent midlineComponent;
     StatusBarComponent statusBarComponent;
-    ModifierMenuComponent modifierMenuComponent;
     SequenceSelectionComponent sequenceSelectionComponent;
+
+    ModifierMenuManager modifierMenuManager;
 
     ContextualMenuComponent contextualMenuComponent;
 
@@ -65,18 +66,8 @@ private:
     std::unique_ptr<MenuNode> helpMenuRoot;
     std::unique_ptr<MenuNode> globalSettingsMenuRoot;
     std::unique_ptr<MenuNode> sequenceSettingsMenuRoot;
-    std::unique_ptr<MenuNode> modifierMenuRoot;
-
-    // Temporary modifier states for menu widgets
-    // TODO: These should eventually bind to actual modifiers on selected notes
-    juce::ValueTree randomTriggerState;
-    juce::ValueTree randomVelocityState;
-    juce::ValueTree randomOctaveShiftState;
 
     std::unique_ptr<MenuNode> createHelpMenuTree();
-
-    void showModifierMenu (juce::Point<int> position);
-    void hideModifierMenu();
 
     // Schedule a single track for its next loop iteration
     void scheduleTrack (size_t trackIndex);

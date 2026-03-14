@@ -85,7 +85,16 @@ std::optional<Modifier> Note::getModifier (ModifierType type)
     return std::nullopt;
 }
 
-bool Note::hasAnyModifier() { return state.getNumChildren() > 0; }
+bool Note::hasAnyModifier()
+{
+    for (const auto& type : ModifierIDs::AllTypes)
+    {
+        if (state.getChildWithName (type).isValid())
+            return true;
+    }
+
+    return false;
+}
 
 std::optional<MidiNote> Note::asMidiNote (Timeline t, [[maybe_unused]] Scale s, double tempo)
 {

@@ -19,3 +19,8 @@ MenuNode* MenuNode::addChild (std::unique_ptr<MenuNode> child)
     children.push_back (std::move (child));
     return childPtr;
 }
+
+void MenuNode::setComponent (std::unique_ptr<juce::Component> c)
+{
+    component = std::move (c);
+}
