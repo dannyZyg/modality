@@ -1,6 +1,18 @@
 #pragma once
 
+#include "juce_core/juce_core.h"
 #include <JuceHeader.h>
+
+namespace AppSettingsIDs
+{
+#define DECLARE_ID(name) inline const juce::Identifier name { #name };
+
+DECLARE_ID (WindowLastHeight)
+DECLARE_ID (WindowLastWidth)
+DECLARE_ID (MidiDefaultOutputDevice)
+
+#undef DECLARE_ID
+} // namespace AppSettingsIDs
 
 class AppSettings
 {
@@ -11,28 +23,31 @@ public:
     void shutdown();
 
     template <typename T>
-    T getValue (const juce::String& keyName, const T& defaultValue);
+    T getValue (const juce::Identifier& keyName, const T& defaultValue);
 
     template <typename T>
-    void setValue (const juce::String& keyName, const T& value);
+    void setValue (const juce::Identifier& keyName, const T& value);
 
-    bool getBoolValue (const juce::String& keyName, bool defaultValue = false);
-    void setBoolValue (const juce::String& keyName, bool value);
+    bool getBoolValue (const juce::Identifier& keyName, bool defaultValue = false);
+    void setBoolValue (const juce::Identifier& keyName, bool value);
 
-    int getIntValue (const juce::String& keyName, int defaultValue = 0);
-    void setIntValue (const juce::String& keyName, int value);
+    int getIntValue (const juce::Identifier& keyName, int defaultValue = 0);
+    void setIntValue (const juce::Identifier& keyName, int value);
 
-    double getDoubleValue (const juce::String& keyName, double defaultValue = 0.0);
-    void setDoubleValue (const juce::String& keyName, double value);
+    double getDoubleValue (const juce::Identifier& keyName, double defaultValue = 0.0);
+    void setDoubleValue (const juce::Identifier& keyName, double value);
 
-    juce::String getStringValue (const juce::String& keyName, const juce::String& defaultValue = "");
-    void setStringValue (const juce::String& keyName, const juce::String& value);
+    juce::String getStringValue (const juce::Identifier& keyName, const juce::String& defaultValue = "");
+    void setStringValue (const juce::Identifier& keyName, const juce::String& value);
 
     int getLastWindowWidth();
     void setLastWindowWidth (int width);
 
     int getLastWindowHeight();
     void setLastWindowHeight (int height);
+
+    juce::String getDefaultMidiOutputDevice();
+    void setDefaultMidiOutputDevice (juce::String deviceID);
 
 private:
     AppSettings();
@@ -50,13 +65,13 @@ private:
 
 // Template implementations need to be visible to all clients
 template <typename T>
-T AppSettings::getValue (const juce::String& keyName, const T& defaultValue)
+T AppSettings::getValue (const juce::Identifier& keyName, const T& defaultValue)
 {
     return static_cast<T> (properties->getValue (keyName, juce::String (defaultValue)));
 }
 
 template <typename T>
-void AppSettings::setValue (const juce::String& keyName, const T& value)
+void AppSettings::setValue (const juce::Identifier& keyName, const T& value)
 {
     properties->setValue (keyName, juce::String (value));
     properties->saveIfNeeded();

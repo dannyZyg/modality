@@ -1,4 +1,5 @@
 #include "Data/AppSettings.h"
+#include "juce_core/juce_core.h"
 
 AppSettings& AppSettings::getInstance()
 {
@@ -48,45 +49,45 @@ void AppSettings::shutdown()
     isInitialised = false;
 }
 
-bool AppSettings::getBoolValue (const juce::String& keyName, bool defaultValue)
+bool AppSettings::getBoolValue (const juce::Identifier& keyName, bool defaultValue)
 {
     return properties->getBoolValue (keyName, defaultValue);
 }
 
-void AppSettings::setBoolValue (const juce::String& keyName, bool value)
+void AppSettings::setBoolValue (const juce::Identifier& keyName, bool value)
 {
     properties->setValue (keyName, value);
     properties->saveIfNeeded();
 }
 
-int AppSettings::getIntValue (const juce::String& keyName, int defaultValue)
+int AppSettings::getIntValue (const juce::Identifier& keyName, int defaultValue)
 {
     return properties->getIntValue (keyName, defaultValue);
 }
 
-void AppSettings::setIntValue (const juce::String& keyName, int value)
+void AppSettings::setIntValue (const juce::Identifier& keyName, int value)
 {
     properties->setValue (keyName, value);
     properties->saveIfNeeded();
 }
 
-double AppSettings::getDoubleValue (const juce::String& keyName, double defaultValue)
+double AppSettings::getDoubleValue (const juce::Identifier& keyName, double defaultValue)
 {
     return properties->getDoubleValue (keyName, defaultValue);
 }
 
-void AppSettings::setDoubleValue (const juce::String& keyName, double value)
+void AppSettings::setDoubleValue (const juce::Identifier& keyName, double value)
 {
     properties->setValue (keyName, value);
     properties->saveIfNeeded();
 }
 
-juce::String AppSettings::getStringValue (const juce::String& keyName, const juce::String& defaultValue)
+juce::String AppSettings::getStringValue (const juce::Identifier& keyName, const juce::String& defaultValue)
 {
     return properties->getValue (keyName, defaultValue);
 }
 
-void AppSettings::setStringValue (const juce::String& keyName, const juce::String& value)
+void AppSettings::setStringValue (const juce::Identifier& keyName, const juce::String& value)
 {
     properties->setValue (keyName, value);
     properties->saveIfNeeded();
@@ -96,20 +97,30 @@ void AppSettings::setStringValue (const juce::String& keyName, const juce::Strin
 
 int AppSettings::getLastWindowWidth()
 {
-    return getIntValue ("window.lastWidth", 800);
+    return getIntValue (AppSettingsIDs::WindowLastWidth, 800);
 }
 
 void AppSettings::setLastWindowWidth (int width)
 {
-    setIntValue ("window.lastWidth", width);
+    setIntValue (AppSettingsIDs::WindowLastWidth, width);
 }
 
 int AppSettings::getLastWindowHeight()
 {
-    return getIntValue ("window.lastHeight", 600);
+    return getIntValue (AppSettingsIDs::WindowLastHeight, 600);
 }
 
 void AppSettings::setLastWindowHeight (int height)
 {
-    setIntValue ("window.lastHeight", height);
+    setIntValue (AppSettingsIDs::WindowLastHeight, height);
+}
+
+juce::String AppSettings::getDefaultMidiOutputDevice()
+{
+    return getStringValue (AppSettingsIDs::MidiDefaultOutputDevice);
+}
+
+void AppSettings::setDefaultMidiOutputDevice (juce::String deviceID)
+{
+    setStringValue (AppSettingsIDs::MidiDefaultOutputDevice, deviceID);
 }
