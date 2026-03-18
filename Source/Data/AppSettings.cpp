@@ -124,3 +124,13 @@ void AppSettings::setDefaultMidiOutputDevice (juce::String deviceID)
 {
     setStringValue (AppSettingsIDs::MidiDefaultOutputDevice, deviceID);
 }
+
+juce::String AppSettings::getDefaultMidiChannel()
+{
+    return getStringValue (AppSettingsIDs::MidiDefaultChannel);
+}
+
+void AppSettings::setDefaultMidiChannel (juce::String channel)
+{
+    setStringValue (AppSettingsIDs::MidiDefaultChannel, channel);
+}

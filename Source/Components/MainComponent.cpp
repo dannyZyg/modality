@@ -1,6 +1,7 @@
 #include "MainComponent.h"
 #include "Components/MidlineComponent.h"
 #include "Components/Modifiers/ModifierMenuManager.h"
+#include "Components/Settings/MidiSettingsSelectionFactory.h"
 #include "Components/ShortcutInfoComponent.h"
 #include "Data/AppSettings.h"
 #include "Data/Cursor.h"
@@ -18,7 +19,8 @@ MainComponent::MainComponent() : cursor (composition),
                                  statusBarComponent (cursor),
                                  sequenceSelectionComponent (cursor, composition),
                                  modifierMenuManager (cursor, [this] (juce::String message, int timeout)
-                                                      { contextualMenuComponent.showMessage (message, timeout); })
+                                                      { contextualMenuComponent.showMessage (message, timeout); }),
+                                 sequenceSettngsManager (cursor, midiOutputManager)
 
 {
     AppSettings::getInstance().initialise ("Modality");
@@ -41,6 +43,8 @@ MainComponent::MainComponent() : cursor (composition),
     deviceManager.initialise (0, 2, nullptr, true);
     deviceManager.addAudioCallback (&transport);
 
+    auto defaultMidiOutputId = AppSettings::getInstance().getDefaultMidiOutputDevice();
+
     // MIDI outputs are managed by MidiOutputManager
     // Each sequence can specify its own output device via midiOutputId
     auto availableDevices = midiOutputManager.getAvailableDevices();
@@ -48,7 +52,14 @@ MainComponent::MainComponent() : cursor (composition),
     {
         juce::Logger::writeToLog ("Available MIDI outputs:");
         for (const auto& device : availableDevices)
+        {
             juce::Logger::writeToLog ("  - " + device.name + " (" + device.identifier + ")");
+            if (device.identifier == defaultMidiOutputId)
+            {
+                juce::Logger::writeToLog ("Found default MIDI output device: " + device.name + " (" + device.identifier + ")");
+                midiOutputManager.setDefaultDeviceId (device.identifier);
+            }
+        }
     }
 
     // Make sure all children components have size set
@@ -61,7 +72,6 @@ MainComponent::MainComponent() : cursor (composition),
 
     helpMenuRoot = std::make_unique<MenuNode> ("Help");
     globalSettingsMenuRoot = std::make_unique<MenuNode> ("Global Settings");
-    sequenceSettingsMenuRoot = std::make_unique<MenuNode> ("Sequence Settings");
 
     auto shortcutInfoComponent = std::make_unique<ShortcutInfoComponent> (shortcutManager);
     auto shortcutsNode = std::make_unique<MenuNode> ("Shortcuts", juce::KeyPress::createFromDescription ("s"), std::move (shortcutInfoComponent));
@@ -69,15 +79,24 @@ MainComponent::MainComponent() : cursor (composition),
     helpMenuRoot->addChild (std::move (shortcutsNode));
 
     auto tempoNode = std::make_unique<MenuNode> ("Tempo Settings", juce::KeyPress::createFromDescription ("t"));
-    auto deviceNode = std::make_unique<MenuNode> ("Device Settings", juce::KeyPress::createFromDescription ("d"));
+    // auto deviceNode = std::make_unique<MenuNode> ("Midi Settings", juce::KeyPress::createFromDescription ("d"));
+
+    auto initialMidiOutDevice = AppSettings::getInstance().getDefaultMidiOutputDevice();
+    auto initialMidiChannel = AppSettings::getInstance().getDefaultMidiOutputDevice();
+    auto onChangeMidiOut = [] (const String& s)
+    {
+        AppSettings::getInstance().setDefaultMidiOutputDevice (s);
+    };
+    auto onChangeMidiChannel = [] (const String& s)
+    {
+        AppSettings::getInstance().setDefaultMidiChannel (s);
+    };
+
+    auto midiSettingsNode = MidiSettingsSelectionFactory::createMenuNode (midiOutputManager, initialMidiOutDevice, initialMidiChannel, onChangeMidiOut, onChangeMidiChannel);
 
     // Add children and receive the raw pointer to them (to further assign children to these) - the original unq ptr has moved!
     [[maybe_unused]] MenuNode* tempoNodePtr = globalSettingsMenuRoot->addChild (std::move (tempoNode));
-    MenuNode* deviceNodePtr = globalSettingsMenuRoot->addChild (std::move (deviceNode));
-
-    auto deviceSub = std::make_unique<MenuNode> ("Device Sub Menu", juce::KeyPress::createFromDescription ("s"));
-
-    deviceNodePtr->addChild (std::move (deviceSub));
+    [[maybe_unused]] MenuNode* deviceNodePtr = globalSettingsMenuRoot->addChild (std::move (midiSettingsNode));
 }
 
 MainComponent::~MainComponent()
@@ -648,7 +667,7 @@ void MainComponent::setupKeyboardShortcuts()
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
-                contextualMenuComponent.displayMenu (sequenceSettingsMenuRoot.get());
+                contextualMenuComponent.displayMenu (sequenceSettngsManager.getMenuNodeRoot());
                 return true;
             },
             "Sequence Settings",

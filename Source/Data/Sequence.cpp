@@ -135,6 +135,10 @@ juce::String Sequence::getMidiOutputId() const
     return state.getProperty (SequenceIDs::MidiOutputId);
 }
 
+juce::Value Sequence::getMidiOutputIdAsValue() { return state.getPropertyAsValue (SequenceIDs::MidiOutputId, nullptr); }
+
+juce::Value Sequence::getMidiOutputChannelAsValue() { return state.getPropertyAsValue (SequenceIDs::MidiChannel, nullptr); }
+
 void Sequence::setEnabled (bool isEnabled)
 {
     enabled = isEnabled;

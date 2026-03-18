@@ -1,6 +1,6 @@
 #include "Components/Modifiers/ModifierMenuManager.h"
 #include "Components/Modifiers/ModifierComponentFactory.h"
-#include "Components/PaginatedSettingsComponent.h"
+#include "Components/Settings/PaginatedSettingsComponent.h"
 #include "Data/MenuNode.h"
 #include "Data/ModifierRegistry.h"
 #include <functional>

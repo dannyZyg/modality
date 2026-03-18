@@ -44,6 +44,10 @@ public:
     void setMidiChannel (int channel, juce::UndoManager* undoManager = nullptr);
     int getMidiChannel() const;
     void setMidiOutputId (const juce::String& outputId, juce::UndoManager* undoManager = nullptr);
+
+    juce::Value getMidiOutputIdAsValue();
+    juce::Value getMidiOutputChannelAsValue();
+
     juce::String getMidiOutputId() const;
 
     void setEnabled (bool isEnabled);

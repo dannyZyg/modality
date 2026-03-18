@@ -12,6 +12,7 @@
 MidiOutputManager::MidiOutputManager()
 {
     refreshDevices();
+    setDefaultDeviceId ("");
 }
 
 MidiOutputManager::~MidiOutputManager()
@@ -42,6 +43,16 @@ const juce::MidiDeviceInfo* MidiOutputManager::findDeviceById (const juce::Strin
     for (const auto& device : availableDevices)
     {
         if (device.identifier == deviceId)
+            return &device;
+    }
+    return nullptr;
+}
+
+const juce::MidiDeviceInfo* MidiOutputManager::findDeviceByName (const juce::String& deviceName) const
+{
+    for (const auto& device : availableDevices)
+    {
+        if (device.name == deviceName)
             return &device;
     }
     return nullptr;

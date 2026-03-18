@@ -8,6 +8,7 @@
 #include "Components/Modifiers/ModifierMenuManager.h"
 #include "Components/SequenceComponent.h"
 #include "Components/SequenceSelectionComponent.h"
+#include "Components/Settings/SequenceSettingsManager.h"
 #include "Components/StatusBarComponent.h"
 #include "Data/Composition.h"
 #include "Data/Cursor.h"
@@ -65,7 +66,8 @@ private:
     // Menu structures
     std::unique_ptr<MenuNode> helpMenuRoot;
     std::unique_ptr<MenuNode> globalSettingsMenuRoot;
-    std::unique_ptr<MenuNode> sequenceSettingsMenuRoot;
+
+    SequenceSettingsManager sequenceSettngsManager;
 
     std::unique_ptr<MenuNode> createHelpMenuTree();
 

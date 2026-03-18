@@ -10,6 +10,7 @@ namespace AppSettingsIDs
 DECLARE_ID (WindowLastHeight)
 DECLARE_ID (WindowLastWidth)
 DECLARE_ID (MidiDefaultOutputDevice)
+DECLARE_ID (MidiDefaultChannel)
 
 #undef DECLARE_ID
 } // namespace AppSettingsIDs
@@ -48,6 +49,9 @@ public:
 
     juce::String getDefaultMidiOutputDevice();
     void setDefaultMidiOutputDevice (juce::String deviceID);
+
+    juce::String getDefaultMidiChannel();
+    void setDefaultMidiChannel (juce::String channel);
 
 private:
     AppSettings();

@@ -1,4 +1,4 @@
-#include "Components/PaginatedSettingsComponent.h"
+#include "Components/Settings/PaginatedSettingsComponent.h"
 #include "juce_gui_basics/juce_gui_basics.h"
 
 PaginatedSettingsComponent::PaginatedSettingsComponent (std::vector<std::unique_ptr<ISelectableWidget>> w) : widgets (std::move (w))
