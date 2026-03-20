@@ -33,6 +33,7 @@ public:
     ~Sequence();
 
     juce::ValueTree& getState();
+    void loadNotesFromState();
 
     double getLengthSeconds (double tempo) const;
     double getLengthBeats() const;

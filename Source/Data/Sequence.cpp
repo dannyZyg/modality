@@ -41,11 +41,7 @@ Sequence::Sequence (juce::ValueTree existingState) : state (existingState.isVali
     if (! state.getChildWithName (SequenceIDs::Notes).isValid())
         state.addChild (juce::ValueTree (SequenceIDs::Notes), -1, nullptr);
 
-    auto notesState = getNotesState();
-    for (int i = 0; i < notesState.getNumChildren(); ++i)
-    {
-        insertNote (notesState.getChild (i), nullptr);
-    }
+    loadNotesFromState();
 
     state.addListener (this);
 }
@@ -58,6 +54,17 @@ juce::ValueTree Sequence::ensureChildrenExist (juce::ValueTree s)
 Sequence::~Sequence()
 {
     state.removeListener (this);
+}
+
+void Sequence::loadNotesFromState()
+{
+    // When loading notes from existing state, the notes already exist in the value tree
+    // It doesn't make sense to use insertNote() - we want to batch create vector items to represent the existing state
+    auto notesState = getNotesState();
+    for (int i = 0; i < notesState.getNumChildren(); ++i)
+    {
+        notes.emplace_back (std::make_unique<Note> (notesState.getChild (i)));
+    }
 }
 
 juce::ValueTree& Sequence::getState() { return state; }

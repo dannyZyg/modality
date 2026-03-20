@@ -673,7 +673,61 @@ void MainComponent::setupKeyboardShortcuts()
             "Sequence Settings",
             "Open settings menu for the currently selected sequence"),
 
+        Shortcut (
+            juce::KeyPress::createFromDescription ("command + s"),
+            { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
+            [this]()
+            {
+                fileChooser = std::make_unique<juce::FileChooser> (
+                    "Save",
+                    juce::File::getSpecialLocation (juce::File::userDocumentsDirectory),
+                    "*.modality");
+
+                fileChooser->launchAsync (juce::FileBrowserComponent::saveMode | juce::FileBrowserComponent::canSelectFiles,
+                                          [this] (const juce::FileChooser& fc)
+                                          {
+                                              auto file = fc.getResult();
+                                              if (file != juce::File {})
+
+                                                  composition.saveToFile (file);
+                                          });
+
+                // contextualMenuComponent.displayMenu (composition.saveToFile());
+                return true;
+            },
+            "Save",
+            "Saves the current composition to disk"),
+
+        Shortcut (
+            juce::KeyPress::createFromDescription ("command + o"),
+            { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
+            [this]()
+            {
+                fileChooser = std::make_unique<juce::FileChooser> (
+                    "Load",
+                    juce::File::getSpecialLocation (juce::File::userDocumentsDirectory),
+                    "*.modality");
+
+                fileChooser->launchAsync (juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles,
+                                          [this] (const juce::FileChooser& fc)
+                                          {
+                                              auto file = fc.getResult();
+                                              composition.loadFromFile (file);
+                                              repaintSequenceComponents();
+                                          });
+
+                return true;
+            },
+            "Load",
+            "Loads an existing composition from disk"),
+
     };
 
     shortcutManager.registerShortcuts (shortcuts);
+}
+
+void MainComponent::repaintSequenceComponents()
+{
+    sequenceComponent.repaint();
+    sequenceSelectionComponent.repaint();
 }

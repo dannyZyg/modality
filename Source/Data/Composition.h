@@ -13,12 +13,12 @@ DECLARE_ID (Sequences)
 
 } // namespace CompositionIDs
 
-class Composition : public juce::ValueTree::Listener
+class Composition : public juce::ValueTree::Listener, public juce::ChangeBroadcaster
 {
 public:
     Composition();
     explicit Composition (juce::ValueTree existingState);
-    ~Composition();
+    ~Composition() override;
 
     void createDefaultSequences();
 
@@ -32,14 +32,35 @@ public:
     std::vector<MidiNote> extractMidiSequence (size_t seqIndex, double tempo);
 
     void valueTreeChildAdded (juce::ValueTree& parentTree,
-                              juce::ValueTree& childWhichHasBeenAdded);
+                              juce::ValueTree& childWhichHasBeenAdded) override;
 
     void valueTreeChildRemoved (juce::ValueTree& parentTree,
                                 juce::ValueTree& childWhichHasBeenRemoved,
-                                int indexFromWhichChildWasRemoved);
+                                int indexFromWhichChildWasRemoved) override;
+
+    void valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHasChanged,
+                                   const juce::Identifier& property) override;
+
+    void valueTreeChildOrderChanged (ValueTree& treeWhichChildrenBelongTo,
+                                     int oldChildIndex,
+                                     int newChildIndex) override;
+
+    juce::ValueTree getState();
+
+    bool save();
+    bool saveAs (juce::File& f);
+    bool saveToFile (juce::File& f);
+    bool hasFile();
+
+    bool loadFromFile (juce::File& f);
+
+    bool isDirty();
+    void setIsDirty (bool v);
 
 private:
     juce::ValueTree state;
+    juce::File currentFile;
+    bool dirty { false };
 
     int numDefaultSequences { 4 };
 

@@ -59,6 +59,7 @@ void Composition::valueTreeChildAdded (juce::ValueTree& parentTree,
         auto sequence = std::make_unique<Sequence> (childWhichHasBeenAdded);
         sequences.emplace_back (std::move (sequence));
     }
+    setIsDirty (true);
 }
 
 void Composition::valueTreeChildRemoved (juce::ValueTree& parentTree,
@@ -70,6 +71,20 @@ void Composition::valueTreeChildRemoved (juce::ValueTree& parentTree,
         std::erase_if (sequences, [&] (const auto& sequence)
                        { return sequence->getState() == childWhichHasBeenRemoved; });
     }
+    setIsDirty (true);
+}
+
+void Composition::valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHasChanged,
+                                            const juce::Identifier& property)
+{
+    setIsDirty (true);
+}
+
+void Composition::valueTreeChildOrderChanged (ValueTree& treeWhichChildrenBelongTo,
+                                              int oldChildIndex,
+                                              int newChildIndex)
+{
+    setIsDirty (true);
 }
 
 Sequence& Composition::getSequence (size_t index) const
@@ -104,4 +119,114 @@ std::vector<MidiNote> Composition::extractMidiSequence (size_t seqIndex, double 
         }
     }
     return midiClip;
+}
+
+juce::ValueTree Composition::getState()
+{
+    return state;
+}
+
+bool Composition::hasFile() { return currentFile.existsAsFile(); }
+
+bool Composition::save()
+{
+    if (hasFile())
+    {
+        return saveToFile (currentFile);
+    }
+    return false;
+}
+
+bool Composition::saveAs (juce::File& f)
+{
+    return saveToFile (f);
+}
+
+bool Composition::saveToFile (juce::File& f)
+{
+    auto stateXml = getState().toXmlString();
+
+    f.replaceWithText (stateXml);
+
+    currentFile = f;
+    setIsDirty (false);
+    return true;
+}
+
+bool Composition::loadFromFile (juce::File& f)
+{
+    if (! f.existsAsFile())
+    {
+        juce::AlertWindow::showMessageBoxAsync (
+            juce::MessageBoxIconType::WarningIcon,
+            "File Not Found: " + f.getFullPathName(),
+            "The file could not be found. Please check the path and try again.",
+            "OK",
+            nullptr);
+
+        return false;
+    }
+
+    auto xml = juce::XmlDocument::parse (f);
+
+    if (xml == nullptr)
+    {
+        juce::AlertWindow::showMessageBoxAsync (
+            juce::MessageBoxIconType::WarningIcon,
+            "File Corrupt: " + f.getFullPathName(),
+            "The file could not be loaded.",
+            "OK",
+            nullptr);
+
+        return false;
+    }
+
+    auto loadedTree = juce::ValueTree::fromXml (*xml);
+
+    if (! loadedTree.isValid())
+    {
+        juce::AlertWindow::showMessageBoxAsync (
+            juce::MessageBoxIconType::WarningIcon,
+            "File not supported: " + f.getFullPathName(),
+            "The file could not be loaded.",
+            "OK",
+            nullptr);
+
+        return false;
+    }
+
+    if (loadedTree.getType() != juce::Identifier ("Composition"))
+    {
+        juce::AlertWindow::showMessageBoxAsync (
+            juce::MessageBoxIconType::WarningIcon,
+            "File not supported: " + f.getFullPathName(),
+            "The file could not be loaded.",
+            "OK",
+            nullptr);
+        return false;
+    }
+
+    state.removeAllChildren (nullptr);
+    state.copyPropertiesAndChildrenFrom (loadedTree, nullptr);
+
+    sequences.clear();
+    for (auto seqState : state.getChildWithName (CompositionIDs::Sequences))
+    {
+        sequences.push_back (std::make_unique<Sequence> (seqState));
+    }
+
+    return true;
+}
+
+bool Composition::isDirty() { return dirty; }
+
+void Composition::setIsDirty (bool v)
+{
+    DBG ("SETTING IS DIRTY: ");
+    if (isDirty() != v)
+    {
+        dirty = v;
+        DBG ("sending change");
+        sendChangeMessage();
+    }
 }

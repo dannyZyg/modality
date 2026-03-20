@@ -36,6 +36,8 @@ public:
 
     bool keyPressed (const juce::KeyPress& key) override;
 
+    void repaintSequenceComponents();
+
 private:
     //==============================================================================
     Composition composition;
@@ -82,6 +84,8 @@ private:
 
     void setupKeyboardShortcuts();
     KeyboardShortcutManager shortcutManager;
+
+    std::unique_ptr<juce::FileChooser> fileChooser;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

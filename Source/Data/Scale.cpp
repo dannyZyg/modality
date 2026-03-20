@@ -46,25 +46,23 @@ void Scale::setName (juce::String name, juce::UndoManager* undoManager)
 
 void Scale::setDegrees (std::vector<double> newDegrees, juce::UndoManager* undoManager)
 {
-    juce::Array<var> degreesAsVar;
+    juce::StringArray degreesAsVar;
 
     for (const auto& item : newDegrees)
     {
-        degreesAsVar.add (item);
+        degreesAsVar.add (juce::String (item));
     }
-    state.setProperty (ScaleIDs::Degrees, degreesAsVar, undoManager);
+    state.setProperty (ScaleIDs::Degrees, degreesAsVar.joinIntoString ("|"), undoManager);
 }
 
 std::vector<double> Scale::getDegrees() const
 {
     std::vector<double> result;
 
-    if (auto* arr = state.getProperty (ScaleIDs::Degrees).getArray())
+    auto parts = juce::StringArray::fromTokens (state.getProperty (ScaleIDs::Degrees).toString(), "|", "");
+    for (const auto& part : parts)
     {
-        for (const auto& item : *arr)
-        {
-            result.push_back (static_cast<double> (item));
-        }
+        result.push_back (part.getDoubleValue());
     }
     return result;
 }
