@@ -52,7 +52,7 @@ public:
     void moveSelection (const Timeline& timeline, const Scale& scale, Direction dir, bool shouldWrap);
     bool canSelectionMove (const Timeline& timeline, const Scale& scale, Direction dir);
 
-    void toggleLineMode();
+    void toggleLineMode (Position pos, Timeline& timeline, Scale& scale);
 
 private:
     std::vector<Position> positions;

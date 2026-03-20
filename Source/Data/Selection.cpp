@@ -11,7 +11,7 @@ void Selection::clear()
     positions.clear();
 }
 
-void Selection::toggleLineMode()
+void Selection::toggleLineMode (Position pos, Timeline& timeline, Scale& scale)
 {
     if (lineMode == VisualLineMode::vertical)
     {
@@ -21,6 +21,8 @@ void Selection::toggleLineMode()
     {
         lineMode = VisualLineMode::vertical;
     }
+    clear();
+    addToVisualLineSelection (pos, timeline, scale);
 }
 
 void Selection::addToVisualLineSelection (Position pos, Timeline& timeline, Scale& scale)

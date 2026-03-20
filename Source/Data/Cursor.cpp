@@ -323,7 +323,7 @@ const std::vector<Position>& Cursor::getVisualSelectionPositions() const
     return visualSelection.getPositions();
 }
 
-void Cursor::toggleLineMode() { visualSelection.toggleLineMode(); }
+void Cursor::toggleLineMode() { visualSelection.toggleLineMode (cursorPosition, getCurrentTimeline(), getCurrentScale()); }
 
 Position Cursor::getVisualSelectionOpposite()
 {
