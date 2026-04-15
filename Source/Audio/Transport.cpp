@@ -73,6 +73,7 @@ void Transport::start()
 void Transport::stop()
 {
     transportSource.stop();
+    reset();
 }
 
 bool Transport::isPlaying() const

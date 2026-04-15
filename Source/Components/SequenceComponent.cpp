@@ -38,12 +38,9 @@ void SequenceComponent::paint (juce::Graphics& g)
 
     double sequenceDurationInSeconds = selectedSequence.getLengthSeconds (tempoBPM);
 
-    if (sequenceDurationInSeconds > 0)
-    {
-        double loopedPosition = std::fmod (currentPlayheadTime_, sequenceDurationInSeconds);
-        double playheadX = (loopedPosition / sequenceDurationInSeconds) * width;
-        g.drawLine (static_cast<float> (playheadX), 0, static_cast<float> (playheadX), height, 3.0f);
-    }
+    double loopedPosition = std::fmod (currentPlayheadTime_, sequenceDurationInSeconds);
+    double playheadX = (loopedPosition / sequenceDurationInSeconds) * width;
+    g.drawLine (static_cast<float> (playheadX), 0, static_cast<float> (playheadX), height, 3.0f);
 
     // Draw the outline
     g.setColour (juce::Colours::grey);
