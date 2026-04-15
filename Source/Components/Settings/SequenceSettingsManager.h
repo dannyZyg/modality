@@ -18,6 +18,5 @@ private:
     MidiOutputManager& midiOutManager;
     std::unique_ptr<MenuNode> menuRoot;
     MenuNode* midiSettingsNode;
-
-    void buildMidiSettingsMenu();
+    MenuNode* nameSettingsNode;
 };

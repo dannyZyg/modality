@@ -256,3 +256,12 @@ void Sequence::decreaseTimelineStepSize()
 {
     timeline.decreaseStepSize();
 }
+
+void Sequence::setName (juce::String s, juce::UndoManager* undoManager)
+{
+    state.setProperty (SequenceIDs::Name, s, undoManager);
+}
+
+juce::String Sequence::getName() { return state.getProperty (SequenceIDs::Name); }
+
+juce::Value Sequence::getNameAsValue() { return state.getPropertyAsValue (SequenceIDs::Name, nullptr); }

@@ -16,6 +16,7 @@ namespace SequenceIDs
 {
 #define DECLARE_ID(name) inline const juce::Identifier name { #name };
 DECLARE_ID (Sequence)
+DECLARE_ID (Name)
 DECLARE_ID (Notes)
 DECLARE_ID (LengthBeats)
 DECLARE_ID (MidiChannel)
@@ -78,6 +79,10 @@ public:
 
     void increaseTimelineStepSize();
     void decreaseTimelineStepSize();
+
+    void setName (juce::String s, juce::UndoManager* undoManager);
+    juce::String getName();
+    juce::Value getNameAsValue();
 
 private:
     juce::ValueTree ensureChildrenExist (juce::ValueTree s);
