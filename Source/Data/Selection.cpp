@@ -206,6 +206,51 @@ Position Selection::getOppositeCorner (Position p)
     return Position {};
 }
 
+Position Selection::getOppositeEdge (Position p)
+{
+    anchor = p;
+
+    if (positions.empty())
+    {
+        return Position {};
+    }
+
+    if (lineMode == VisualLineMode::horizontal)
+    {
+        // if p is the lowest y value, get the highest y value, vice versa
+        bool isLowest = Division::isEqual (p.yDegree.value, getLowestPosition().yDegree.value);
+
+        if (isLowest)
+        {
+            // If at bottom edge, return top edge (preserve X coordinate)
+            return Position { p.xTimepoint, getHighestPosition().yDegree };
+        }
+        else
+        {
+            // If at top edge (or anywhere else), return bottom edge
+            return Position { p.xTimepoint, getLowestPosition().yDegree };
+        }
+    }
+    else if (lineMode == VisualLineMode::vertical)
+    {
+        // if p is the lowest x value, get the highest x value, vice versa
+        bool isEarliest = Division::isEqual (p.xTimepoint.value, getEarliestPosition().xTimepoint.value);
+
+        if (isEarliest)
+        {
+            // If at left edge, return right edge (preserve Y coordinate)
+            return Position { getLatestPosition().xTimepoint, p.yDegree };
+        }
+        else
+        {
+            // If at right edge (or anywhere else), return left edge
+            return Position { getEarliestPosition().xTimepoint, p.yDegree };
+        }
+    }
+
+    return Position {};
+}
+
 void Selection::moveSelection (const Timeline& timeline, const Scale& scale, Direction dir, bool shouldWrap)
 {
     // When not wrapping, check if the entire block can move

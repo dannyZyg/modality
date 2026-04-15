@@ -48,6 +48,7 @@ public:
     Position getHighestPosition();
     Position getLowestPosition();
     Position getOppositeCorner (Position p);
+    Position getOppositeEdge (Position p);
 
     void moveSelection (const Timeline& timeline, const Scale& scale, Direction dir, bool shouldWrap);
     bool canSelectionMove (const Timeline& timeline, const Scale& scale, Direction dir);

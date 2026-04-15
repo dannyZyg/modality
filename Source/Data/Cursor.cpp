@@ -13,7 +13,6 @@
 #include "Data/Scale.h"
 #include "Data/Selection.h"
 #include "Data/Timeline.h"
-#include "juce_core/system/juce_PlatformDefs.h"
 #include "juce_data_structures/juce_data_structures.h"
 
 Cursor::Cursor (Composition& comp) : composition (comp), randomGenerator (std::random_device()())
@@ -327,7 +326,13 @@ void Cursor::toggleLineMode() { visualSelection.toggleLineMode (cursorPosition, 
 
 Position Cursor::getVisualSelectionOpposite()
 {
-    return visualSelection.getOppositeCorner (cursorPosition);
+    if (mode == Mode::visualBlock)
+        return visualSelection.getOppositeCorner (cursorPosition);
+
+    if (mode == Mode::visualLine)
+        return visualSelection.getOppositeEdge (cursorPosition);
+
+    return visualSelection.getOppositeEdge (cursorPosition);
 }
 
 std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesAtPosition (Position& p, Timeline& t, Scale& s)
