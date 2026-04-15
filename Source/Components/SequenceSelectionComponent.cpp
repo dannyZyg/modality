@@ -3,20 +3,34 @@
 #include <JuceHeader.h>
 
 //==============================================================================
-SequenceSelectionComponent::SequenceSelectionComponent (const Cursor& curs, const Composition& comp)
+SequenceSelectionComponent::SequenceSelectionComponent (const Cursor& curs, Composition& comp)
     : cursor (curs), composition (comp)
 {
+    // Bind to each sequence's name Value for automatic updates
+    const auto& sequences = composition.getSequences();
+    for (const auto& seqPtr : sequences)
+    {
+        if (seqPtr)
+        {
+            auto nameValue = seqPtr->getNameAsValue();
+            nameValue.addListener (this);
+            sequenceNameValues.push_back (nameValue);
+        }
+    }
 }
 
-SequenceSelectionComponent::~SequenceSelectionComponent() {}
+SequenceSelectionComponent::~SequenceSelectionComponent()
+{
+    for (auto& value : sequenceNameValues)
+    {
+        value.removeListener (this);
+    }
+}
 
 void SequenceSelectionComponent::paint (juce::Graphics& g)
 {
     float width = static_cast<float> (getWidth());
     float height = static_cast<float> (getHeight());
-    // auto bounds = getLocalBounds();
-    // g.setColour (juce::Colours::blue);
-    // g.fillRect (bounds);
 
     const auto& sequences = composition.getSequences();
     const Sequence& selectedSequence = cursor.getSelectedSequence();
@@ -29,8 +43,7 @@ void SequenceSelectionComponent::paint (juce::Graphics& g)
 
     for (size_t i = 0; i < sequences.size(); ++i)
     {
-        const auto& seqPtr = sequences[i]; // Access the unique_ptr at the current index
-        //
+        const auto& seqPtr = sequences[i];
         auto fi = static_cast<float> (i);
         auto rect = juce::Rectangle<float> (
             (fi * barWidth) + (fi * padding),
@@ -45,14 +58,29 @@ void SequenceSelectionComponent::paint (juce::Graphics& g)
         {
             g.setColour (juce::Colours::orchid);
             g.fillRect (rect);
-            // seqPtr points to the currently selected sequence
-            // You can perform actions specific to the selected sequence here
-            // ... your code ...
         }
-        else if (seqPtr)
+
+        if (seqPtr)
         {
-            // seqPtr points to a non-selected sequence
-            // ... other actions ...
+            juce::String name = seqPtr->getName();
+
+            if (name.isEmpty())
+            {
+                name = "Sequence " + juce::String (i + 1);
+            }
+
+            if (seqPtr.get() == &selectedSequence)
+            {
+                g.setColour (juce::Colours::white);
+            }
+            else
+            {
+                g.setColour (juce::Colours::black);
+            }
+
+            g.setFont (12.0f);
+            bool useEllipsis = true;
+            g.drawText (name, rect, juce::Justification::centred, useEllipsis);
         }
     }
 }
@@ -64,4 +92,9 @@ void SequenceSelectionComponent::resized()
 //==============================================================================
 void SequenceSelectionComponent::update()
 {
+}
+
+void SequenceSelectionComponent::valueChanged ([[maybe_unused]] juce::Value& value)
+{
+    repaint();
 }

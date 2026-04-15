@@ -4,25 +4,23 @@
 #include "Data/Cursor.h"
 #include <JuceHeader.h>
 
-//==============================================================================
-/*
-    This component lives inside our window, and this is where you should put all
-    your controls and content.
-*/
-class SequenceSelectionComponent : public juce::Component
+class SequenceSelectionComponent : public juce::Component, public juce::Value::Listener
 {
 public:
     //==============================================================================
-    SequenceSelectionComponent (const Cursor& curs, const Composition& comp);
+    SequenceSelectionComponent (const Cursor& curs, Composition& comp);
     ~SequenceSelectionComponent() override;
 
     void paint (juce::Graphics& g) override;
     void resized() override;
     void update();
 
+    void valueChanged (juce::Value& value) override;
+
 private:
     const Cursor& cursor;
-    const Composition& composition;
+    Composition& composition;
+    std::vector<juce::Value> sequenceNameValues;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SequenceSelectionComponent)
 };
