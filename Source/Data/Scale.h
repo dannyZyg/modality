@@ -2,6 +2,7 @@
 
 #include "juce_data_structures/juce_data_structures.h"
 #include <JuceHeader.h>
+#include <vector>
 
 namespace ScaleIDs
 {
@@ -33,6 +34,8 @@ public:
     explicit Scale (const juce::String& name);
     explicit Scale (juce::ValueTree existingState);
 
+    static const std::vector<juce::String> getScaleNames();
+
     double getLowerBound() const;
     double getUpperBound() const;
     int getStepsBetween (const Degree& from, const Degree& to) const;
@@ -50,6 +53,7 @@ public:
 
     void setScale (juce::String scaleName, juce::UndoManager* undoManager = nullptr);
     juce::ValueTree& getState();
+    double getNearestDegree (double rawDegree) const;
 
 private:
     juce::ValueTree state;

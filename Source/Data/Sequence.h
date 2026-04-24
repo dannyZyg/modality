@@ -49,6 +49,7 @@ public:
 
     juce::Value getMidiOutputIdAsValue();
     juce::Value getMidiOutputChannelAsValue();
+    juce::Value getScaleAsValue();
 
     juce::String getMidiOutputId() const;
 
@@ -84,12 +85,16 @@ public:
     juce::String getName();
     juce::Value getNameAsValue();
 
+    void setScale (juce::String scaleName, juce::UndoManager* undoManager = nullptr);
+
 private:
     juce::ValueTree ensureChildrenExist (juce::ValueTree s);
     auto isNoteWithin (double minTime, double maxTime, double minDegree, double maxDegree);
 
     juce::ValueTree state;
     juce::ValueTree getNotesState();
+
+    void snapNotesToScale (juce::UndoManager* undoManager = nullptr);
 
     Timeline timeline;
     Scale scale { "Natural Minor" };

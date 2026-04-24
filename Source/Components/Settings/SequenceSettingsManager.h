@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Audio/MidiOutputManager.h"
+#include "Components/Widgets/SelectionWidgetComponent.h"
 #include "Data/Cursor.h"
 #include "Data/MenuNode.h"
 
@@ -18,5 +19,7 @@ private:
     MidiOutputManager& midiOutManager;
     std::unique_ptr<MenuNode> menuRoot;
     MenuNode* midiSettingsNode;
-    MenuNode* nameSettingsNode;
+    MenuNode* propertiesNode;
+
+    std::vector<SelectionOption> getScaleOptions();
 };

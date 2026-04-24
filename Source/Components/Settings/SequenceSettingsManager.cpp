@@ -3,7 +3,10 @@
 #include "Components/Settings/MidiSettingsSelectionFactory.h"
 #include "Components/Settings/PaginatedSettingsComponent.h"
 #include "Components/Widgets/ISelectableWidget.h"
+#include "Components/Widgets/SelectionWidgetComponent.h"
 #include "Components/Widgets/TextInputWidgetComponent.h"
+#include "Data/Scale.h"
+#include <memory>
 
 SequenceSettingsManager::SequenceSettingsManager (Cursor& c, MidiOutputManager& m) : cursor (c), midiOutManager (m)
 {
@@ -20,20 +23,25 @@ SequenceSettingsManager::SequenceSettingsManager (Cursor& c, MidiOutputManager& 
     midiSettingsNode = menuRoot->addChild (std::move (midiSettings));
 
     // Create name settings menu node
-    auto nameSettings = std::make_unique<MenuNode> ("Name Settings", juce::KeyPress::createFromDescription ("n"));
+    auto sequenceProperties = std::make_unique<MenuNode> ("Sequence Properties", juce::KeyPress::createFromDescription ("s"));
 
-    nameSettings->onEnter = [this]()
+    sequenceProperties->onEnter = [this]()
     {
         std::vector<std::unique_ptr<ISelectableWidget>> widgets;
         auto& seq = cursor.getSelectedSequence();
 
         widgets.push_back (std::make_unique<TextInputWidgetComponent> ("Sequence Name", seq.getNameAsValue(), 32));
 
+        auto onSelectScale = [&seq, this] (const juce::String& newScaleName)
+        { midiOutManager.sendAllNotesOff(); seq.setScale (newScaleName, cursor.getUndoManager()); };
+
+        widgets.push_back (std::make_unique<SelectionWidgetComponent> ("Scale", getScaleOptions(), seq.getScale().getName(), onSelectScale));
+
         auto nameComponent = std::make_unique<PaginatedSettingsComponent> (std::move (widgets));
-        nameSettingsNode->setComponent (std::move (nameComponent));
+        propertiesNode->setComponent (std::move (nameComponent));
     };
 
-    nameSettingsNode = menuRoot->addChild (std::move (nameSettings));
+    propertiesNode = menuRoot->addChild (std::move (sequenceProperties));
 }
 
 SequenceSettingsManager::~SequenceSettingsManager() {}
@@ -41,4 +49,15 @@ SequenceSettingsManager::~SequenceSettingsManager() {}
 MenuNode* SequenceSettingsManager::getMenuNodeRoot()
 {
     return menuRoot.get();
+}
+
+std::vector<SelectionOption> SequenceSettingsManager::getScaleOptions()
+{
+    std::vector<SelectionOption> options;
+
+    for (auto scale : scaleDefinitions)
+    {
+        options.push_back (SelectionOption (scale.first, scale.first));
+    }
+    return options;
 }

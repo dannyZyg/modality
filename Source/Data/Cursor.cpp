@@ -523,3 +523,8 @@ juce::ValueTree Cursor::getClipboard()
 {
     return clipboard;
 }
+
+juce::UndoManager* Cursor::getUndoManager()
+{
+    return &undoManager;
+}

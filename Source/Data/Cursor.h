@@ -14,6 +14,7 @@
 #include "Data/Timeline.h"
 #include "Note.h"
 #include "Sequence.h"
+#include "juce_data_structures/juce_data_structures.h"
 #include <JuceHeader.h>
 #include <random>
 #pragma once
@@ -118,6 +119,8 @@ public:
     Scale& getCurrentScale();
 
     juce::ValueTree getClipboard();
+
+    juce::UndoManager* getUndoManager();
 
 private:
     Composition& composition;

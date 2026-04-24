@@ -265,3 +265,26 @@ void Sequence::setName (juce::String s, juce::UndoManager* undoManager)
 juce::String Sequence::getName() { return state.getProperty (SequenceIDs::Name); }
 
 juce::Value Sequence::getNameAsValue() { return state.getPropertyAsValue (SequenceIDs::Name, nullptr); }
+
+juce::Value Sequence::getScaleAsValue()
+{
+    return scale.getState().getPropertyAsValue (ScaleIDs::Name, nullptr);
+}
+
+void Sequence::snapNotesToScale (juce::UndoManager* undoManager)
+{
+    if (undoManager)
+        undoManager->beginNewTransaction ("snapNotesToScale");
+
+    for (auto& note : notes)
+    {
+        auto snappedDegree = scale.getNearestDegree (note->getDegree());
+        note->setDegree (snappedDegree, undoManager);
+    }
+}
+
+void Sequence::setScale (juce::String scaleName, juce::UndoManager* undoManager)
+{
+    scale.setScale (scaleName, undoManager);
+    snapNotesToScale (undoManager);
+}

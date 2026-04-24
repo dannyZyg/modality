@@ -19,6 +19,17 @@ Scale::Scale (juce::ValueTree existingState) : state (existingState.isValid() ? 
         setScale ("Major");
 }
 
+const std::vector<juce::String> Scale::getScaleNames()
+{
+    std::vector<juce::String> names;
+
+    for (auto name : scaleDefinitions)
+    {
+        names.push_back (name.first);
+    }
+    return names;
+}
+
 juce::ValueTree& Scale::getState() { return state; }
 
 void Scale::setScale (juce::String scaleName, juce::UndoManager* undoManager)
@@ -286,4 +297,17 @@ std::optional<Degree> Scale::applySteps (const Degree& from, int steps, bool sho
         }
     }
     return current;
+}
+
+double Scale::getNearestDegree (double rawDegree) const
+{
+    auto degrees = getDegrees();
+    auto descending = getDescendingDegrees();
+
+    degrees.insert (degrees.end(), descending.begin() + 1, descending.end());
+
+    auto nearest = std::min_element (degrees.begin(), degrees.end(), [rawDegree] (double a, double b)
+                                     { return std::abs (a - rawDegree) < std::abs (b - rawDegree); });
+
+    return *nearest;
 }
