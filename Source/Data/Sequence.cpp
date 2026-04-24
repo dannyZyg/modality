@@ -25,9 +25,6 @@ Sequence::Sequence (juce::ValueTree existingState) : state (existingState.isVali
     if (! state.hasProperty (SequenceIDs::MidiChannel))
         setMidiChannel (1);
 
-    if (! state.hasProperty (SequenceIDs::LengthBeats))
-        setLengthBeats (defaultLengthBeats);
-
     if (! state.hasProperty (SequenceIDs::MidiOutputId))
         setMidiOutputId ("");
 
@@ -117,12 +114,10 @@ double Sequence::getLengthSeconds (double tempo) const
 
 void Sequence::setLengthBeats (double beats, juce::UndoManager* undoManager)
 {
-    state.setProperty (SequenceIDs::LengthBeats, beats, undoManager);
-    // update timeline with new bounds
     timeline.setUpperBound (beats, undoManager);
 }
 
-double Sequence::getLengthBeats() const { return static_cast<double> (state.getProperty (SequenceIDs::LengthBeats)); }
+double Sequence::getLengthBeats() const { return timeline.getUpperBound(); }
 
 int Sequence::getMidiChannel() const { return static_cast<int> (state.getProperty (SequenceIDs::MidiChannel)); }
 

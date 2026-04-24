@@ -53,6 +53,8 @@ void Timeline::setLowerBound (double lowerBound, juce::UndoManager* undoManager)
 
 double Timeline::getUpperBound() const { return state.getProperty (TimelineIDs::UpperBound); }
 
+juce::Value Timeline::getUpperBoundAsValue() { return state.getPropertyAsValue (TimelineIDs::UpperBound, nullptr); }
+
 void Timeline::setUpperBound (double upperBound, juce::UndoManager* undoManager)
 {
     state.setProperty (TimelineIDs::UpperBound, upperBound, undoManager);

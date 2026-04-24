@@ -20,6 +20,14 @@ SliderWidgetComponent::SliderWidgetComponent (const juce::String& _title, juce::
     horizontalSlider.getValueObject().referTo (valueToBindTo);
 }
 
+void SliderWidgetComponent::setRange (double _min, double _max, double _interval)
+{
+    min = _min;
+    max = _max;
+    interval = _interval;
+    horizontalSlider.setRange (min, max, interval);
+}
+
 void SliderWidgetComponent::setup()
 {
     interval = max / 100.0;

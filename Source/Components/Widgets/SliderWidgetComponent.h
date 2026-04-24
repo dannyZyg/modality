@@ -16,6 +16,8 @@ public:
 
     void setup();
 
+    void setRange (double _min, double _max, double _interval);
+
     bool keyPressed (const juce::KeyPress& key) override;
     void paint (juce::Graphics&) override;
     void resized() override;

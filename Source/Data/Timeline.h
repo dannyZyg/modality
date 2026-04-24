@@ -95,6 +95,7 @@ public:
 
     double getLowerBound() const;
     double getUpperBound() const;
+    juce::Value getUpperBoundAsValue();
     bool isWithinBounds (const double time) const;
     void setLowerBound (double lowerBound, juce::UndoManager* undoManager = nullptr);
     void setUpperBound (double upperBound, juce::UndoManager* undoManager = nullptr);

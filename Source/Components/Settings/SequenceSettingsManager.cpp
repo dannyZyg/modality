@@ -4,6 +4,7 @@
 #include "Components/Settings/PaginatedSettingsComponent.h"
 #include "Components/Widgets/ISelectableWidget.h"
 #include "Components/Widgets/SelectionWidgetComponent.h"
+#include "Components/Widgets/SliderWidgetComponent.h"
 #include "Components/Widgets/TextInputWidgetComponent.h"
 #include "Data/Scale.h"
 #include <memory>
@@ -30,15 +31,22 @@ SequenceSettingsManager::SequenceSettingsManager (Cursor& c, MidiOutputManager& 
         std::vector<std::unique_ptr<ISelectableWidget>> widgets;
         auto& seq = cursor.getSelectedSequence();
 
+        // Sequence name
         widgets.push_back (std::make_unique<TextInputWidgetComponent> ("Sequence Name", seq.getNameAsValue(), 32));
 
+        // Sequence scale
         auto onSelectScale = [&seq, this] (const juce::String& newScaleName)
         { midiOutManager.sendAllNotesOff(); seq.setScale (newScaleName, cursor.getUndoManager()); };
 
         widgets.push_back (std::make_unique<SelectionWidgetComponent> ("Scale", getScaleOptions(), seq.getScale().getName(), onSelectScale));
 
-        auto nameComponent = std::make_unique<PaginatedSettingsComponent> (std::move (widgets));
-        propertiesNode->setComponent (std::move (nameComponent));
+        // Sequence timeline
+        auto timelineSlider = std::make_unique<SliderWidgetComponent> ("Length", seq.getTimeline().getUpperBoundAsValue(), 1.0, 8.0);
+        timelineSlider->setRange (1.0, 8.0, 0.25);
+        widgets.push_back (std::move (timelineSlider));
+
+        auto settingsComponent = std::make_unique<PaginatedSettingsComponent> (std::move (widgets));
+        propertiesNode->setComponent (std::move (settingsComponent));
     };
 
     propertiesNode = menuRoot->addChild (std::move (sequenceProperties));

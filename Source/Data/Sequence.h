@@ -18,13 +18,10 @@ namespace SequenceIDs
 DECLARE_ID (Sequence)
 DECLARE_ID (Name)
 DECLARE_ID (Notes)
-DECLARE_ID (LengthBeats)
 DECLARE_ID (MidiChannel)
 DECLARE_ID (MidiOutputId)
 #undef DECLARE_ID
 } // namespace SequenceIDs
-
-static constexpr double defaultLengthBeats = 4.0f;
 
 class Sequence : juce::ValueTree::Listener
 {
