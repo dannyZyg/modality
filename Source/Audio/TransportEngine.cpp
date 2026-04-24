@@ -11,6 +11,7 @@
 #include "juce_core/juce_core.h"
 #include "juce_core/system/juce_PlatformDefs.h"
 #include <algorithm>
+#include <iterator>
 
 TransportEngine::TransportEngine()
 {
@@ -38,7 +39,6 @@ size_t TransportEngine::getNumTracks() const
 void TransportEngine::scheduleTrack (size_t trackIndex,
                                      const std::vector<MidiNote>& notes,
                                      double loopStartTime,
-                                     double loopLengthSeconds,
                                      juce::MidiOutput* output,
                                      int midiChannel)
 {
@@ -52,97 +52,105 @@ void TransportEngine::scheduleTrack (size_t trackIndex,
     auto& state = trackStates[trackIndex];
     state.cachedOutput = output;
     state.cachedMidiChannel = midiChannel;
-    state.loopLengthSeconds.store (loopLengthSeconds);
 
-    // Collect all events for this track (UI thread - allocation is safe here)
-    std::vector<ScheduledEvent> events;
-    events.reserve (notes.size() * 2); // Each note produces 2 events (on + off)
+    // Build the new events for this track (UI thread - allocation is safe here)
+    std::vector<ScheduledEvent> newEvents;
+    newEvents.reserve (notes.size() * 2);
 
     for (const auto& note : notes)
     {
         double noteStartTime = loopStartTime + note.startTime;
         double noteEndTime = noteStartTime + note.duration;
 
-        events.push_back (ScheduledEvent {
+        newEvents.push_back (ScheduledEvent {
             noteStartTime,
             juce::MidiMessage::noteOn (midiChannel, note.noteNumber, static_cast<juce::uint8> (note.velocity)),
             output });
 
-        events.push_back (ScheduledEvent {
+        newEvents.push_back (ScheduledEvent {
             noteEndTime,
             juce::MidiMessage::noteOff (midiChannel, note.noteNumber),
             output });
     }
 
-    // Sort by timestamp to ensure correct playback order for polyphonic notes
-    std::sort (events.begin(), events.end(), [] (const ScheduledEvent& a, const ScheduledEvent& b)
-               { return a.timestamp < b.timestamp; });
+    insertEventsSorted (newEvents);
+}
 
-    // Write to FIFO in sorted order
-    for (const auto& event : events)
+bool TransportEngine::insertEventsSorted (const std::vector<ScheduledEvent>& newEvents)
+{
+    if (newEvents.empty())
+        return true;
+
+    std::lock_guard<std::mutex> lock (eventMutex);
+
+    int currentCount = eventCount.load();
+    int head = readHead.load();
+
+    // Compact: discard already-consumed events from the front of the buffer so
+    // we don't run out of space over time.
+    if (head > 0)
     {
-        writeEvent (event);
+        int remaining = currentCount - head;
+        if (remaining > 0)
+            std::move (eventBuffer.begin() + head,
+                       eventBuffer.begin() + currentCount,
+                       eventBuffer.begin());
+        currentCount = remaining;
+        readHead.store (0);
+        eventCount.store (currentCount);
+        head = 0;
     }
+
+    // Overflow guard
+    if (currentCount + static_cast<int> (newEvents.size()) > static_cast<int> (MAX_EVENTS))
+    {
+        juce::Logger::writeToLog ("TransportEngine: event buffer overflow, events dropped");
+        return false;
+    }
+
+    // Append new events then stable-sort the entire live region so the buffer
+    // stays globally ordered by timestamp.
+    std::copy (newEvents.begin(), newEvents.end(), eventBuffer.begin() + currentCount);
+    int newCount = currentCount + static_cast<int> (newEvents.size());
+    std::stable_sort (eventBuffer.begin(), eventBuffer.begin() + newCount,
+                      [] (const ScheduledEvent& a, const ScheduledEvent& b) {
+                          return a.timestamp < b.timestamp;
+                      });
+
+    // Commit the new count atomically so the audio thread sees a consistent snapshot.
+    eventCount.store (newCount);
+    return true;
 }
 
 void TransportEngine::clearScheduledEvents()
 {
-    // Reset the FIFO by reading all available items
-    int numReady = fifo.getNumReady();
-    if (numReady > 0)
-    {
-        int start1, size1, start2, size2;
-        fifo.prepareToRead (numReady, start1, size1, start2, size2);
-        fifo.finishedRead (size1 + size2);
-    }
-}
-
-void TransportEngine::writeEvent (const ScheduledEvent& event)
-{
-    int start1, size1, start2, size2;
-    fifo.prepareToWrite (1, start1, size1, start2, size2);
-
-    if (size1 > 0)
-    {
-        eventBuffer[static_cast<size_t> (start1)] = event;
-        fifo.finishedWrite (1);
-    }
-    else if (size2 > 0)
-    {
-        eventBuffer[static_cast<size_t> (start2)] = event;
-        fifo.finishedWrite (1);
-    }
-    // If neither has space, event is dropped (queue overflow)
+    // Reset atomically — no mutex needed because:
+    // - Setting eventCount to 0 first causes the audio thread to stop reading immediately.
+    // - Setting readHead to 0 afterwards is safe because the audio thread will see
+    //   eventCount == 0 and never dereference readHead until new events are committed.
+    // UI-thread callers that also hold eventMutex (insertEventsSorted) are safe because
+    // they re-read eventCount and readHead after acquiring the lock.
+    eventCount.store (0, std::memory_order_release);
+    readHead.store (0, std::memory_order_release);
 }
 
 // === Per-Track Timing Queries ===
 
-bool TransportEngine::trackNeedsScheduling (size_t trackIndex, double currentPosition) const
+bool TransportEngine::trackNeedsBeatScheduling (size_t trackIndex, double currentBeat) const
 {
     if (trackIndex >= numActiveTracks.load())
         return false;
 
-    double nextStart = trackStates[trackIndex].nextLoopStartTime.load();
-    return currentPosition >= (nextStart - lookAheadTime);
+    double lastScheduled = trackStates[trackIndex].lastScheduledBeat.load();
+    return currentBeat >= (lastScheduled - TransportEngine::SCHEDULE_THRESHOLD_BEATS);
 }
 
-double TransportEngine::getTrackNextLoopStartTime (size_t trackIndex) const
-{
-    if (trackIndex >= MAX_TRACKS)
-        return 0.0;
-
-    return trackStates[trackIndex].nextLoopStartTime.load();
-}
-
-void TransportEngine::markTrackScheduled (size_t trackIndex, double loopLengthSeconds)
+void TransportEngine::markBeatsScheduled (size_t trackIndex, double endBeat)
 {
     if (trackIndex >= MAX_TRACKS)
         return;
 
-    auto& state = trackStates[trackIndex];
-    double currentStart = state.nextLoopStartTime.load();
-    state.nextLoopStartTime.store (currentStart + loopLengthSeconds);
-    state.loopLengthSeconds.store (loopLengthSeconds);
+    trackStates[trackIndex].lastScheduledBeat.store (endBeat);
 }
 
 void TransportEngine::setTrackOutput (size_t trackIndex, juce::MidiOutput* output, int midiChannel)
@@ -201,44 +209,20 @@ void TransportEngine::processBlock (double currentPosition, double bufferDuratio
 
     double bufferEndTime = currentPosition + bufferDuration;
 
-    // Read events from the FIFO that fall within this buffer's time window
-    int numReady = fifo.getNumReady();
-    if (numReady == 0)
-        return;
+    // Walk the sorted event buffer from readHead, firing every event whose
+    // timestamp falls within this buffer's time window.  Because the buffer is
+    // globally sorted by timestamp, we can stop at the first future event —
+    // everything after it is also in the future.
+    int head = readHead.load (std::memory_order_acquire);
+    int count = eventCount.load (std::memory_order_acquire);
 
-    int start1, size1, start2, size2;
-    fifo.prepareToRead (numReady, start1, size1, start2, size2);
-
-    int totalConsumed = 0;
-
-    // Lambda to process a contiguous block of events
-    auto processRange = [&] (int start, int size) -> bool
+    while (head < count && eventBuffer[static_cast<size_t> (head)].timestamp <= bufferEndTime)
     {
-        for (int i = 0; i < size; ++i)
-        {
-            const auto& event = eventBuffer[static_cast<size_t> (start + i)];
-
-            if (event.timestamp <= bufferEndTime)
-            {
-                // Send to the event's designated output
-                if (event.output != nullptr)
-                {
-                    event.output->sendMessageNow (event.message);
-                }
-                ++totalConsumed;
-            }
-        }
-        return true; // Processed all events in range
-    };
-
-    // Process first contiguous block
-    bool continueProcessing = processRange (start1, size1);
-
-    // Process second contiguous block (wrap-around) if needed
-    if (continueProcessing && size2 > 0)
-    {
-        processRange (start2, size2);
+        const auto& event = eventBuffer[static_cast<size_t> (head)];
+        if (event.output != nullptr)
+            event.output->sendMessageNow (event.message);
+        ++head;
     }
 
-    fifo.finishedRead (totalConsumed);
+    readHead.store (head, std::memory_order_release);
 }

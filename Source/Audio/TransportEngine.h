@@ -20,13 +20,15 @@
 #include <JuceHeader.h>
 #include <array>
 #include <atomic>
+#include <mutex>
 
 class TransportEngine
 {
 public:
     static constexpr size_t MAX_TRACKS = 16;
     static constexpr size_t MAX_EVENTS = 4096;
-    static constexpr double DEFAULT_LOOKAHEAD = 0.1; // 100ms look-ahead for scheduling
+    static constexpr double LOOKAHEAD_BEATS = 2.0;   // Schedule this many beats ahead
+    static constexpr double SCHEDULE_THRESHOLD_BEATS = 0.5; // Start scheduling when within this many beats
 
     TransportEngine();
     ~TransportEngine() = default;
@@ -58,7 +60,6 @@ public:
     void scheduleTrack (size_t trackIndex,
                         const std::vector<MidiNote>& notes,
                         double loopStartTime,
-                        double loopLengthSeconds,
                         juce::MidiOutput* output,
                         int midiChannel);
 
@@ -70,26 +71,21 @@ public:
     // === Per-Track Timing Queries ===
 
     /**
-     * Check if a specific track needs its next loop scheduled.
+     * Check if a specific track needs beat scheduling.
      *
      * @param trackIndex The track index to check
-     * @param currentPosition Current transport position in seconds
-     * @return true if this track needs scheduleTrack called
+     * @param currentBeat Current transport beat position
+     * @return true if this track needs more beats scheduled
      */
-    bool trackNeedsScheduling (size_t trackIndex, double currentPosition) const;
+    bool trackNeedsBeatScheduling (size_t trackIndex, double currentBeat) const;
 
     /**
-     * Get the start time of the next loop iteration for a track.
-     */
-    double getTrackNextLoopStartTime (size_t trackIndex) const;
-
-    /**
-     * Mark a track's loop as scheduled and advance to next loop.
+     * Mark beats as scheduled for a track.
      *
      * @param trackIndex The track that was scheduled
-     * @param loopLengthSeconds The loop length (to calculate next loop start)
+     * @param endBeat The highest beat that was scheduled
      */
-    void markTrackScheduled (size_t trackIndex, double loopLengthSeconds);
+    void markBeatsScheduled (size_t trackIndex, double endBeat);
 
     /**
      * Update cached output pointer for a track.
@@ -127,9 +123,14 @@ public:
 private:
     std::atomic<bool> wasPlaying { false };
 
-    // Lock-free event queue
+    // Sorted event buffer.
+    // UI thread writes (protected by eventMutex), audio thread reads only.
+    // eventCount is committed atomically after each write so the audio thread
+    // always sees a consistent, fully-sorted snapshot.
     std::array<ScheduledEvent, MAX_EVENTS> eventBuffer;
-    juce::AbstractFifo fifo { MAX_EVENTS };
+    std::atomic<int> eventCount { 0 }; // number of valid events in eventBuffer
+    std::atomic<int> readHead { 0 };   // audio thread's current read position
+    std::mutex eventMutex;             // held only by UI thread; never acquired on audio thread
 
     // Per-track timing state
     std::array<PerTrackState, MAX_TRACKS> trackStates;
@@ -137,8 +138,8 @@ private:
 
     // Timing
     double sampleRate { 44100.0 };
-    double lookAheadTime { DEFAULT_LOOKAHEAD };
 
-    // Helper to write events to the FIFO
-    void writeEvent (const ScheduledEvent& event);
+    // Insert a batch of new events into the sorted buffer (call with eventMutex held).
+    // Returns false if the buffer would overflow.
+    bool insertEventsSorted (const std::vector<ScheduledEvent>& newEvents);
 };

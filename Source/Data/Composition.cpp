@@ -121,6 +121,70 @@ std::vector<MidiNote> Composition::extractMidiSequence (size_t seqIndex, double 
     return midiClip;
 }
 
+std::vector<MidiNote> Composition::extractMidiSequenceForBeatRange (size_t seqIndex, double startBeat, double endBeat, double tempo)
+{
+    std::vector<MidiNote> midiClip;
+
+    auto& seq = getSequence (seqIndex);
+    double loopLengthBeats = seq.getLengthBeats();
+
+    // Convert global beats to loop-local beats
+    double localStartBeat = std::fmod (startBeat, loopLengthBeats);
+    double localEndBeat = localStartBeat + (endBeat - startBeat);
+
+    // Handle wraparound case where we need notes from multiple loop iterations
+    bool wrapsAround = localEndBeat > loopLengthBeats;
+
+    for (auto& n : seq.notes)
+    {
+        auto midi = n->asMidiNote (seq.getTimeline(), seq.getScale(), tempo);
+
+        if (! midi)
+            continue;
+
+        double noteStartBeat = midi->startTime / (60.0 / tempo); // Convert seconds back to beats
+
+        // Check if note falls within the requested range
+        bool inRange = false;
+        double adjustedStartTime = 0.0;
+
+        if (wrapsAround)
+        {
+            // Need to check both before and after wraparound
+            if (noteStartBeat >= localStartBeat && noteStartBeat < loopLengthBeats)
+            {
+                // Note is in the first part (before wrap)
+                inRange = true;
+                adjustedStartTime = noteStartBeat - localStartBeat;
+            }
+            else if (noteStartBeat < (localEndBeat - loopLengthBeats))
+            {
+                // Note is in the wrapped part (after wrap)
+                inRange = true;
+                adjustedStartTime = (loopLengthBeats - localStartBeat) + noteStartBeat;
+            }
+        }
+        else
+        {
+            // No wraparound - simple range check
+            if (noteStartBeat >= localStartBeat && noteStartBeat < localEndBeat)
+            {
+                inRange = true;
+                adjustedStartTime = noteStartBeat - localStartBeat;
+            }
+        }
+
+        if (inRange)
+        {
+            // Convert adjusted beat time back to seconds
+            double adjustedStartTimeSeconds = adjustedStartTime * (60.0 / tempo);
+            midiClip.emplace_back (adjustedStartTimeSeconds, midi->noteNumber, midi->velocity, midi->duration);
+        }
+    }
+
+    return midiClip;
+}
+
 juce::ValueTree Composition::getState()
 {
     return state;

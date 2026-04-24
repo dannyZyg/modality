@@ -106,26 +106,20 @@ size_t Transport::getNumTracks() const
 void Transport::scheduleTrack (size_t trackIndex,
                                const std::vector<MidiNote>& notes,
                                double loopStartTime,
-                               double loopLengthSeconds,
                                juce::MidiOutput* output,
                                int midiChannel)
 {
-    engine.scheduleTrack (trackIndex, notes, loopStartTime, loopLengthSeconds, output, midiChannel);
+    engine.scheduleTrack (trackIndex, notes, loopStartTime, output, midiChannel);
 }
 
-bool Transport::trackNeedsScheduling (size_t trackIndex) const
+bool Transport::trackNeedsBeatScheduling (size_t trackIndex, double currentBeat) const
 {
-    return engine.trackNeedsScheduling (trackIndex, getCurrentPosition());
+    return engine.trackNeedsBeatScheduling (trackIndex, currentBeat);
 }
 
-double Transport::getTrackNextLoopStartTime (size_t trackIndex) const
+void Transport::markBeatsScheduled (size_t trackIndex, double endBeat)
 {
-    return engine.getTrackNextLoopStartTime (trackIndex);
-}
-
-void Transport::markTrackScheduled (size_t trackIndex, double loopLengthSeconds)
-{
-    engine.markTrackScheduled (trackIndex, loopLengthSeconds);
+    engine.markBeatsScheduled (trackIndex, endBeat);
 }
 
 void Transport::clearScheduledEvents()
@@ -195,4 +189,9 @@ double Transport::beatsToSeconds (double beats) const
 double Transport::secondsToBeats (double seconds) const
 {
     return (seconds / 60.0) * getTempo();
+}
+
+double Transport::getCurrentBeat() const
+{
+    return secondsToBeats (getCurrentPosition());
 }

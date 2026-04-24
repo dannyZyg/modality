@@ -31,6 +31,8 @@ public:
 
     std::vector<MidiNote> extractMidiSequence (size_t seqIndex, double tempo);
 
+    std::vector<MidiNote> extractMidiSequenceForBeatRange (size_t seqIndex, double startBeat, double endBeat, double tempo);
+
     void valueTreeChildAdded (juce::ValueTree& parentTree,
                               juce::ValueTree& childWhichHasBeenAdded) override;
 

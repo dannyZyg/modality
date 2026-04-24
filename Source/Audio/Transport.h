@@ -104,24 +104,25 @@ public:
     void scheduleTrack (size_t trackIndex,
                         const std::vector<MidiNote>& notes,
                         double loopStartTime,
-                        double loopLengthSeconds,
                         juce::MidiOutput* output,
                         int midiChannel);
 
     /**
-     * Check if a track needs its next loop scheduled.
+     * Check if a track needs beat scheduling.
+     * 
+     * @param trackIndex The track index to check
+     * @param currentBeat Current transport beat position
+     * @return true if this track needs more beats scheduled
      */
-    bool trackNeedsScheduling (size_t trackIndex) const;
+    bool trackNeedsBeatScheduling (size_t trackIndex, double currentBeat) const;
 
     /**
-     * Get the start time of a track's next loop iteration.
+     * Mark beats as scheduled for a track.
+     * 
+     * @param trackIndex The track that was scheduled
+     * @param endBeat The highest beat that was scheduled
      */
-    double getTrackNextLoopStartTime (size_t trackIndex) const;
-
-    /**
-     * Mark a track's loop as scheduled and advance to next loop.
-     */
-    void markTrackScheduled (size_t trackIndex, double loopLengthSeconds);
+    void markBeatsScheduled (size_t trackIndex, double endBeat);
 
     /**
      * Clear all scheduled MIDI events.
@@ -156,6 +157,12 @@ public:
      * Convert seconds to beats using current tempo.
      */
     double secondsToBeats (double seconds) const;
+
+    /**
+     * Get the current playback position in beats.
+     * Uses current position and tempo to calculate beat position.
+     */
+    double getCurrentBeat() const;
 
 private:
     // Tempo (atomic for thread-safe access)

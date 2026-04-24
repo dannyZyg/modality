@@ -73,8 +73,8 @@ private:
 
     std::unique_ptr<MenuNode> createHelpMenuTree();
 
-    // Schedule a single track for its next loop iteration
-    void scheduleTrack (size_t trackIndex);
+    // Schedule beats for a track (per-beat scheduling)
+    void scheduleTrackBeats (size_t trackIndex, double currentBeat);
 
     // Check and schedule any tracks that need their next loop
     void checkAndScheduleTracks();

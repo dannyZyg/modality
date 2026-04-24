@@ -130,12 +130,13 @@ void MainComponent::update()
 void MainComponent::checkAndScheduleTracks()
 {
     size_t numTracks = composition.getSequences().size();
+    double currentBeat = transport.getCurrentBeat();
 
     for (size_t i = 0; i < numTracks; ++i)
     {
-        if (transport.trackNeedsScheduling (i))
+        if (transport.trackNeedsBeatScheduling (i, currentBeat))
         {
-            scheduleTrack (i);
+            scheduleTrackBeats (i, currentBeat);
         }
     }
 }
@@ -184,18 +185,18 @@ void MainComponent::start()
     // Set up track count based on number of sequences
     transport.setNumTracks (composition.getSequences().size());
 
-    // Schedule all tracks for the first loop iteration
+    // Schedule initial beats for all tracks (0-2 beats)
     size_t numTracks = composition.getSequences().size();
     for (size_t i = 0; i < numTracks; ++i)
     {
-        scheduleTrack (i);
+        scheduleTrackBeats (i, 0.0);
     }
 
     transport.start();
     juce::Logger::writeToLog ("Transport Started at " + juce::String (transport.getTempo()) + " BPM");
 }
 
-void MainComponent::scheduleTrack (size_t trackIndex)
+void MainComponent::scheduleTrackBeats (size_t trackIndex, double currentBeat)
 {
     auto& seq = cursor.getSequence (trackIndex);
 
@@ -217,27 +218,24 @@ void MainComponent::scheduleTrack (size_t trackIndex)
         return;
     }
 
-    // Check for pending tempo change and apply it at this track's loop boundary
     double tempo = transport.getTempo();
-    if (transport.hasPendingTempoChange())
-    {
-        tempo = transport.applyPendingTempo();
-        juce::Logger::writeToLog ("Applied tempo change: " + juce::String (tempo) + " BPM");
-    }
-
-    // Extract MIDI notes using global tempo
-    auto notes = composition.extractMidiSequence (trackIndex, tempo);
-
-    // Get timing from the sequence (using global tempo)
-    double loopStartTime = transport.getTrackNextLoopStartTime (trackIndex);
-    double loopLengthSeconds = seq.getLengthSeconds (tempo);
+    
+    // Calculate beat range to schedule
+    double startBeat = currentBeat;
+    double endBeat = startBeat + TransportEngine::LOOKAHEAD_BEATS; // Schedule ahead
+    
+    // Extract MIDI notes for this beat range
+    auto notes = composition.extractMidiSequenceForBeatRange (trackIndex, startBeat, endBeat, tempo);
+    
+    // Convert beat times to absolute seconds for scheduling
+    double loopStartTimeSeconds = transport.beatsToSeconds (startBeat);
     int midiChannel = seq.getMidiChannel();
-
-    // Schedule the track
-    transport.scheduleTrack (trackIndex, notes, loopStartTime, loopLengthSeconds, output, midiChannel);
-
-    // Mark this track's loop as scheduled
-    transport.markTrackScheduled (trackIndex, loopLengthSeconds);
+    
+    // Schedule the beat slice
+    transport.scheduleTrack (trackIndex, notes, loopStartTimeSeconds, output, midiChannel);
+    
+    // Mark beats as scheduled
+    transport.markBeatsScheduled (trackIndex, endBeat);
 }
 
 void MainComponent::stop()

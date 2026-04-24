@@ -52,8 +52,7 @@ struct ScheduledEvent
  */
 struct PerTrackState
 {
-    std::atomic<double> nextLoopStartTime { 0.0 };
-    std::atomic<double> loopLengthSeconds { 2.0 };
+    std::atomic<double> lastScheduledBeat { 0.0 };   // Highest beat we've scheduled
 
     // Cached for realtime access - set during scheduling, read during processing
     juce::MidiOutput* cachedOutput = nullptr;
@@ -64,7 +63,6 @@ struct PerTrackState
     // Reset to initial state
     void reset()
     {
-        nextLoopStartTime.store (0.0);
-        // Keep loopLengthSeconds as-is (will be updated from sequence)
+        lastScheduledBeat.store (0.0);
     }
 };
