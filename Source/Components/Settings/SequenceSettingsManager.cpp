@@ -36,7 +36,11 @@ SequenceSettingsManager::SequenceSettingsManager (Cursor& c, MidiOutputManager& 
 
         // Sequence scale
         auto onSelectScale = [&seq, this] (const juce::String& newScaleName)
-        { midiOutManager.sendAllNotesOff(); seq.setScale (newScaleName, cursor.getUndoManager()); };
+        {
+            midiOutManager.sendAllNotesOff();
+            seq.setScale (newScaleName, cursor.getUndoManager());
+            cursor.cursorPosition.yDegree = Degree (seq.getScale().getNearestDegree (cursor.cursorPosition.yDegree.value));
+        };
 
         widgets.push_back (std::make_unique<SelectionWidgetComponent> ("Scale", getScaleOptions(), seq.getScale().getName(), onSelectScale));
 
