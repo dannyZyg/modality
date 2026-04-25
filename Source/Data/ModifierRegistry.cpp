@@ -45,7 +45,21 @@ juce::ValueTree ModifierRegistry::createDefaultState (const juce::Identifier& ty
     {
         for (const auto& param : def->params)
         {
-            state.setProperty (param.id, param.defaultVal, nullptr);
+            std::visit ([&state] (const auto& p)
+                        {
+                using T = std::decay_t<decltype (p)>;
+                if constexpr (std::is_same_v<T, DualValueParamDefinition>)
+                {
+                    // id holds the Min key; derive the Max key by replacing "Min" suffix with "Max"
+                    juce::Identifier maxId (p.id.toString().replace ("Min", "Max"));
+                    state.setProperty (p.id, p.defaultMin, nullptr);
+                    state.setProperty (maxId, p.defaultMax, nullptr);
+                }
+                else
+                {
+                    state.setProperty (p.id, p.defaultVal, nullptr);
+                } },
+                        param);
         }
     }
     return state;
@@ -56,23 +70,61 @@ juce::ValueTree ModifierRegistry::createDefaultState (const juce::Identifier& ty
 // ============================================
 namespace
 {
-static bool reg1 = ModifierRegistry::getInstance().registerModifier ({ ModifierIDs::RandomTrigger,
-                                                                       "Random Trigger",
-                                                                       "r",
-                                                                       juce::Identifier ("sliderPanel"),
-                                                                       { { ModifierIDs::RandomTriggerProbability, "Probability", ParamWidgetType::slider, 0.5, 0.0, 1.0 } } });
+static bool reg1 = ModifierRegistry::getInstance().registerModifier ({ .type = ModifierIDs::RandomTrigger,
+                                                                       .displayName = "Trigger Probability",
+                                                                       .navShortcutDescription = "r",
+                                                                       .componentType = juce::Identifier ("sliderPanel"),
+                                                                       .params = {
+                                                                           SingleValueParamDefinition { .id = ModifierIDs::RandomTriggerProbability,
+                                                                                                        .displayName = "Probability",
+                                                                                                        .widgetType = ParamWidgetType::slider,
+                                                                                                        .defaultVal = 1.0,
+                                                                                                        .min = 0.0,
+                                                                                                        .max = 1.0,
+                                                                                                        .interval = 0.01 },
+                                                                       } });
 
-static bool reg2 = ModifierRegistry::getInstance().registerModifier ({ ModifierIDs::RandomOctaveShift,
-                                                                       "Random Octave",
-                                                                       "o",
-                                                                       juce::Identifier ("sliderPanel"),
-                                                                       { { ModifierIDs::RandomOctaveShiftProbability, "Probability", ParamWidgetType::slider, 0.5, 0.0, 1.0 },
-                                                                         { ModifierIDs::RandomOctaveShiftRange, "Range", ParamWidgetType::slider, 2.0, 1.0, 4.0 } } });
+static bool reg2 = ModifierRegistry::getInstance().registerModifier ({ .type = ModifierIDs::RandomOctaveShift,
+                                                                       .displayName = "Random Octave",
+                                                                       .navShortcutDescription = "o",
+                                                                       .componentType = juce::Identifier ("sliderPanel"),
+                                                                       .params = {
+                                                                           SingleValueParamDefinition { .id = ModifierIDs::RandomOctaveShiftProbability,
+                                                                                                        .displayName = "Probability",
+                                                                                                        .widgetType = ParamWidgetType::slider,
+                                                                                                        .defaultVal = 0.5,
+                                                                                                        .min = 0.0,
+                                                                                                        .max = 1.0,
+                                                                                                        .interval = 0.01 },
+                                                                           DualValueParamDefinition { .id = ModifierIDs::RandomOctaveShiftRangeMin,
+                                                                                                      .displayName = "Range",
+                                                                                                      .widgetType = ParamWidgetType::rangeSlider,
+                                                                                                      .defaultMin = -1.0,
+                                                                                                      .defaultMax = 1.0,
+                                                                                                      .min = -4.0,
+                                                                                                      .max = 4.0,
+                                                                                                      .interval = 1.0 },
+                                                                       } });
 
-static bool reg3 = ModifierRegistry::getInstance().registerModifier ({ ModifierIDs::RandomVelocity,
-                                                                       "Random Velocity",
-                                                                       "v",
-                                                                       juce::Identifier ("sliderPanel"),
-                                                                       { { ModifierIDs::RandomVelocityProbability, "Probability", ParamWidgetType::slider, 0.5, 0.0, 1.0 },
-                                                                         { ModifierIDs::RandomVelocityRange, "Range", ParamWidgetType::slider, 0.5, 0.0, 1.0 } } });
+static bool reg3 = ModifierRegistry::getInstance().registerModifier ({ .type = ModifierIDs::RandomVelocity,
+                                                                       .displayName = "Random Velocity Deviation",
+                                                                       .navShortcutDescription = "v",
+                                                                       .componentType = juce::Identifier ("sliderPanel"),
+                                                                       .params = {
+                                                                           SingleValueParamDefinition { .id = ModifierIDs::RandomVelocityProbability,
+                                                                                                        .displayName = "Probability of Deviation",
+                                                                                                        .widgetType = ParamWidgetType::slider,
+                                                                                                        .defaultVal = 0.5,
+                                                                                                        .min = 0.0,
+                                                                                                        .max = 1.0,
+                                                                                                        .interval = 0.01 },
+                                                                           DualValueParamDefinition { .id = ModifierIDs::RandomVelocityRangeMin,
+                                                                                                      .displayName = "Velocity Range",
+                                                                                                      .widgetType = ParamWidgetType::rangeSlider,
+                                                                                                      .defaultMin = 64.0,
+                                                                                                      .defaultMax = 127.0,
+                                                                                                      .min = 0.0,
+                                                                                                      .max = 127.0,
+                                                                                                      .interval = 1.0 },
+                                                                       } });
 } // namespace

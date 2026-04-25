@@ -10,7 +10,8 @@ public:
                                 juce::Value minValueToBindTo,
                                 juce::Value maxValueToBindTo,
                                 double min,
-                                double max);
+                                double max,
+                                double interval);
 
     virtual ~RangeSliderWidgetComponent() override;
 

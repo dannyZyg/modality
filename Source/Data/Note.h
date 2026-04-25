@@ -14,8 +14,6 @@
 #include "Data/Scale.h"
 #include "Data/Timeline.h"
 #include <JuceHeader.h>
-#include <random>
-
 namespace NoteIDs
 {
 #define DECLARE_ID(name) inline const juce::Identifier name { #name };
@@ -80,5 +78,4 @@ public:
 
 private:
     juce::ValueTree state;
-    std::mt19937 randomGenerator;
 };

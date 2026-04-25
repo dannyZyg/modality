@@ -3,6 +3,7 @@
 
 PaginatedSettingsComponent::PaginatedSettingsComponent (std::vector<std::unique_ptr<ISelectableWidget>> w) : widgets (std::move (w))
 {
+    setWantsKeyboardFocus (true);
     addAndMakeVisible (label);
 
     for (auto& widget : widgets)
@@ -42,6 +43,12 @@ void PaginatedSettingsComponent::resized()
 }
 
 void PaginatedSettingsComponent::update() {}
+
+void PaginatedSettingsComponent::focusGained (FocusChangeType)
+{
+    if (! widgets.empty())
+        widgets[selectedWidgetIndex]->grabKeyboardFocus();
+}
 
 bool PaginatedSettingsComponent::keyPressed (const juce::KeyPress& key)
 {

@@ -41,8 +41,7 @@ SequenceSettingsManager::SequenceSettingsManager (Cursor& c, MidiOutputManager& 
         widgets.push_back (std::make_unique<SelectionWidgetComponent> ("Scale", getScaleOptions(), seq.getScale().getName(), onSelectScale));
 
         // Sequence timeline
-        auto timelineSlider = std::make_unique<SliderWidgetComponent> ("Length", seq.getTimeline().getUpperBoundAsValue(), 1.0, 8.0);
-        timelineSlider->setRange (1.0, 8.0, 0.25);
+        auto timelineSlider = std::make_unique<SliderWidgetComponent> ("Length", seq.getTimeline().getUpperBoundAsValue(), 1.0, 8.0, 0.25);
         widgets.push_back (std::move (timelineSlider));
 
         auto settingsComponent = std::make_unique<PaginatedSettingsComponent> (std::move (widgets));

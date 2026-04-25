@@ -20,7 +20,7 @@ public:
     ~PaginatedSettingsComponent() override;
 
     bool keyPressed (const juce::KeyPress& key) override;
-    /* void focusGained(FocusChangeType cause) override; */
+    void focusGained (FocusChangeType cause) override;
 
     void paint (juce::Graphics&) override;
     void resized() override;

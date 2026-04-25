@@ -4,8 +4,9 @@ RangeSliderWidgetComponent::RangeSliderWidgetComponent (const juce::String& _tit
                                                         juce::Value minValueToBindTo,
                                                         juce::Value maxValueToBindTo,
                                                         double _min,
-                                                        double _max)
-    : min (_min), max (_max), title (_title)
+                                                        double _max,
+                                                        double _interval)
+    : min (_min), max (_max), interval (_interval), title (_title)
 {
     setup();
     rangeSlider.getMinValueObject().referTo (minValueToBindTo);
@@ -16,8 +17,6 @@ RangeSliderWidgetComponent::~RangeSliderWidgetComponent() {}
 
 void RangeSliderWidgetComponent::setup()
 {
-    interval = (max - min) / 100.0;
-
     rangeSlider.setSliderStyle (juce::Slider::SliderStyle::TwoValueHorizontal);
     rangeSlider.setRange (min, max, interval);
     rangeSlider.setMinValue (min);

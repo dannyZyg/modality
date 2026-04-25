@@ -11,12 +11,10 @@ SliderWidgetComponent::SliderWidgetComponent (double _min, double _max, double _
     setup();
 }
 
-SliderWidgetComponent::SliderWidgetComponent (const juce::String& _title, juce::Value valueToBindTo, double _min, double _max)
-    : min (_min), max (_max), initial (static_cast<double> (valueToBindTo.getValue())), title (_title)
+SliderWidgetComponent::SliderWidgetComponent (const juce::String& _title, juce::Value valueToBindTo, double _min, double _max, double _interval)
+    : min (_min), max (_max), interval (_interval), initial (static_cast<double> (valueToBindTo.getValue())), title (_title)
 {
     setup();
-    // Bind the slider's value object to the provided juce::Value
-    // This creates two-way binding - changes to slider update ValueTree and vice versa
     horizontalSlider.getValueObject().referTo (valueToBindTo);
 }
 
@@ -30,13 +28,13 @@ void SliderWidgetComponent::setRange (double _min, double _max, double _interval
 
 void SliderWidgetComponent::setup()
 {
-    interval = max / 100.0;
-
     horizontalSlider.setSliderStyle (juce::Slider::SliderStyle::LinearHorizontal);
     horizontalSlider.setRange (min, max, interval);
     horizontalSlider.setValue (initial);
     horizontalSlider.setTextBoxStyle (juce::Slider::NoTextBox, false, 0, 0);
     horizontalSlider.addListener (this);
+    setWantsKeyboardFocus (true);
+    horizontalSlider.setWantsKeyboardFocus (false);
     addAndMakeVisible (horizontalSlider);
 }
 

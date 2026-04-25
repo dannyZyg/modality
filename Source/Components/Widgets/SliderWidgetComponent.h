@@ -10,7 +10,7 @@ public:
     SliderWidgetComponent (double _min, double _max, double _initial, juce::String _title);
 
     // Value-bound constructor - binds slider to a ValueTree property
-    SliderWidgetComponent (const juce::String& _title, juce::Value valueToBindTo, double _min, double _max);
+    SliderWidgetComponent (const juce::String& _title, juce::Value valueToBindTo, double _min, double _max, double _interval);
 
     virtual ~SliderWidgetComponent() override;
 

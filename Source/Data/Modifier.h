@@ -3,6 +3,7 @@
 #include "Data/Parameter.h"
 #include "juce_core/juce_core.h"
 #include <JuceHeader.h>
+#include <variant>
 
 // Type alias - used throughout codebase
 using ModifierType = juce::Identifier;
@@ -18,10 +19,12 @@ DECLARE_ID (RandomVelocity)
 
 // Parameter IDs
 DECLARE_ID (RandomTriggerProbability)
-DECLARE_ID (RandomOctaveShiftRange)
 DECLARE_ID (RandomOctaveShiftProbability)
+DECLARE_ID (RandomOctaveShiftRangeMin)
+DECLARE_ID (RandomOctaveShiftRangeMax)
 DECLARE_ID (RandomVelocityProbability)
-DECLARE_ID (RandomVelocityRange)
+DECLARE_ID (RandomVelocityRangeMin)
+DECLARE_ID (RandomVelocityRangeMax)
 
 #undef DECLARE_ID
 
@@ -33,7 +36,7 @@ inline const std::array<juce::Identifier, 3> AllTypes = {
 
 } // namespace ModifierIDs
 
-struct ParamDefinition
+struct SingleValueParamDefinition
 {
     juce::Identifier id;
     juce::String displayName;
@@ -41,7 +44,22 @@ struct ParamDefinition
     double defaultVal;
     double min;
     double max;
+    double interval;
 };
+
+struct DualValueParamDefinition
+{
+    juce::Identifier id;
+    juce::String displayName;
+    ParamWidgetType widgetType;
+    double defaultMin;
+    double defaultMax;
+    double min;
+    double max;
+    double interval;
+};
+
+using ParamDefinition = std::variant<SingleValueParamDefinition, DualValueParamDefinition>;
 
 class Modifier
 {
