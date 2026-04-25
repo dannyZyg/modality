@@ -1,6 +1,7 @@
 enum class ParamWidgetType
 {
     slider,
+    rangeSlider,
     toggle
 };
 

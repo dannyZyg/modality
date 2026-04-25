@@ -5,9 +5,6 @@ PaginatedSettingsComponent::PaginatedSettingsComponent (std::vector<std::unique_
 {
     addAndMakeVisible (label);
 
-    label.setText ("Paginated Settings Panel", juce::dontSendNotification);
-    label.setJustificationType (juce::Justification::centred);
-
     for (auto& widget : widgets)
     {
         addAndMakeVisible (widget.get());
@@ -25,7 +22,7 @@ PaginatedSettingsComponent::~PaginatedSettingsComponent()
 {
 }
 
-void PaginatedSettingsComponent::paint (juce::Graphics& g) { g.fillAll (juce::Colours::lightgreen); }
+void PaginatedSettingsComponent::paint (juce::Graphics& g) {}
 
 void PaginatedSettingsComponent::resized()
 {
@@ -34,8 +31,8 @@ void PaginatedSettingsComponent::resized()
     auto x = 20;
     auto y = 20;
     auto width = getWidth() - (2 * x);
-    auto height = 50;
-    auto padding = 50;
+    auto height = 65;
+    auto padding = 70;
 
     for (auto& widget : widgets)
     {

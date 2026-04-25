@@ -35,6 +35,7 @@ void SliderWidgetComponent::setup()
     horizontalSlider.setSliderStyle (juce::Slider::SliderStyle::LinearHorizontal);
     horizontalSlider.setRange (min, max, interval);
     horizontalSlider.setValue (initial);
+    horizontalSlider.setTextBoxStyle (juce::Slider::NoTextBox, false, 0, 0);
     horizontalSlider.addListener (this);
     addAndMakeVisible (horizontalSlider);
 }
@@ -43,19 +44,30 @@ SliderWidgetComponent::~SliderWidgetComponent() {}
 
 void SliderWidgetComponent::paint (juce::Graphics& g)
 {
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId)); // Background
+    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+
+    auto inner = getLocalBounds().reduced (6);
+
     g.setColour (juce::Colours::white);
     g.setFont (15.0f);
-    g.drawText (title, getLocalBounds().removeFromTop (30), juce::Justification::centred, true);
+    g.drawText (title, inner.removeFromTop (22), juce::Justification::centred, true);
+
+    g.setColour (isSelected() ? juce::Colours::aqua : juce::Colours::white);
+    g.drawText (juce::String (horizontalSlider.getValue(), 2),
+                inner.removeFromBottom (20),
+                juce::Justification::centred,
+                true);
 
     if (isSelected())
     {
         g.setColour (juce::Colours::aqua);
-
-        float borderThickness = 2.0f;
-        juce::Rectangle<int> bounds = getLocalBounds();
-        g.drawRect (bounds.toFloat(), borderThickness);
+        g.drawRect (getLocalBounds().toFloat(), 2.0f);
     }
+}
+
+void SliderWidgetComponent::resized()
+{
+    horizontalSlider.setBounds (getLocalBounds().reduced (6));
 }
 
 bool SliderWidgetComponent::keyPressed (const juce::KeyPress& key)
@@ -95,14 +107,10 @@ void SliderWidgetComponent::sliderValueChanged (juce::Slider* slider)
 {
     if (slider == &horizontalSlider)
     {
+        repaint();
         if (sliderCallback)
         {
             sliderCallback (horizontalSlider.getValue());
         }
     }
-}
-
-void SliderWidgetComponent::resized()
-{
-    horizontalSlider.setBounds (getLocalBounds());
 }
