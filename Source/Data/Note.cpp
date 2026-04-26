@@ -59,7 +59,8 @@ void Note::setVelocity (int v, juce::UndoManager* undoManager)
 
 void Note::addModifier (Modifier m, UndoManager* undoManager)
 {
-    state.getOrCreateChildWithName (m.getType(), undoManager);
+    if (!state.getChildWithName (m.getType()).isValid())
+        state.appendChild (m.getState(), undoManager);
 }
 
 bool Note::removeModifier (ModifierType type, UndoManager* undoManager)
