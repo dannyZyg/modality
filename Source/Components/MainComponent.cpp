@@ -18,8 +18,11 @@ MainComponent::MainComponent() : cursor (composition),
                                  midlineComponent (cursor),
                                  statusBarComponent (cursor),
                                  sequenceSelectionComponent (cursor, composition),
-                                 modifierMenuManager (cursor, [this] (juce::String message, int timeout)
-                                                      { contextualMenuComponent.showMessage (message, timeout); }),
+                                 modifierMenuManager (cursor,
+                                                      [this] (juce::String message, int timeout)
+                                                      { contextualMenuComponent.showMessage (message, timeout); },
+                                                      [this]()
+                                                      { contextualMenuComponent.navigateBack(); }),
                                  sequenceSettngsManager (cursor, midiOutputManager)
 
 {
@@ -67,6 +70,8 @@ MainComponent::MainComponent() : cursor (composition),
 
     addAndMakeVisible (contextualMenuComponent);
     contextualMenuComponent.setVisible (false);
+    contextualMenuComponent.onUndo = [this]() { cursor.undo(); };
+    contextualMenuComponent.onRedo = [this]() { cursor.redo(); };
 
     // GLOBAL SETTINGS MENU
 
@@ -588,7 +593,15 @@ void MainComponent::setupKeyboardShortcuts()
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
-                contextualMenuComponent.displayMenu (modifierMenuManager.getMenuNodeRoot());
+                contextualMenuComponent.displayMenu (
+                    modifierMenuManager.getMenuNodeRoot(),
+                    [this] (const juce::String& tag) -> bool
+                    {
+                        auto notes = cursor.findNotesForCursorMode();
+                        if (notes.empty())
+                            return false;
+                        return notes.front().get()->getModifier (juce::Identifier (tag)).has_value();
+                    });
                 return true;
             },
             "Modifiers",

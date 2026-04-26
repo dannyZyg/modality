@@ -6,7 +6,10 @@
 #include <functional>
 #include <memory>
 
-ModifierMenuManager::ModifierMenuManager (Cursor& c, std::function<void (const juce::String&, int i)> s) : cursor (c), showMessage (s)
+ModifierMenuManager::ModifierMenuManager (Cursor& c,
+                                          std::function<void (const juce::String&, int i)> s,
+                                          std::function<void()> back)
+    : cursor (c), showMessage (s), goBack (back)
 {
     buildMenu();
 }
@@ -46,6 +49,13 @@ std::function<void()> ModifierMenuManager::createCallback (ModifierType type, Me
         auto* def = ModifierRegistry::getInstance().getDefinition (type);
         auto component = std::make_unique<PaginatedSettingsComponent> (std::move (widgets), def ? def->description : juce::String{});
 
+        component->onRemove = [this, type]()
+        {
+            cursor.removeModifier (type);
+            showMessage ("Modifier removed", 1500);
+            goBack();
+        };
+
         node->setComponent (std::move (component));
     };
 }
@@ -66,6 +76,8 @@ void ModifierMenuManager::buildMenu()
         auto childNode = std::make_unique<MenuNode> (
             def->displayName,
             def->getNavShortcut());
+
+        childNode->tag = modifierType.toString();
 
         MenuNode* childPtr = childNode.get();
         childNode->onEnter = createCallback (modifierType, childPtr);

@@ -30,6 +30,20 @@ bool ContextualMenuComponent::keyPressed (const juce::KeyPress& key)
         return true; // Key was handled
     }
 
+    if (key == juce::KeyPress ('u'))
+    {
+        if (onUndo)
+            onUndo();
+        return true;
+    }
+
+    if (key == juce::KeyPress ('r', juce::ModifierKeys::ctrlModifier, 0))
+    {
+        if (onRedo)
+            onRedo();
+        return true;
+    }
+
     if (currentMenuNode)
     {
         for (const auto& child : currentMenuNode->children)
@@ -45,7 +59,7 @@ bool ContextualMenuComponent::keyPressed (const juce::KeyPress& key)
     return true;
 }
 
-void ContextualMenuComponent::displayMenu (MenuNode* rootNode)
+void ContextualMenuComponent::displayMenu (MenuNode* rootNode, std::function<bool (const juce::String&)> isActive)
 {
     if (! rootNode)
         return;
@@ -55,6 +69,7 @@ void ContextualMenuComponent::displayMenu (MenuNode* rootNode)
         backStack.pop();
 
     currentMenuNode = rootNode;
+    isActiveTag = std::move (isActive);
     setVisible (true);
     repaint();
 
@@ -224,29 +239,34 @@ void ContextualMenuComponent::closeMenu()
 void ContextualMenuComponent::drawSubNavOptions (juce::Graphics& g)
 {
     if (currentMenuNode == nullptr)
-    {
         return;
-    }
 
-    g.setColour (juce::Colours::lightgrey);
     g.setFont (juce::Font (20.0f));
 
     int yOffset = 50;
     int itemHeight = 30;
+    int dotRadius = 4;
+    int dotMargin = 8;
+    int leftEdge = getLocalBounds().getX() + 50;
+    int rowWidth = getLocalBounds().getWidth() - 100;
 
     for (auto& c : currentMenuNode->children)
     {
-        juce::String keyText = c->navShortcut.getTextDescription().toLowerCase();
-        juce::String itemLabel = c->title;
-        juce::String displayText = keyText + " -> " + itemLabel;
+        bool active = isActiveTag && isActiveTag (c->tag);
 
-        g.drawText (displayText,
-                    getLocalBounds().getX() + 50,
-                    yOffset,
-                    getLocalBounds().getWidth() - 100,
-                    itemHeight,
-                    juce::Justification::left,
-                    true);
+        juce::String keyText = c->navShortcut.getTextDescription().toLowerCase();
+        juce::String displayText = keyText + " -> " + c->title;
+
+        juce::Colour itemColour = active ? juce::Colours::orange : juce::Colours::lightgrey;
+        g.setColour (itemColour);
+        g.drawText (displayText, leftEdge, yOffset, rowWidth, itemHeight, juce::Justification::left, true);
+
+        if (active)
+        {
+            int dotX = leftEdge + rowWidth - dotRadius * 2 - dotMargin;
+            int dotY = yOffset + (itemHeight / 2) - dotRadius;
+            g.fillEllipse ((float) dotX, (float) dotY, (float) dotRadius * 2, (float) dotRadius * 2);
+        }
 
         yOffset += itemHeight;
     }

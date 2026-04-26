@@ -26,6 +26,8 @@ public:
     void resized() override;
     void update();
 
+    std::function<void()> onRemove;
+
 private:
     static constexpr int footerHeight = 70;
     static constexpr int descriptionHeight = 40;

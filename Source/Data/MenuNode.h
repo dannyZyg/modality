@@ -10,6 +10,7 @@ struct MenuNode
 {
     juce::String title;
     juce::KeyPress navShortcut;
+    juce::String tag; // optional metadata, e.g. modifier type string (used to check if a modifier is active)
     std::unique_ptr<juce::Component> component;
     std::vector<std::unique_ptr<MenuNode>> children;
 

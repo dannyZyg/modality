@@ -91,7 +91,7 @@ void PaginatedSettingsComponent::paint (juce::Graphics& g)
         }
     }
 
-    g.drawText ("j/k: navigate", footerX, footerBounds.getY() + 48, footerRowWidth, rowHeight, juce::Justification::left, true);
+    g.drawText ("j/k: navigate   d: remove", footerX, footerBounds.getY() + 48, footerRowWidth, rowHeight, juce::Justification::left, true);
 }
 
 void PaginatedSettingsComponent::resized()
@@ -101,8 +101,8 @@ void PaginatedSettingsComponent::resized()
     auto x = 20;
     auto y = 20 + (descriptionText.isNotEmpty() ? descriptionHeight : 0);
     auto width = getWidth() - (2 * x);
-    auto height = 65;
-    auto padding = 70;
+    auto height = 85;
+    auto padding = 90;
     auto availableHeight = getHeight() - footerHeight;
 
     for (auto& widget : widgets)
@@ -127,6 +127,13 @@ bool PaginatedSettingsComponent::keyPressed (const juce::KeyPress& key)
 {
     if (widgets.empty())
         return false;
+
+    if (key == juce::KeyPress::createFromDescription ("d"))
+    {
+        if (onRemove)
+            onRemove();
+        return true;
+    }
 
     if (key == juce::KeyPress::createFromDescription ("j"))
     {

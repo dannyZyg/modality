@@ -30,11 +30,14 @@ public:
     void timerCallback() override;
 
     // UI Helpers
-    void displayMenu (MenuNode* rootNode);
+    void displayMenu (MenuNode* rootNode, std::function<bool (const juce::String&)> isActive = {});
     void showMessage (juce::String message, int timeoutMs = 2000);
     void navigateBack();
     void navigateTo (MenuNode* childNode);
     void closeMenu();
+
+    std::function<void()> onUndo;
+    std::function<void()> onRedo;
 
 protected:
     juce::String currentTitle = "";
@@ -54,6 +57,9 @@ private:
 
     MenuNode* currentMenuNode = nullptr;
     std::stack<MenuNode*> backStack; // To navigate back up the tree
+    std::function<bool (const juce::String&)> isActiveTag;
+
+private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ContextualMenuComponent)
 };
