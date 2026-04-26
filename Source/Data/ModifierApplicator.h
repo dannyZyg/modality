@@ -2,12 +2,13 @@
 #pragma once
 #include "Data/Modifier.h"
 #include "Data/Note.h"
+#include "Data/Scale.h"
 #include <JuceHeader.h>
 #include <functional>
 #include <map>
 #include <optional>
 
-using ModifierCallback = std::function<std::optional<MidiNote> (const Modifier&, MidiNote)>;
+using ModifierCallback = std::function<std::optional<MidiNote> (const Modifier&, MidiNote, const Scale&)>;
 
 class ModifierApplicator
 {
@@ -25,38 +26,38 @@ public:
     }
 
     // Apply a single modifier to a note
-    std::optional<MidiNote> applyModifier (const Modifier& mod, MidiNote note) const
+    std::optional<MidiNote> applyModifier (const Modifier& mod, MidiNote note, const Scale& scale) const
     {
         auto it = callbacks.find (mod.getType());
         if (it != callbacks.end())
         {
-            return it->second (mod, std::move (note));
+            return it->second (mod, std::move (note), scale);
         }
         return note; // Return unmodified note if no callback found
     }
 
     // Apply multiple modifiers in sequence
-    std::optional<MidiNote> applyModifiers (const std::set<Modifier>& mods, MidiNote note) const
+    std::optional<MidiNote> applyModifiers (const std::set<Modifier>& mods, MidiNote note, const Scale& scale) const
     {
         std::optional<MidiNote> current = std::move (note);
         for (const auto& mod : mods)
         {
             if (! current)
                 return std::nullopt;
-            current = applyModifier (mod, std::move (*current));
+            current = applyModifier (mod, std::move (*current), scale);
         }
         return current;
     }
 
     // Apply multiple modifiers in sequence
-    std::optional<MidiNote> applyModifiers (const std::vector<Modifier>& mods, MidiNote note) const
+    std::optional<MidiNote> applyModifiers (const std::vector<Modifier>& mods, MidiNote note, const Scale& scale) const
     {
         std::optional<MidiNote> current = std::move (note);
         for (const auto& mod : mods)
         {
             if (! current)
                 return std::nullopt;
-            current = applyModifier (mod, std::move (*current));
+            current = applyModifier (mod, std::move (*current), scale);
         }
         return current;
     }

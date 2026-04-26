@@ -70,6 +70,29 @@ juce::ValueTree ModifierRegistry::createDefaultState (const juce::Identifier& ty
 // ============================================
 namespace
 {
+static bool reg0 = ModifierRegistry::getInstance().registerModifier ({ .type = ModifierIDs::RandomPitchVariation,
+                                                                       .displayName = "Pitch Variation",
+                                                                       .description = "Randomly shifts the note up or down by a number of scale degrees. Range sets the maximum shift in either direction; the actual shift is chosen randomly each time.",
+                                                                       .navShortcutDescription = "p",
+                                                                       .componentType = juce::Identifier ("sliderPanel"),
+                                                                       .params = {
+                                                                           SingleValueParamDefinition { .id = ModifierIDs::RandomPitchVariationProbability,
+                                                                                                        .displayName = "Probability",
+                                                                                                        .widgetType = ParamWidgetType::slider,
+                                                                                                        .defaultVal = 0.5,
+                                                                                                        .min = 0.0,
+                                                                                                        .max = 1.0,
+                                                                                                        .interval = 0.01 },
+                                                                           DualValueParamDefinition { .id = ModifierIDs::RandomPitchVariationRangeMin,
+                                                                                                      .displayName = "Range (degrees)",
+                                                                                                      .widgetType = ParamWidgetType::rangeSlider,
+                                                                                                      .defaultMin = -3.0,
+                                                                                                      .defaultMax = 3.0,
+                                                                                                      .min = -12.0,
+                                                                                                      .max = 12.0,
+                                                                                                      .interval = 1.0 },
+                                                                       } });
+
 static bool reg1 = ModifierRegistry::getInstance().registerModifier ({ .type = ModifierIDs::RandomTrigger,
                                                                        .displayName = "Trigger Probability",
                                                                        .description = "Randomly suppresses notes. At probability 1.0, notes always play; lower values increase the chance a note is silenced.",

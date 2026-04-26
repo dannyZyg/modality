@@ -11,6 +11,7 @@
 #include "Note.h"
 #include "Data/ModifierApplicator.h"
 #include "juce_data_structures/juce_data_structures.h"
+#include <algorithm>
 #include <vector>
 
 Note::Note (double deg, double time, double dur) : state (NoteIDs::Note)
@@ -111,5 +112,18 @@ std::optional<MidiNote> Note::asMidiNote (Timeline t, [[maybe_unused]] Scale s, 
         modifiers.push_back (modifier);
     }
 
-    return ModifierApplicator::getInstance().applyModifiers (modifiers, std::move (midi));
+    // Sort modifiers by their position in AllTypes so execution order is deterministic
+    // (e.g. RandomPitchVariation always runs before RandomOctaveShift)
+    std::sort (modifiers.begin(), modifiers.end(), [] (const Modifier& a, const Modifier& b)
+    {
+        auto indexOf = [] (const juce::Identifier& id)
+        {
+            const auto& types = ModifierIDs::AllTypes;
+            auto it = std::find (types.begin(), types.end(), id);
+            return it != types.end() ? std::distance (types.begin(), it) : static_cast<ptrdiff_t> (types.size());
+        };
+        return indexOf (a.getType()) < indexOf (b.getType());
+    });
+
+    return ModifierApplicator::getInstance().applyModifiers (modifiers, std::move (midi), s);
 }

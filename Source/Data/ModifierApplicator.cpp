@@ -1,5 +1,6 @@
 #include "ModifierApplicator.h"
 #include "Data/Modifier.h"
+#include "Data/Scale.h"
 #include <algorithm>
 #include <random>
 
@@ -7,9 +8,38 @@ namespace
 {
 static std::mt19937 rng { std::random_device {}() };
 
+static bool reg0 = (ModifierApplicator::getInstance().registerCallback (
+                        ModifierIDs::RandomPitchVariation,
+                        [] (const Modifier& mod, MidiNote note, const Scale& scale) -> std::optional<MidiNote>
+                        {
+                            auto probability = static_cast<float> (mod.getValue (ModifierIDs::RandomPitchVariationProbability));
+                            std::uniform_real_distribution<float> probDist (0.0f, 1.0f);
+                            if (probDist (rng) > probability)
+                                return note;
+
+                            auto rangeMin = static_cast<int> (mod.getValue (ModifierIDs::RandomPitchVariationRangeMin));
+                            auto rangeMax = static_cast<int> (mod.getValue (ModifierIDs::RandomPitchVariationRangeMax));
+                            if (rangeMin == rangeMax)
+                                return note;
+
+                            std::uniform_int_distribution<int> stepDist (rangeMin, rangeMax);
+                            int steps = 0;
+                            while (steps == 0)
+                                steps = stepDist (rng);
+
+                            Degree currentDegree (note.noteNumber - 64);
+                            auto shifted = scale.applySteps (currentDegree, steps, false);
+                            if (! shifted.has_value())
+                                return note;
+
+                            note.noteNumber = std::clamp (static_cast<int> (64 + shifted->value), 0, 127);
+                            return note;
+                        }),
+                    true);
+
 static bool reg1 = (ModifierApplicator::getInstance().registerCallback (
                         ModifierIDs::RandomTrigger,
-                        [] (const Modifier& mod, MidiNote note) -> std::optional<MidiNote>
+                        [] (const Modifier& mod, MidiNote note, const Scale&) -> std::optional<MidiNote>
                         {
                             auto probability = static_cast<float> (mod.getValue (ModifierIDs::RandomTriggerProbability));
                             std::uniform_real_distribution<float> dist (0.0f, 1.0f);
@@ -21,7 +51,7 @@ static bool reg1 = (ModifierApplicator::getInstance().registerCallback (
 
 static bool reg2 = (ModifierApplicator::getInstance().registerCallback (
                         ModifierIDs::RandomOctaveShift,
-                        [] (const Modifier& mod, MidiNote note) -> std::optional<MidiNote>
+                        [] (const Modifier& mod, MidiNote note, const Scale&) -> std::optional<MidiNote>
                         {
                             auto probability = static_cast<float> (mod.getValue (ModifierIDs::RandomOctaveShiftProbability));
                             std::uniform_real_distribution<float> dist (0.0f, 1.0f);
@@ -38,7 +68,7 @@ static bool reg2 = (ModifierApplicator::getInstance().registerCallback (
 
 static bool reg3 = (ModifierApplicator::getInstance().registerCallback (
                         ModifierIDs::RandomVelocity,
-                        [] (const Modifier& mod, MidiNote note) -> std::optional<MidiNote>
+                        [] (const Modifier& mod, MidiNote note, const Scale&) -> std::optional<MidiNote>
                         {
                             auto probability = static_cast<float> (mod.getValue (ModifierIDs::RandomVelocityProbability));
                             std::uniform_real_distribution<float> dist (0.0f, 1.0f);

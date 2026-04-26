@@ -13,11 +13,15 @@ namespace ModifierIDs
 #define DECLARE_ID(name) inline const juce::Identifier name { #name };
 
 // Modifier types
+DECLARE_ID (RandomPitchVariation)
 DECLARE_ID (RandomTrigger)
 DECLARE_ID (RandomOctaveShift)
 DECLARE_ID (RandomVelocity)
 
 // Parameter IDs
+DECLARE_ID (RandomPitchVariationProbability)
+DECLARE_ID (RandomPitchVariationRangeMin)
+DECLARE_ID (RandomPitchVariationRangeMax)
 DECLARE_ID (RandomTriggerProbability)
 DECLARE_ID (RandomOctaveShiftProbability)
 DECLARE_ID (RandomOctaveShiftRangeMin)
@@ -28,7 +32,8 @@ DECLARE_ID (RandomVelocityRangeMax)
 
 #undef DECLARE_ID
 
-inline const std::array<juce::Identifier, 3> AllTypes = {
+inline const std::array<juce::Identifier, 4> AllTypes = {
+    RandomPitchVariation,
     RandomTrigger,
     RandomOctaveShift,
     RandomVelocity
