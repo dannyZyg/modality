@@ -77,7 +77,7 @@ namespace detail
 
 [[maybe_unused]] static std::unique_ptr<MenuNode> createMenuNode (const Cursor& cursor, const MidiOutputManager& midiOutManager)
 {
-    auto midiSettingsNode = std::make_unique<MenuNode> ("Midi Settings", juce::KeyPress::createFromDescription ("m"));
+    auto midiSettingsNode = std::make_unique<MenuNode> ("Midi Settings", juce::KeyPress::createFromDescription ("o"));
     auto settingsComponent = createComponent (cursor, midiOutManager);
     midiSettingsNode->setComponent (std::move (settingsComponent));
 
@@ -91,7 +91,7 @@ namespace detail
     const std::function<void (const juce::String&)> onMidiOutputChanged,
     const std::function<void (const juce::String&)> onMidiChannelChanged)
 {
-    auto midiSettingsNode = std::make_unique<MenuNode> ("Midi Settings", juce::KeyPress::createFromDescription ("m"));
+    auto midiSettingsNode = std::make_unique<MenuNode> ("Midi Settings", juce::KeyPress::createFromDescription ("i"));
 
     auto settingsComponent = createComponent (midiOutManager, initialMidiOutput, initialMidiChannel, onMidiOutputChanged, onMidiChannelChanged);
     midiSettingsNode->setComponent (std::move (settingsComponent));

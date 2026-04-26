@@ -1,4 +1,6 @@
 #include "SequenceSelectionComponent.h"
+#include "AppColours.h"
+#include "Data/Sequence.h"
 #include "juce_graphics/juce_graphics.h"
 #include <JuceHeader.h>
 
@@ -6,7 +8,7 @@
 SequenceSelectionComponent::SequenceSelectionComponent (const Cursor& curs, Composition& comp)
     : cursor (curs), composition (comp)
 {
-    // Bind to each sequence's name Value for automatic updates
+    // Bind to each sequence's name, muted, and soloed Values for automatic updates
     const auto& sequences = composition.getSequences();
     for (const auto& seqPtr : sequences)
     {
@@ -15,16 +17,30 @@ SequenceSelectionComponent::SequenceSelectionComponent (const Cursor& curs, Comp
             auto nameValue = seqPtr->getNameAsValue();
             nameValue.addListener (this);
             sequenceNameValues.push_back (nameValue);
+
+            auto mutedValue = seqPtr->getState().getPropertyAsValue (SequenceIDs::Muted, nullptr);
+            mutedValue.addListener (this);
+            sequenceMutedValues.push_back (mutedValue);
+
+            auto soloedValue = seqPtr->getState().getPropertyAsValue (SequenceIDs::Soloed, nullptr);
+            soloedValue.addListener (this);
+            sequenceSoloedValues.push_back (soloedValue);
         }
     }
+
+    startTimer (500); // Flash timer for soloed sequences
 }
 
 SequenceSelectionComponent::~SequenceSelectionComponent()
 {
+    stopTimer();
+
     for (auto& value : sequenceNameValues)
-    {
         value.removeListener (this);
-    }
+    for (auto& value : sequenceMutedValues)
+        value.removeListener (this);
+    for (auto& value : sequenceSoloedValues)
+        value.removeListener (this);
 }
 
 void SequenceSelectionComponent::paint (juce::Graphics& g)
@@ -51,13 +67,51 @@ void SequenceSelectionComponent::paint (juce::Graphics& g)
             barWidth,
             height);
 
-        g.setColour (juce::Colours::grey);
-        g.drawRect (rect);
+        bool isSelected = seqPtr && seqPtr.get() == &selectedSequence;
+        bool isMuted = seqPtr && seqPtr->isMuted();
+        bool isSoloed = seqPtr && seqPtr->isSoloed();
 
-        if (seqPtr && seqPtr.get() == &selectedSequence)
+        // Determine fill colour
+        if (isSelected)
         {
-            g.setColour (juce::Colours::orchid);
+            if (isSoloed)
+                g.setColour (AppColours::sequenceSoloFill);
+            else if (isMuted)
+                g.setColour (AppColours::sequenceMutedSelected);
+            else
+                g.setColour (AppColours::sequenceSelected);
+
             g.fillRect (rect);
+        }
+        else if (isMuted)
+        {
+            // Greyed-out fill for muted unselected sequences
+            g.setColour (AppColours::sequenceMutedFill);
+            g.fillRect (rect);
+        }
+        else if (isSoloed)
+        {
+            // Gold fill for soloed unselected sequences
+            g.setColour (AppColours::sequenceSoloFill.withAlpha (0.5f));
+            g.fillRect (rect);
+        }
+
+        // Outline
+        if (isSoloed && flashState)
+        {
+            // Flashing bright outline for soloed sequences
+            g.setColour (AppColours::sequenceSoloFlash);
+            g.drawRect (rect, 2.0f);
+        }
+        else if (isMuted)
+        {
+            g.setColour (AppColours::sequenceMutedOutline);
+            g.drawRect (rect);
+        }
+        else
+        {
+            g.setColour (AppColours::sequenceOutline);
+            g.drawRect (rect);
         }
 
         if (seqPtr)
@@ -65,23 +119,32 @@ void SequenceSelectionComponent::paint (juce::Graphics& g)
             juce::String name = seqPtr->getName();
 
             if (name.isEmpty())
-            {
                 name = "Sequence " + juce::String (i + 1);
-            }
 
-            if (seqPtr.get() == &selectedSequence)
-            {
-                g.setColour (juce::Colours::white);
-            }
+            if (isMuted)
+                g.setColour (AppColours::sequenceTextMuted);
+            else if (isSelected)
+                g.setColour (AppColours::sequenceTextSelected);
             else
-            {
-                g.setColour (juce::Colours::black);
-            }
+                g.setColour (AppColours::sequenceText);
 
             g.setFont (12.0f);
             bool useEllipsis = true;
             g.drawText (name, rect, juce::Justification::centred, useEllipsis);
         }
+    }
+}
+
+void SequenceSelectionComponent::timerCallback()
+{
+    // Check if any sequence is soloed — only repaint when needed
+    const auto& sequences = composition.getSequences();
+    bool anySoloed = std::any_of (sequences.begin(), sequences.end(), [] (const auto& s)
+                                  { return s && s->isSoloed(); });
+    if (anySoloed)
+    {
+        flashState = ! flashState;
+        repaint();
     }
 }
 

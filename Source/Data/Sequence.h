@@ -20,6 +20,8 @@ DECLARE_ID (Name)
 DECLARE_ID (Notes)
 DECLARE_ID (MidiChannel)
 DECLARE_ID (MidiOutputId)
+DECLARE_ID (Muted)
+DECLARE_ID (Soloed)
 #undef DECLARE_ID
 } // namespace SequenceIDs
 
@@ -38,7 +40,6 @@ public:
     void setLengthBeats (double beats, juce::UndoManager* undoManager = nullptr);
 
     bool enabled = true;
-    bool muted = false;
 
     void setMidiChannel (int channel, juce::UndoManager* undoManager = nullptr);
     int getMidiChannel() const;
@@ -55,6 +56,9 @@ public:
 
     void setMuted (bool isMuted);
     bool isMuted() const;
+
+    void setSoloed (bool isSoloed);
+    bool isSoloed() const;
 
     std::vector<std::unique_ptr<Note>> notes;
 

@@ -18,8 +18,7 @@ MainComponent::MainComponent() : cursor (composition),
                                  midlineComponent (cursor),
                                  statusBarComponent (cursor),
                                  sequenceSelectionComponent (cursor, composition),
-                                 modifierMenuManager (cursor,
-                                                      [this] (juce::String message, int timeout)
+                                 modifierMenuManager (cursor, [this] (juce::String message, int timeout)
                                                       { contextualMenuComponent.showMessage (message, timeout); },
                                                       [this]()
                                                       { contextualMenuComponent.navigateBack(); }),
@@ -70,8 +69,10 @@ MainComponent::MainComponent() : cursor (composition),
 
     addAndMakeVisible (contextualMenuComponent);
     contextualMenuComponent.setVisible (false);
-    contextualMenuComponent.onUndo = [this]() { cursor.undo(); };
-    contextualMenuComponent.onRedo = [this]() { cursor.redo(); };
+    contextualMenuComponent.onUndo = [this]()
+    { cursor.undo(); };
+    contextualMenuComponent.onRedo = [this]()
+    { cursor.redo(); };
 
     // GLOBAL SETTINGS MENU
 
@@ -205,6 +206,14 @@ void MainComponent::scheduleTrackBeats (size_t trackIndex, double currentBeat)
 {
     auto& seq = cursor.getSequence (trackIndex);
 
+    // Solo logic: if any sequence is soloed, only soloed sequences play
+    const auto& sequences = composition.getSequences();
+    bool anySoloed = std::any_of (sequences.begin(), sequences.end(), [] (const auto& s)
+                                  { return s && s->isSoloed(); });
+
+    if (anySoloed && ! seq.isSoloed())
+        return;
+
     // Skip disabled or muted tracks
     if (! seq.isEnabled() || seq.isMuted())
         return;
@@ -224,21 +233,21 @@ void MainComponent::scheduleTrackBeats (size_t trackIndex, double currentBeat)
     }
 
     double tempo = transport.getTempo();
-    
+
     // Calculate beat range to schedule
     double startBeat = currentBeat;
     double endBeat = startBeat + TransportEngine::LOOKAHEAD_BEATS; // Schedule ahead
-    
+
     // Extract MIDI notes for this beat range
     auto notes = composition.extractMidiSequenceForBeatRange (trackIndex, startBeat, endBeat, tempo);
-    
+
     // Convert beat times to absolute seconds for scheduling
     double loopStartTimeSeconds = transport.beatsToSeconds (startBeat);
     int midiChannel = seq.getMidiChannel();
-    
+
     // Schedule the beat slice
     transport.scheduleTrack (trackIndex, notes, loopStartTimeSeconds, output, midiChannel);
-    
+
     // Mark beats as scheduled
     transport.markBeatsScheduled (trackIndex, endBeat);
 }
@@ -679,7 +688,14 @@ void MainComponent::setupKeyboardShortcuts()
             { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
-                contextualMenuComponent.displayMenu (sequenceSettngsManager.getMenuNodeRoot());
+                contextualMenuComponent.displayMenu (sequenceSettngsManager.getMenuNodeRoot(), [this] (const juce::String& tag)
+                                                     {
+                                                        auto& seq = cursor.getSelectedSequence();
+                                                        if (tag == "muted")
+                                                            return seq.isMuted();
+                                                        if (tag == "soloed")
+                                                            return seq.isSoloed();
+                                                        return false; });
                 return true;
             },
             "Sequence Settings",

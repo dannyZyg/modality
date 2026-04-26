@@ -24,7 +24,7 @@ SequenceSettingsManager::SequenceSettingsManager (Cursor& c, MidiOutputManager& 
     midiSettingsNode = menuRoot->addChild (std::move (midiSettings));
 
     // Create name settings menu node
-    auto sequenceProperties = std::make_unique<MenuNode> ("Sequence Properties", juce::KeyPress::createFromDescription ("s"));
+    auto sequenceProperties = std::make_unique<MenuNode> ("Sequence Properties", juce::KeyPress::createFromDescription ("p"));
 
     sequenceProperties->onEnter = [this]()
     {
@@ -53,6 +53,48 @@ SequenceSettingsManager::SequenceSettingsManager (Cursor& c, MidiOutputManager& 
     };
 
     propertiesNode = menuRoot->addChild (std::move (sequenceProperties));
+
+    // Mute node
+    auto muteNode = std::make_unique<MenuNode> ("Mute", juce::KeyPress ('m'));
+    muteNode->tag = "muted";
+    muteNode->onAction = [this]()
+    {
+        auto& seq = cursor.getSelectedSequence();
+        bool currentlyMuted = seq.isMuted();
+
+        // Mutually exclusive: unmute if already muted, otherwise mute and clear solo
+        if (currentlyMuted)
+        {
+            seq.setMuted (false);
+        }
+        else
+        {
+            seq.setSoloed (false);
+            seq.setMuted (true);
+        }
+    };
+    menuRoot->addChild (std::move (muteNode));
+
+    // Solo node
+    auto soloNode = std::make_unique<MenuNode> ("Solo", juce::KeyPress ('s'));
+    soloNode->tag = "soloed";
+    soloNode->onAction = [this]()
+    {
+        auto& seq = cursor.getSelectedSequence();
+        bool currentlySoloed = seq.isSoloed();
+
+        // Mutually exclusive: unsolo if already soloed, otherwise solo and clear mute
+        if (currentlySoloed)
+        {
+            seq.setSoloed (false);
+        }
+        else
+        {
+            seq.setMuted (false);
+            seq.setSoloed (true);
+        }
+    };
+    menuRoot->addChild (std::move (soloNode));
 }
 
 SequenceSettingsManager::~SequenceSettingsManager() {}

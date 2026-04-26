@@ -24,6 +24,7 @@ struct MenuNode
     MenuNode* addChild (std::unique_ptr<MenuNode> child);
 
     std::function<void()> onEnter;
+    std::function<void()> onAction;
 
     void setComponent (std::unique_ptr<juce::Component> c);
 };

@@ -28,6 +28,12 @@ Sequence::Sequence (juce::ValueTree existingState) : state (existingState.isVali
     if (! state.hasProperty (SequenceIDs::MidiOutputId))
         setMidiOutputId ("");
 
+    if (! state.hasProperty (SequenceIDs::Muted))
+        state.setProperty (SequenceIDs::Muted, false, nullptr);
+
+    if (! state.hasProperty (SequenceIDs::Soloed))
+        state.setProperty (SequenceIDs::Soloed, false, nullptr);
+
     // ensure child trees exist
     if (! state.getChildWithName (TimelineIDs::Timeline).isValid())
         state.addChild (timeline.getState(), -1, nullptr);
@@ -153,12 +159,22 @@ bool Sequence::isEnabled() const
 
 void Sequence::setMuted (bool isMuted)
 {
-    muted = isMuted;
+    state.setProperty (SequenceIDs::Muted, isMuted, nullptr);
 }
 
 bool Sequence::isMuted() const
 {
-    return muted;
+    return static_cast<bool> (state.getProperty (SequenceIDs::Muted, false));
+}
+
+void Sequence::setSoloed (bool isSoloed)
+{
+    state.setProperty (SequenceIDs::Soloed, isSoloed, nullptr);
+}
+
+bool Sequence::isSoloed() const
+{
+    return static_cast<bool> (state.getProperty (SequenceIDs::Soloed, false));
 }
 
 // Create a reusable predicate to filter notes
