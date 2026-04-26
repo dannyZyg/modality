@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Data/Composition.h"
 #include "Data/Cursor.h"
 #include <JuceHeader.h>
 
@@ -12,7 +13,7 @@ class StatusBarComponent : public juce::Component
 {
 public:
     //==============================================================================
-    StatusBarComponent (const Cursor& c);
+    StatusBarComponent (const Cursor& c, const Composition& comp);
     ~StatusBarComponent() override;
 
     void paint (juce::Graphics& g) override;
@@ -26,6 +27,7 @@ private:
     float piePercentage; // Value between 0 and 1
 
     const Cursor& cursor;
+    const Composition& composition;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StatusBarComponent)
 };

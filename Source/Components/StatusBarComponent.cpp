@@ -4,7 +4,7 @@
 
 //==============================================================================
 
-StatusBarComponent::StatusBarComponent (const Cursor& c) : cursor (c)
+StatusBarComponent::StatusBarComponent (const Cursor& c, const Composition& comp) : cursor (c), composition (comp)
 {
     setWantsKeyboardFocus (false);
     repaint();
@@ -88,33 +88,25 @@ void StatusBarComponent::paint (juce::Graphics& g)
     g.setColour (juce::Colours::black.withAlpha (0.3f));
     g.drawEllipse (pieRect, 1.0f);
 
-    // After drawing mode text, add play icon
-    const float iconSize = static_cast<float> (height) * 0.6f;
-
-    // Create a triangle path for play icon
-    juce::Path playPath;
-    playPath.startNewSubPath (0, 0);
-    playPath.lineTo (iconSize, iconSize / 2);
-    playPath.lineTo (0, iconSize);
-    playPath.closeSubPath();
-
-    // Position it after the mode text
-    g.setColour (juce::Colours::lightseagreen);
-    auto playBounds = juce::Rectangle<float> (
-        pieRect.getRight() + iconSize,
-        (static_cast<float> (height) - iconSize) / 2, // Center vertically
-        iconSize,
-        iconSize);
-    g.fillPath (playPath, playPath.getTransformToScaleToFit (playBounds, true));
+    // Dirty state indicator (* asterisk, right side just left of cursor box)
+    if (composition.isDirty())
+    {
+        const int dirtyWidth = 20;
+        juce::Rectangle<int> dirtyBox (cursorBox.getX() - dirtyWidth, 0, dirtyWidth, height);
+        g.setColour (juce::Colours::orangered);
+        g.setFont (juce::Font (juce::FontOptions (20.0f).withStyle ("Bold")));
+        g.drawText ("*", dirtyBox, juce::Justification::centred, false);
+    }
 
     // Help text in the center
     g.setColour (juce::Colours::darkgrey);
     g.setFont (juce::Font (juce::FontOptions (12.0f).withStyle ("Italic")));
 
+    const int helpLeft = pieBackground.getRight() + padding;
     auto helpTextBounds = juce::Rectangle<int> (
-        static_cast<int> (playBounds.getRight()) + padding,
+        helpLeft,
         0,
-        cursorBox.getX() - static_cast<int> (playBounds.getRight()) - (2 * padding),
+        cursorBox.getX() - helpLeft - padding,
         height);
 
     g.drawText ("/ : settings    ? : help", helpTextBounds, juce::Justification::centred, true);

@@ -16,7 +16,7 @@ MainComponent::MainComponent() : cursor (composition),
                                  sequenceComponent (cursor, transport),
                                  cursorComponent (cursor),
                                  midlineComponent (cursor),
-                                 statusBarComponent (cursor),
+                                 statusBarComponent (cursor, composition),
                                  sequenceSelectionComponent (cursor, composition),
                                  modifierMenuManager (cursor, [this] (juce::String message, int timeout)
                                                       { contextualMenuComponent.showMessage (message, timeout); },

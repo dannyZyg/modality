@@ -295,11 +295,9 @@ void Composition::reset()
 
 void Composition::setIsDirty (bool v)
 {
-    DBG ("SETTING IS DIRTY: ");
     if (isDirty() != v)
     {
         dirty = v;
-        DBG ("sending change");
         sendChangeMessage();
     }
 }
