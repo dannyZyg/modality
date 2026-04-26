@@ -1,7 +1,8 @@
 #include "Components/Settings/PaginatedSettingsComponent.h"
 #include "juce_gui_basics/juce_gui_basics.h"
 
-PaginatedSettingsComponent::PaginatedSettingsComponent (std::vector<std::unique_ptr<ISelectableWidget>> w) : widgets (std::move (w))
+PaginatedSettingsComponent::PaginatedSettingsComponent (std::vector<std::unique_ptr<ISelectableWidget>> w, juce::String description)
+    : widgets (std::move (w)), descriptionText (std::move (description))
 {
     setWantsKeyboardFocus (true);
     addAndMakeVisible (label);
@@ -25,6 +26,15 @@ PaginatedSettingsComponent::~PaginatedSettingsComponent()
 
 void PaginatedSettingsComponent::paint (juce::Graphics& g)
 {
+    if (descriptionText.isNotEmpty())
+    {
+        auto descX = 20;
+        auto descWidth = getWidth() - (2 * descX);
+        g.setColour (juce::Colours::lightgrey);
+        g.setFont (juce::Font (juce::FontOptions (14.0f)));
+        g.drawFittedText (descriptionText, descX, 0, descWidth, descriptionHeight, juce::Justification::centredLeft, 2);
+    }
+
     if (widgets.empty())
         return;
 
@@ -35,8 +45,8 @@ void PaginatedSettingsComponent::paint (juce::Graphics& g)
     auto footerBounds = getLocalBounds().removeFromBottom (footerHeight);
     auto leftInset = 50;
     auto rowHeight = 20;
-    auto rowWidth = footerBounds.getWidth() - (2 * leftInset);
-    auto x = footerBounds.getX() + leftInset;
+    auto footerRowWidth = footerBounds.getWidth() - (2 * leftInset);
+    auto footerX = footerBounds.getX() + leftInset;
 
     g.setColour (juce::Colours::lightgrey);
     g.setFont (juce::Font (juce::FontOptions (16.0f).withStyle ("Italic")));
@@ -65,9 +75,9 @@ void PaginatedSettingsComponent::paint (juce::Graphics& g)
         ga.addLineOfText (font, fullLine, 0.0f, 0.0f);
         auto textWidth = static_cast<int> (ga.getBoundingBox (0, -1, true).getWidth());
 
-        if (textWidth <= rowWidth)
+        if (textWidth <= footerRowWidth)
         {
-            g.drawText (fullLine, x, footerBounds.getY() + 5, rowWidth, rowHeight, juce::Justification::left, true);
+            g.drawText (fullLine, footerX, footerBounds.getY() + 5, footerRowWidth, rowHeight, juce::Justification::left, true);
         }
         else
         {
@@ -76,12 +86,12 @@ void PaginatedSettingsComponent::paint (juce::Graphics& g)
             std::vector<ISelectableWidget::ShortcutHint> firstHalf (hints.begin(), hints.begin() + static_cast<int> (mid));
             std::vector<ISelectableWidget::ShortcutHint> secondHalf (hints.begin() + static_cast<int> (mid), hints.end());
 
-            g.drawText (buildLine (firstHalf), x, footerBounds.getY() + 5, rowWidth, rowHeight, juce::Justification::left, true);
-            g.drawText (buildLine (secondHalf), x, footerBounds.getY() + 25, rowWidth, rowHeight, juce::Justification::left, true);
+            g.drawText (buildLine (firstHalf), footerX, footerBounds.getY() + 5, footerRowWidth, rowHeight, juce::Justification::left, true);
+            g.drawText (buildLine (secondHalf), footerX, footerBounds.getY() + 25, footerRowWidth, rowHeight, juce::Justification::left, true);
         }
     }
 
-    g.drawText ("j/k: navigate", x, footerBounds.getY() + 48, rowWidth, rowHeight, juce::Justification::left, true);
+    g.drawText ("j/k: navigate", footerX, footerBounds.getY() + 48, footerRowWidth, rowHeight, juce::Justification::left, true);
 }
 
 void PaginatedSettingsComponent::resized()
@@ -89,7 +99,7 @@ void PaginatedSettingsComponent::resized()
     label.setBounds (getLocalBounds());
 
     auto x = 20;
-    auto y = 20;
+    auto y = 20 + (descriptionText.isNotEmpty() ? descriptionHeight : 0);
     auto width = getWidth() - (2 * x);
     auto height = 65;
     auto padding = 70;

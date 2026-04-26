@@ -72,6 +72,7 @@ namespace
 {
 static bool reg1 = ModifierRegistry::getInstance().registerModifier ({ .type = ModifierIDs::RandomTrigger,
                                                                        .displayName = "Trigger Probability",
+                                                                       .description = "Randomly suppresses notes. At probability 1.0, notes always play; lower values increase the chance a note is silenced.",
                                                                        .navShortcutDescription = "r",
                                                                        .componentType = juce::Identifier ("sliderPanel"),
                                                                        .params = {
@@ -86,6 +87,7 @@ static bool reg1 = ModifierRegistry::getInstance().registerModifier ({ .type = M
 
 static bool reg2 = ModifierRegistry::getInstance().registerModifier ({ .type = ModifierIDs::RandomOctaveShift,
                                                                        .displayName = "Random Octave",
+                                                                       .description = "Randomly shifts the note up or down by whole octaves. Probability controls how often the shift applies; Range sets the octave boundary.",
                                                                        .navShortcutDescription = "o",
                                                                        .componentType = juce::Identifier ("sliderPanel"),
                                                                        .params = {
@@ -108,6 +110,7 @@ static bool reg2 = ModifierRegistry::getInstance().registerModifier ({ .type = M
 
 static bool reg3 = ModifierRegistry::getInstance().registerModifier ({ .type = ModifierIDs::RandomVelocity,
                                                                        .displayName = "Random Velocity Deviation",
+                                                                       .description = "Randomly replaces the note velocity with a value within the configured range. Probability controls how often the deviation applies.",
                                                                        .navShortcutDescription = "v",
                                                                        .componentType = juce::Identifier ("sliderPanel"),
                                                                        .params = {

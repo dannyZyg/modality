@@ -43,7 +43,8 @@ std::function<void()> ModifierMenuManager::createCallback (ModifierType type, Me
         auto& state = modifier->getState();
         auto widgets = ModifierComponentFactory::createWidgets (type, state);
 
-        auto component = std::make_unique<PaginatedSettingsComponent> (std::move (widgets));
+        auto* def = ModifierRegistry::getInstance().getDefinition (type);
+        auto component = std::make_unique<PaginatedSettingsComponent> (std::move (widgets), def ? def->description : juce::String{});
 
         node->setComponent (std::move (component));
     };

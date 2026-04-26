@@ -9,6 +9,7 @@ struct ModifierDefinition
 {
     juce::Identifier type;
     juce::String displayName;
+    juce::String description;
     juce::String navShortcutDescription;
     juce::Identifier componentType; // UI component key (e.g., "sliderPanel")
     std::vector<ParamDefinition> params;

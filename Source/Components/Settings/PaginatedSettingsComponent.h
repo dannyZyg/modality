@@ -15,7 +15,7 @@ class PaginatedSettingsComponent : public juce::Component
 {
 public:
     //==============================================================================
-    PaginatedSettingsComponent (std::vector<std::unique_ptr<ISelectableWidget>> w);
+    PaginatedSettingsComponent (std::vector<std::unique_ptr<ISelectableWidget>> w, juce::String description = {});
 
     ~PaginatedSettingsComponent() override;
 
@@ -28,6 +28,7 @@ public:
 
 private:
     static constexpr int footerHeight = 70;
+    static constexpr int descriptionHeight = 40;
 
     juce::Label label;
     juce::Slider horizontalSlider;
@@ -35,6 +36,8 @@ private:
     size_t selectedWidgetIndex = 0;
 
     std::vector<std::unique_ptr<ISelectableWidget>> widgets;
+
+    juce::String descriptionText;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PaginatedSettingsComponent)
 };
