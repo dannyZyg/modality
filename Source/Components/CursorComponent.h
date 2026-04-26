@@ -18,9 +18,12 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
     void update();
+    void triggerYankFlash();
 
 private:
     const Cursor& cursor;
+    double yankFlashStartMs = -1.0;
+    static constexpr double yankFlashDurationMs = 500.0;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CursorComponent)
 };

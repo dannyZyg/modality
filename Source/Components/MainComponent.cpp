@@ -428,6 +428,7 @@ void MainComponent::setupKeyboardShortcuts()
             { Mode::normal, Mode::visualBlock, Mode::visualLine },
             [this]()
             {
+                cursorComponent.triggerYankFlash();
                 cursor.yank (CursorIDs::YankModeNotes);
                 return true;
             },
