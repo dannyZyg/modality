@@ -56,7 +56,9 @@ public:
 
     bool loadFromFile (juce::File& f);
 
-    bool isDirty();
+    void reset();
+
+    bool isDirty() const;
     void setIsDirty (bool v);
 
 private:

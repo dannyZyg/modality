@@ -282,7 +282,16 @@ bool Composition::loadFromFile (juce::File& f)
     return true;
 }
 
-bool Composition::isDirty() { return dirty; }
+bool Composition::isDirty() const { return dirty; }
+
+void Composition::reset()
+{
+    state.removeAllChildren (nullptr);
+    sequences.clear();
+    currentFile = juce::File {};
+    createDefaultSequences();
+    setIsDirty (false);
+}
 
 void Composition::setIsDirty (bool v)
 {

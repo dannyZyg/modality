@@ -6,6 +6,7 @@
   ==============================================================================
 */
 
+#include "AppMenuModel.h"
 #include "Components/MainComponent.h"
 #include <JuceHeader.h>
 
@@ -38,9 +39,10 @@ public:
     //==============================================================================
     void systemRequestedQuit() override
     {
-        // This is called when the app is being asked to quit: you can ignore this
-        // request and let the app carry on running, or call quit() to allow the app to close.
-        quit();
+        if (mainWindow != nullptr)
+            mainWindow->tryQuit();
+        else
+            quit();
     }
 
     void anotherInstanceStarted ([[maybe_unused]] const juce::String& commandLine) override
@@ -73,15 +75,62 @@ public:
             centreWithSize (getWidth(), getHeight());
 #endif
 
+            auto* mc = dynamic_cast<MainComponent*> (getContentComponent());
+            appMenuModel = std::make_unique<AppMenuModel> (mc->getComposition(), commandManager);
+            commandManager.registerAllCommandsForTarget (appMenuModel.get());
+            commandManager.setFirstCommandTarget (appMenuModel.get());
+#if JUCE_MAC
+            juce::MenuBarModel::setMacMainMenu (appMenuModel.get());
+#else
+            setMenuBar (appMenuModel.get());
+#endif
+
             setVisible (true);
+        }
+
+        ~MainWindow() override
+        {
+#if JUCE_MAC
+            juce::MenuBarModel::setMacMainMenu (nullptr);
+#else
+            setMenuBar (nullptr);
+#endif
         }
 
         void closeButtonPressed() override
         {
-            // This is called when the user tries to close this window. Here, we'll just
-            // ask the app to quit when this happens, but you can change this to do
-            // whatever you need.
-            JUCEApplication::getInstance()->systemRequestedQuit();
+            tryQuit();
+        }
+
+        void tryQuit()
+        {
+            auto* mc = dynamic_cast<MainComponent*> (getContentComponent());
+            if (mc->getComposition().isDirty())
+            {
+                juce::AlertWindow::showYesNoCancelBox (
+                    juce::MessageBoxIconType::QuestionIcon,
+                    "Unsaved Changes",
+                    "You have unsaved changes. Save before closing?",
+                    "Save", "Discard", "Cancel",
+                    this,
+                    juce::ModalCallbackFunction::create ([this] (int result)
+                    {
+                        if (result == 1) // Save
+                        {
+                            appMenuModel->setQuitAfterSave (true);
+                            commandManager.invokeDirectly (AppMenuModel::FileSave, false);
+                        }
+                        else if (result == 2) // Discard
+                        {
+                            JUCEApplication::getInstance()->quit();
+                        }
+                        // result == 0 (Cancel) → do nothing
+                    }));
+            }
+            else
+            {
+                JUCEApplication::getInstance()->quit();
+            }
         }
 
         /* Note: Be careful if you override any DocumentWindow methods - the base
@@ -92,6 +141,9 @@ public:
         */
 
     private:
+        juce::ApplicationCommandManager commandManager;
+        std::unique_ptr<AppMenuModel> appMenuModel;
+
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
     };
 
