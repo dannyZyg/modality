@@ -68,6 +68,16 @@ void SliderWidgetComponent::resized()
     horizontalSlider.setBounds (getLocalBounds().reduced (6));
 }
 
+std::vector<ISelectableWidget::ShortcutHint> SliderWidgetComponent::getShortcutHints() const
+{
+    return {
+        { "h/l", "adjust" },
+        { "m", "midpoint" },
+        { "^", "min" },
+        { "$", "max" },
+    };
+}
+
 bool SliderWidgetComponent::keyPressed (const juce::KeyPress& key)
 {
     if (key == juce::KeyPress::createFromDescription ("h"))

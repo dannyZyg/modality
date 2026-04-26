@@ -18,6 +18,8 @@ public:
 
     void setRange (double _min, double _max, double _interval);
 
+    std::vector<ShortcutHint> getShortcutHints() const override;
+
     bool keyPressed (const juce::KeyPress& key) override;
     void paint (juce::Graphics&) override;
     void resized() override;

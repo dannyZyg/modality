@@ -15,6 +15,8 @@ public:
 
     virtual ~RangeSliderWidgetComponent() override;
 
+    std::vector<ShortcutHint> getShortcutHints() const override;
+
     bool keyPressed (const juce::KeyPress& key) override;
     void paint (juce::Graphics&) override;
     void resized() override;

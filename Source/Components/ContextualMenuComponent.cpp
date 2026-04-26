@@ -57,17 +57,8 @@ void ContextualMenuComponent::displayMenu (MenuNode* rootNode)
     currentMenuNode = rootNode;
     setVisible (true);
     repaint();
-    showMessage ("Menu displayed. Press Escape to exit.", 2000);
 
-    // // This needs to be called after the component has a valid size and is visible, otherwise focus won't be gained!
-    // if (currentMenuNode->component)
-    // {
-    //     currentMenuNode->component->grabKeyboardFocus();
-    // }
-    // else
-    // {
     grabKeyboardFocus();
-    // }
 }
 
 void ContextualMenuComponent::paint (juce::Graphics& g)
@@ -89,6 +80,18 @@ void ContextualMenuComponent::paint (juce::Graphics& g)
     {
         drawSubNavOptions (g);
     }
+
+    // ESC hint — always visible, pinned to absolute bottom, label reflects stack depth
+    juce::String escLabel = backStack.empty() ? "ESC: Exit Menu" : "ESC: Prev Menu";
+    g.setColour (juce::Colours::lightgrey);
+    g.setFont (juce::Font (16.0f, juce::Font::italic));
+    g.drawText (escLabel,
+                getLocalBounds().getX() + 50,
+                getLocalBounds().getBottom() - 30,
+                getLocalBounds().getWidth() - 100,
+                20,
+                juce::Justification::left,
+                true);
 }
 
 void ContextualMenuComponent::drawContextualContent (juce::Graphics& g)
@@ -247,16 +250,4 @@ void ContextualMenuComponent::drawSubNavOptions (juce::Graphics& g)
 
         yOffset += itemHeight;
     }
-
-    juce::String prevTitle = backStack.empty() ? "Close Menu" : backStack.top()->title;
-
-    g.setColour (juce::Colours::lightgrey);
-    g.setFont (juce::Font (16.0f, juce::Font::italic));
-    g.drawText ("Press ESC: " + prevTitle,
-                getLocalBounds().getX() + 50,
-                getLocalBounds().getBottom() - 30, // Closer to the absolute bottom
-                getLocalBounds().getWidth() - 100,
-                20,
-                juce::Justification::left,
-                true);
 }

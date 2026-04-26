@@ -32,6 +32,13 @@ void SelectionWidgetComponent::setup()
 {
 }
 
+std::vector<ISelectableWidget::ShortcutHint> SelectionWidgetComponent::getShortcutHints() const
+{
+    return {
+        { "h/l", "change option" },
+    };
+}
+
 bool SelectionWidgetComponent::keyPressed (const juce::KeyPress& key)
 {
     if (key == juce::KeyPress::createFromDescription ("h"))

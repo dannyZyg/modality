@@ -12,9 +12,9 @@ PaginatedSettingsComponent::PaginatedSettingsComponent (std::vector<std::unique_
     }
 
     // After all widgets are added, set the first one as selected if available
-    if (! widgets.empty()) // Check if vector is not empty
+    if (! widgets.empty())
     {
-        selectedWidgetIndex = 0; // Set to 0 to select the first widget
+        selectedWidgetIndex = 0;
         widgets[selectedWidgetIndex]->setSelected (true);
     }
 }
@@ -23,7 +23,66 @@ PaginatedSettingsComponent::~PaginatedSettingsComponent()
 {
 }
 
-void PaginatedSettingsComponent::paint (juce::Graphics& g) {}
+void PaginatedSettingsComponent::paint (juce::Graphics& g)
+{
+    if (widgets.empty())
+        return;
+
+    auto& selected = widgets[selectedWidgetIndex];
+    if (! selected->isSelected())
+        return;
+
+    auto footerBounds = getLocalBounds().removeFromBottom (footerHeight);
+    auto leftInset = 50;
+    auto rowHeight = 20;
+    auto rowWidth = footerBounds.getWidth() - (2 * leftInset);
+    auto x = footerBounds.getX() + leftInset;
+
+    g.setColour (juce::Colours::lightgrey);
+    g.setFont (juce::Font (juce::FontOptions (16.0f).withStyle ("Italic")));
+
+    // widget-specific hints
+    auto hints = selected->getShortcutHints();
+
+    if (! hints.empty())
+    {
+        auto buildLine = [] (const std::vector<ISelectableWidget::ShortcutHint>& slice) -> juce::String
+        {
+            juce::String s;
+            for (const auto& [key, desc] : slice)
+            {
+                if (s.isNotEmpty())
+                    s += "   ";
+                s += key + ": " + desc;
+            }
+            return s;
+        };
+
+        auto font = g.getCurrentFont();
+        juce::String fullLine = buildLine (hints);
+
+        juce::GlyphArrangement ga;
+        ga.addLineOfText (font, fullLine, 0.0f, 0.0f);
+        auto textWidth = static_cast<int> (ga.getBoundingBox (0, -1, true).getWidth());
+
+        if (textWidth <= rowWidth)
+        {
+            g.drawText (fullLine, x, footerBounds.getY() + 5, rowWidth, rowHeight, juce::Justification::left, true);
+        }
+        else
+        {
+            // Split hints at the midpoint and render two rows
+            auto mid = hints.size() / 2;
+            std::vector<ISelectableWidget::ShortcutHint> firstHalf (hints.begin(), hints.begin() + static_cast<int> (mid));
+            std::vector<ISelectableWidget::ShortcutHint> secondHalf (hints.begin() + static_cast<int> (mid), hints.end());
+
+            g.drawText (buildLine (firstHalf), x, footerBounds.getY() + 5, rowWidth, rowHeight, juce::Justification::left, true);
+            g.drawText (buildLine (secondHalf), x, footerBounds.getY() + 25, rowWidth, rowHeight, juce::Justification::left, true);
+        }
+    }
+
+    g.drawText ("j/k: navigate", x, footerBounds.getY() + 48, rowWidth, rowHeight, juce::Justification::left, true);
+}
 
 void PaginatedSettingsComponent::resized()
 {
@@ -34,9 +93,13 @@ void PaginatedSettingsComponent::resized()
     auto width = getWidth() - (2 * x);
     auto height = 65;
     auto padding = 70;
+    auto availableHeight = getHeight() - footerHeight;
 
     for (auto& widget : widgets)
     {
+        if (y + height > availableHeight)
+            break;
+
         widget->setBounds (x, y, width, height);
         y += padding;
     }
@@ -61,6 +124,7 @@ bool PaginatedSettingsComponent::keyPressed (const juce::KeyPress& key)
         selectedWidgetIndex = (selectedWidgetIndex + 1) % widgets.size();
         widgets[selectedWidgetIndex]->setSelected (true);
         widgets[selectedWidgetIndex]->grabKeyboardFocus();
+        repaint();
         return true;
     }
 
@@ -70,6 +134,7 @@ bool PaginatedSettingsComponent::keyPressed (const juce::KeyPress& key)
         selectedWidgetIndex = (selectedWidgetIndex - 1 + widgets.size()) % widgets.size();
         widgets[selectedWidgetIndex]->setSelected (true);
         widgets[selectedWidgetIndex]->grabKeyboardFocus();
+        repaint();
         return true;
     }
 

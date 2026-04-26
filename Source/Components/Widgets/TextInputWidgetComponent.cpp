@@ -90,6 +90,18 @@ void TextInputWidgetComponent::resized()
     editor.setBounds (bounds);
 }
 
+std::vector<ISelectableWidget::ShortcutHint> TextInputWidgetComponent::getShortcutHints() const
+{
+    if (isEditMode)
+        return { { "ESC", "normal mode" } };
+
+    return {
+        { "i", "insert" },
+        { "a", "append" },
+        { "Enter", "append" },
+    };
+}
+
 bool TextInputWidgetComponent::keyPressed (const juce::KeyPress& key)
 {
     // If selected but not in edit mode, check for edit mode activation keys
@@ -102,6 +114,8 @@ bool TextInputWidgetComponent::keyPressed (const juce::KeyPress& key)
             editor.grabKeyboardFocus();
             editor.setCaretPosition (0); // Move to beginning
             repaint(); // Update border color
+            if (auto* parent = getParentComponent())
+                parent->repaint();
             return true;
         }
 
@@ -112,6 +126,8 @@ bool TextInputWidgetComponent::keyPressed (const juce::KeyPress& key)
             editor.grabKeyboardFocus();
             editor.moveCaretToEnd (false); // false = don't select text
             repaint(); // Update border color
+            if (auto* parent = getParentComponent())
+                parent->repaint();
             return true;
         }
 
@@ -122,6 +138,8 @@ bool TextInputWidgetComponent::keyPressed (const juce::KeyPress& key)
             editor.grabKeyboardFocus();
             editor.moveCaretToEnd (false);
             repaint(); // Update border color
+            if (auto* parent = getParentComponent())
+                parent->repaint();
             return true;
         }
 
@@ -178,4 +196,6 @@ void TextInputWidgetComponent::exitEditMode()
     editor.giveAwayKeyboardFocus();
     grabKeyboardFocus(); // Return focus to the widget itself
     repaint(); // Update border color back to aqua
+    if (auto* parent = getParentComponent())
+        parent->repaint();
 }

@@ -27,6 +27,8 @@ public:
     void update();
 
 private:
+    static constexpr int footerHeight = 70;
+
     juce::Label label;
     juce::Slider horizontalSlider;
 

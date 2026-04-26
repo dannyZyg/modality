@@ -69,6 +69,17 @@ void RangeSliderWidgetComponent::resized()
     rangeSlider.setBounds (getLocalBounds().reduced (6));
 }
 
+std::vector<ISelectableWidget::ShortcutHint> RangeSliderWidgetComponent::getShortcutHints() const
+{
+    juce::String activeLabel = (activeHandle == ActiveHandle::Min) ? "min handle" : "max handle";
+
+    return {
+        { "h/l", "adjust " + activeLabel },
+        { "o", "toggle handle" },
+        { "m", "center" },
+    };
+}
+
 bool RangeSliderWidgetComponent::keyPressed (const juce::KeyPress& key)
 {
     // Toggle active handle
