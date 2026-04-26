@@ -404,11 +404,16 @@ int Cursor::removeModifier (ModifierType t)
 {
     auto notes = findNotesForCursorMode();
 
+    if (notes.size() == 0)
+        return 0;
+
+    undoManager.beginNewTransaction ("removeModifier");
+
     for (auto& note : notes)
     {
         if (auto mod = (*note.get()).getModifier (t))
         {
-            (*note.get()).removeModifier (mod->getType());
+            (*note.get()).removeModifier (mod->getType(), &undoManager);
         }
     }
 
