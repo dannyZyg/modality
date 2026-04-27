@@ -273,7 +273,12 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
         return true;
     }
 
-    return false; // Key not handled
+    if (key == juce::KeyPress::createFromDescription ("cmd+q"))
+    {
+        return false;
+    }
+
+    return true; // Consume all key events to prevent OS beep
 }
 
 void MainComponent::setupKeyboardShortcuts()
