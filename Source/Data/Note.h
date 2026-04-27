@@ -69,6 +69,9 @@ public:
     void setDegree (double value, juce::UndoManager* undoManager = nullptr);
     void setStartTime (double value, juce::UndoManager* undoManager = nullptr);
 
+    void setLastTriggeredMidiNote (const MidiNote& m);
+    std::optional<MidiNote> lastTriggeredMidiNote;
+
     void addModifier (Modifier m, UndoManager* undoManager = nullptr);
     bool removeModifier (ModifierType type, UndoManager* undoManager = nullptr);
     std::optional<Modifier> getModifier (ModifierType type);

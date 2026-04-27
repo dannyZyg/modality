@@ -179,6 +179,13 @@ std::vector<MidiNote> Composition::extractMidiSequenceForBeatRange (size_t seqIn
             // Convert adjusted beat time back to seconds
             double adjustedStartTimeSeconds = adjustedStartTime * (60.0 / tempo);
             midiClip.emplace_back (adjustedStartTimeSeconds, midi->noteNumber, midi->velocity, midi->duration);
+
+            // Store the post-modifier result on the note for the UI to read for visualisation
+            // Use loop-local start time in seconds so it's directly comparable to
+            // the looped playhead position in SequenceComponent::paint
+            MidiNote triggered = *midi;
+            triggered.startTime = noteStartBeat * (60.0 / tempo);
+            n->setLastTriggeredMidiNote (triggered);
         }
     }
 

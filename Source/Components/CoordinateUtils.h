@@ -157,6 +157,26 @@ public:
         return path;
     }
 
+    static juce::Point<float> getTriangleTipPoint (const Note& n,
+                                                   float screenWidth,
+                                                   float screenHeight,
+                                                   const Timeline& timeline,
+                                                   const Scale& scale)
+    {
+        auto point = musicToScreen (n, screenWidth, screenHeight, timeline, scale);
+        float width = getStepWidthAtSmallestSize (screenWidth, timeline);
+        float height = getStepHeight (screenHeight, scale);
+        return { point.x + width, point.y + height / 2.0f };
+    }
+
+    static float getDurationPixelWidth (const Note& n,
+                                        float screenWidth,
+                                        const Timeline& timeline)
+    {
+        float smallestStepPx = getStepWidthAtSmallestSize (screenWidth, timeline);
+        return static_cast<float> (n.getDuration() / timeline.getSmallestStepSize()) * smallestStepPx;
+    }
+
 private:
     // Prevent instantiation since this is a utility class
     CoordinateUtils() = delete;

@@ -345,7 +345,7 @@ std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesAtPo
     return getSelectedSequence().findNotes (minTime, maxTime, minDegree, maxDegree);
 }
 
-std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesAtCursor()
+std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesAtCursor() const
 {
     return getSelectedSequence().findNotes (cursorPosition.xTimepoint.value,
                                             cursorPosition.xTimepoint.value + getCurrentTimeline().getStepSize(),

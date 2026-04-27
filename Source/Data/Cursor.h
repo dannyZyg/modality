@@ -109,7 +109,7 @@ public:
     int addModifier (ModifierType t);
     int removeModifier (ModifierType t);
 
-    std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesAtCursor();
+    std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesAtCursor() const;
     std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesInCursorSelection();
     std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesForCursorMode();
 

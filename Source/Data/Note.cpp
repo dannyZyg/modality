@@ -58,6 +58,11 @@ void Note::setVelocity (int v, juce::UndoManager* undoManager)
     state.setProperty (NoteIDs::Velocity, v, undoManager);
 }
 
+void Note::setLastTriggeredMidiNote (const MidiNote& m)
+{
+    lastTriggeredMidiNote = m;
+}
+
 void Note::addModifier (Modifier m, UndoManager* undoManager)
 {
     if (!state.getChildWithName (m.getType()).isValid())
