@@ -121,7 +121,7 @@ void Selection::removeFromSelection (Position p)
     positions.erase (newEnd, positions.end());
 }
 
-Position Selection::getEarliestPosition()
+Position Selection::getEarliestPosition() const
 {
     if (positions.empty())
     {
@@ -132,7 +132,7 @@ Position Selection::getEarliestPosition()
                               { return a.xTimepoint.value < b.xTimepoint.value; });
 }
 
-Position Selection::getLatestPosition()
+Position Selection::getLatestPosition() const
 {
     if (positions.empty())
     {
@@ -143,7 +143,7 @@ Position Selection::getLatestPosition()
                               { return a.xTimepoint.value < b.xTimepoint.value; });
 }
 
-Position Selection::getHighestPosition()
+Position Selection::getHighestPosition() const
 {
     if (positions.empty())
     {
@@ -154,7 +154,7 @@ Position Selection::getHighestPosition()
                               { return a.yDegree.value < b.yDegree.value; });
 }
 
-Position Selection::getLowestPosition()
+Position Selection::getLowestPosition() const
 {
     if (positions.empty())
     {

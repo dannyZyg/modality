@@ -97,6 +97,11 @@ public:
     void increaseTimelineStepSize();
     void decreaseTimelineStepSize();
 
+    void increaseNoteVelocity();
+    void decreaseNoteVelocity();
+    void increaseNoteDuration();
+    void decreaseNoteDuration();
+
     void yankNotes (double originTimepoint, double originDegree);
     void yank (juce::Identifier yankMode);
     void paste();
@@ -110,8 +115,8 @@ public:
     int removeModifier (ModifierType t);
 
     std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesAtCursor() const;
-    std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesInCursorSelection();
-    std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesForCursorMode();
+    std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesInCursorSelection() const;
+    std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotesForCursorMode() const;
 
     const Timeline& getCurrentTimeline() const;
     const Scale& getCurrentScale() const;

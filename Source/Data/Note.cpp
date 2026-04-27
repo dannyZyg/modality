@@ -58,6 +58,11 @@ void Note::setVelocity (int v, juce::UndoManager* undoManager)
     state.setProperty (NoteIDs::Velocity, v, undoManager);
 }
 
+void Note::setDuration (double value, juce::UndoManager* undoManager)
+{
+    state.setProperty (NoteIDs::Duration, value, undoManager);
+}
+
 void Note::setLastTriggeredMidiNote (const MidiNote& m)
 {
     lastTriggeredMidiNote = m;

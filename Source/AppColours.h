@@ -13,6 +13,7 @@ static const juce::Colour visualLineModeCursor = juce::Colours::orange;
 static const juce::Colour playhead = juce::Colour (47, 128, 107);
 static const juce::Colour yankFlashFill = juce::Colour (255, 240, 80);
 static const juce::Colour yankFlashOutline = juce::Colour (255, 240, 80).darker (0.4f);
+static const juce::Colour velocityFlash = juce::Colour (80, 220, 255);
 
 [[maybe_unused]] static juce::Colour getSelectionColour (Mode m)
 {

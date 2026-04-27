@@ -66,6 +66,7 @@ public:
     int getVelocity() const;
 
     void setVelocity (int v, juce::UndoManager* undoManager = nullptr);
+    void setDuration (double value, juce::UndoManager* undoManager = nullptr);
     void setDegree (double value, juce::UndoManager* undoManager = nullptr);
     void setStartTime (double value, juce::UndoManager* undoManager = nullptr);
 

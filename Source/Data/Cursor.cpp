@@ -317,6 +317,60 @@ void Cursor::increaseTimelineStepSize() { getSelectedSequence().increaseTimeline
 
 void Cursor::decreaseTimelineStepSize() { getSelectedSequence().decreaseTimelineStepSize(); }
 
+void Cursor::increaseNoteVelocity()
+{
+    auto notes = findNotesForCursorMode();
+    if (notes.empty())
+        return;
+    undoManager.beginNewTransaction ("increaseNoteVelocity");
+    for (auto& ref : notes)
+    {
+        auto& note = *ref.get();
+        note.setVelocity (juce::jlimit (0, 127, note.getVelocity() + 10), &undoManager);
+    }
+}
+
+void Cursor::decreaseNoteVelocity()
+{
+    auto notes = findNotesForCursorMode();
+    if (notes.empty())
+        return;
+    undoManager.beginNewTransaction ("decreaseNoteVelocity");
+    for (auto& ref : notes)
+    {
+        auto& note = *ref.get();
+        note.setVelocity (juce::jlimit (0, 127, note.getVelocity() - 10), &undoManager);
+    }
+}
+
+void Cursor::increaseNoteDuration()
+{
+    auto notes = findNotesForCursorMode();
+    if (notes.empty())
+        return;
+    double stepSize = getCurrentTimeline().getStepSize();
+    undoManager.beginNewTransaction ("increaseNoteDuration");
+    for (auto& ref : notes)
+    {
+        auto& note = *ref.get();
+        note.setDuration (note.getDuration() + stepSize, &undoManager);
+    }
+}
+
+void Cursor::decreaseNoteDuration()
+{
+    auto notes = findNotesForCursorMode();
+    if (notes.empty())
+        return;
+    double stepSize = getCurrentTimeline().getStepSize();
+    undoManager.beginNewTransaction ("decreaseNoteDuration");
+    for (auto& ref : notes)
+    {
+        auto& note = *ref.get();
+        note.setDuration (std::max (note.getDuration() - stepSize, stepSize), &undoManager);
+    }
+}
+
 const std::vector<Position>& Cursor::getVisualSelectionPositions() const
 {
     return visualSelection.getPositions();
@@ -353,7 +407,7 @@ std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesAtCu
                                             cursorPosition.yDegree.value);
 }
 
-std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesInCursorSelection()
+std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesInCursorSelection() const
 {
     return getSelectedSequence().findNotes (visualSelection.getEarliestPosition().xTimepoint.value,
                                             visualSelection.getLatestPosition().xTimepoint.value + getCurrentTimeline().getStepSize(),
@@ -361,7 +415,7 @@ std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesInCu
                                             visualSelection.getHighestPosition().yDegree.value);
 }
 
-std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesForCursorMode()
+std::vector<std::reference_wrapper<std::unique_ptr<Note>>> Cursor::findNotesForCursorMode() const
 {
     if (isNormalMode() || isInsertMode())
     {

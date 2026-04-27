@@ -255,6 +255,14 @@ void MainComponent::scheduleTrackBeats (size_t trackIndex, double currentBeat)
 void MainComponent::stop()
 {
     transport.stop();
+
+    // Clear stale flash state on all notes so they don't show the velocity
+    // flash colour when the transport is stopped and restarted
+    for (auto& seq : composition.getSequences())
+        if (seq)
+            for (auto& note : seq->notes)
+                note->lastTriggeredMidiNote.reset();
+
     juce::Logger::writeToLog ("Transport Stopped");
 }
 
@@ -700,6 +708,50 @@ void MainComponent::setupKeyboardShortcuts()
             },
             "Sequence Settings",
             "Open settings menu for the currently selected sequence"),
+
+        Shortcut (
+            juce::KeyPress ('(', juce::ModifierKeys::shiftModifier, 0),
+            { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
+            [this]()
+            {
+                cursor.decreaseNoteVelocity();
+                return true;
+            },
+            "Decrease velocity",
+            "Decrease velocity of notes at cursor by 10"),
+
+        Shortcut (
+            juce::KeyPress (')', juce::ModifierKeys::shiftModifier, 0),
+            { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
+            [this]()
+            {
+                cursor.increaseNoteVelocity();
+                return true;
+            },
+            "Increase velocity",
+            "Increase velocity of notes at cursor by 10"),
+
+        Shortcut (
+            juce::KeyPress ('['),
+            { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
+            [this]()
+            {
+                cursor.decreaseNoteDuration();
+                return true;
+            },
+            "Decrease duration",
+            "Decrease duration of notes at cursor by one step"),
+
+        Shortcut (
+            juce::KeyPress (']'),
+            { Mode::normal, Mode::insert, Mode::visualBlock, Mode::visualLine },
+            [this]()
+            {
+                cursor.increaseNoteDuration();
+                return true;
+            },
+            "Increase duration",
+            "Increase duration of notes at cursor by one step"),
 
     };
 

@@ -47,11 +47,20 @@ void SequenceComponent::paint (juce::Graphics& g)
     g.setColour (juce::Colours::grey);
     g.drawRect (getLocalBounds(), 1);
 
-    // Collect raw pointers of notes under cursor
-    auto notesUnderCursor = cursor.findNotesAtCursor();
-    std::unordered_set<Note*> underCursorSet;
-    for (auto& ref : notesUnderCursor)
-        underCursorSet.insert (ref.get().get());
+    // Collect notes that should show duration lines:
+    // - in normal/insert mode: notes at the cursor point
+    // - in visual modes: all notes in the selection
+    std::unordered_set<Note*> durationLineSet;
+    if (cursor.isVisualBlockMode() || cursor.isVisualLineMode())
+    {
+        for (auto& ref : cursor.findNotesInCursorSelection())
+            durationLineSet.insert (ref.get().get());
+    }
+    else
+    {
+        for (auto& ref : cursor.findNotesAtCursor())
+            durationLineSet.insert (ref.get().get());
+    }
 
     // Draw the notes
     for (auto& note : cursor.getSelectedSequence().notes)
@@ -61,7 +70,7 @@ void SequenceComponent::paint (juce::Graphics& g)
         // Duration line — only for the note under the cursor
         // Drawn first so the triangle paints on top of it
         // Anchored at the left edge of the triangle (note start), extending right
-        if (underCursorSet.count (note.get()) > 0)
+        if (durationLineSet.count (note.get()) > 0)
         {
             auto origin = CoordinateUtils::musicToScreen (*note, width, height, cursor.getCurrentTimeline(), cursor.getCurrentScale());
             float stepHeight = CoordinateUtils::getStepHeight (height, cursor.getCurrentScale());
@@ -81,9 +90,10 @@ void SequenceComponent::paint (juce::Graphics& g)
         g.setColour (baseColour.darker (darkenAmount));
         g.fillPath (tri);
 
-        // Velocity flash: white overlay fading out over the note's duration
+        // Velocity flash: cyan overlay fading out over the note's duration
         // Uses the post-modifier velocity from the last scheduling pass
-        if (note->lastTriggeredMidiNote.has_value())
+        // Guarded on transport playing to avoid stale flash when stopped
+        if (transport.isPlaying() && note->lastTriggeredMidiNote.has_value())
         {
             const auto& triggered = *note->lastTriggeredMidiNote;
             float noteStart = static_cast<float> (triggered.startTime);
@@ -94,7 +104,7 @@ void SequenceComponent::paint (juce::Graphics& g)
             {
                 float fadeAlpha = 1.0f - (elapsed / noteDur);
                 float triggeredV = static_cast<float> (triggered.velocity) / 127.0f;
-                g.setColour (juce::Colours::white.withAlpha (fadeAlpha * triggeredV));
+                g.setColour (AppColours::velocityFlash.withAlpha (fadeAlpha * triggeredV));
                 g.fillPath (tri);
             }
         }

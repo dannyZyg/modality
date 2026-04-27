@@ -43,10 +43,10 @@ public:
     void removeFromSelection (Position p);
 
     const std::vector<Position>& getPositions() const;
-    Position getEarliestPosition();
-    Position getLatestPosition();
-    Position getHighestPosition();
-    Position getLowestPosition();
+    Position getEarliestPosition() const;
+    Position getLatestPosition() const;
+    Position getHighestPosition() const;
+    Position getLowestPosition() const;
     Position getOppositeCorner (Position p);
     Position getOppositeEdge (Position p);
 
