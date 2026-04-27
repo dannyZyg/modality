@@ -20,7 +20,7 @@ void MidlineComponent::paint (juce::Graphics& g)
     auto y = CoordinateUtils::degreeToScreenY (0.0, height, cursor.getCurrentScale());
     auto base = juce::Rectangle<float> (x, y, width, CoordinateUtils::getStepHeight (height, cursor.getCurrentScale()));
 
-    g.setColour (juce::Colours::lightgrey.withLightness (0.9f));
+    g.setColour (juce::Colour (180, 185, 190).withLightness (0.9f));
     g.fillRect (base);
     g.setColour (juce::Colours::black.withLightness (0.7f));
     g.drawRect (base, 1.0f);

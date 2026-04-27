@@ -155,7 +155,7 @@ void MainComponent::paint (juce::Graphics& g)
         grabKeyboardFocus();
     }
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (juce::Colours::whitesmoke);
+    g.fillAll (juce::Colour (255, 253, 240));
 
     // Get the current position from transport (in seconds)
     double currentPosition = transport.getCurrentPosition();

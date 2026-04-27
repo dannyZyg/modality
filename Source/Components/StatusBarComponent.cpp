@@ -22,7 +22,7 @@ void StatusBarComponent::paint (juce::Graphics& g)
     const int height = bounds.getHeight();
 
     // Draw background
-    g.setColour (juce::Colours::lightgrey);
+    g.setColour (juce::Colour (180, 185, 190));
     g.fillRect (bounds);
 
     // Draw border line at top
@@ -60,7 +60,7 @@ void StatusBarComponent::paint (juce::Graphics& g)
         pieSize);
 
     // Draw pie background rectangle
-    g.setColour (juce::Colours::lightgrey.darker (0.1f));
+    g.setColour (juce::Colour (180, 185, 190).darker (0.1f));
     g.fillRect (pieBackground);
     g.setColour (juce::Colours::black.withAlpha (0.3f));
     g.drawRect (pieBackground, 1);
