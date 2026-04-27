@@ -34,6 +34,9 @@ Sequence::Sequence (juce::ValueTree existingState) : state (existingState.isVali
     if (! state.hasProperty (SequenceIDs::Soloed))
         state.setProperty (SequenceIDs::Soloed, false, nullptr);
 
+    if (! state.hasProperty (SequenceIDs::RootNote))
+        state.setProperty (SequenceIDs::RootNote, 64, nullptr);
+
     // ensure child trees exist
     if (! state.getChildWithName (TimelineIDs::Timeline).isValid())
         state.addChild (timeline.getState(), -1, nullptr);
@@ -175,6 +178,21 @@ void Sequence::setSoloed (bool isSoloed)
 bool Sequence::isSoloed() const
 {
     return static_cast<bool> (state.getProperty (SequenceIDs::Soloed, false));
+}
+
+int Sequence::getRootNote() const
+{
+    return static_cast<int> (state.getProperty (SequenceIDs::RootNote, 64));
+}
+
+void Sequence::setRootNote (int midiNote, juce::UndoManager* undoManager)
+{
+    state.setProperty (SequenceIDs::RootNote, juce::jlimit (0, 127, midiNote), undoManager);
+}
+
+juce::Value Sequence::getRootNoteAsValue()
+{
+    return state.getPropertyAsValue (SequenceIDs::RootNote, nullptr);
 }
 
 // Create a reusable predicate to filter notes

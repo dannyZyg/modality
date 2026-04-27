@@ -22,6 +22,7 @@ DECLARE_ID (MidiChannel)
 DECLARE_ID (MidiOutputId)
 DECLARE_ID (Muted)
 DECLARE_ID (Soloed)
+DECLARE_ID (RootNote)
 #undef DECLARE_ID
 } // namespace SequenceIDs
 
@@ -59,6 +60,10 @@ public:
 
     void setSoloed (bool isSoloed);
     bool isSoloed() const;
+
+    int getRootNote() const;
+    void setRootNote (int midiNote, juce::UndoManager* undoManager = nullptr);
+    juce::Value getRootNoteAsValue();
 
     std::vector<std::unique_ptr<Note>> notes;
 

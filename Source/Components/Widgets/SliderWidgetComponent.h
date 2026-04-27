@@ -10,7 +10,7 @@ public:
     SliderWidgetComponent (double _min, double _max, double _initial, juce::String _title);
 
     // Value-bound constructor - binds slider to a ValueTree property
-    SliderWidgetComponent (const juce::String& _title, juce::Value valueToBindTo, double _min, double _max, double _interval);
+    SliderWidgetComponent (const juce::String& _title, juce::Value valueToBindTo, double _min, double _max, double _interval, std::function<juce::String (double)> _labelFormatter = nullptr);
 
     virtual ~SliderWidgetComponent() override;
 
@@ -35,6 +35,7 @@ private:
     juce::String title = "slider";
 
     std::function<void (double)> sliderCallback;
+    std::function<juce::String (double)> labelFormatter;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SliderWidgetComponent)
 };

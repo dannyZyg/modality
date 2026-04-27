@@ -108,11 +108,11 @@ bool Note::hasAnyModifier()
     return false;
 }
 
-std::optional<MidiNote> Note::asMidiNote (Timeline t, [[maybe_unused]] Scale s, double tempo)
+std::optional<MidiNote> Note::asMidiNote (Timeline t, [[maybe_unused]] Scale s, double tempo, int rootNote)
 {
     double start = t.convertBarPositionToSeconds (getStartTime(), tempo);
     double dur = t.convertDivisionToSeconds (getDuration(), tempo);
-    auto midi = MidiNote (start, static_cast<int> (64 + getDegree()), getVelocity(), dur);
+    auto midi = MidiNote (start, static_cast<int> (rootNote + getDegree()), getVelocity(), dur);
 
     std::vector<Modifier> modifiers;
     for (int i = 0; i < state.getNumChildren(); i++)

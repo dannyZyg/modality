@@ -36,6 +36,9 @@ private:
     juce::Slider horizontalSlider;
 
     size_t selectedWidgetIndex = 0;
+    int scrollOffset = 0;
+
+    int visibleWidgetCount() const;
 
     std::vector<std::unique_ptr<ISelectableWidget>> widgets;
 

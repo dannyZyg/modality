@@ -48,6 +48,16 @@ SequenceSettingsManager::SequenceSettingsManager (Cursor& c, MidiOutputManager& 
         auto timelineSlider = std::make_unique<SliderWidgetComponent> ("Length", seq.getTimeline().getUpperBoundAsValue(), 1.0, 8.0, 0.25);
         widgets.push_back (std::move (timelineSlider));
 
+        // Root note
+        static const char* noteNames[] = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+        auto rootNoteFormatter = [] (double v) -> juce::String
+        {
+            int n = juce::jlimit (0, 127, static_cast<int> (v));
+            return juce::String (n) + " \xe2\x80\x94 " + noteNames[n % 12] + juce::String (n / 12 - 1);
+        };
+        auto rootNoteSlider = std::make_unique<SliderWidgetComponent> ("Root Note", seq.getRootNoteAsValue(), 0.0, 127.0, 1.0, rootNoteFormatter);
+        widgets.push_back (std::move (rootNoteSlider));
+
         auto settingsComponent = std::make_unique<PaginatedSettingsComponent> (std::move (widgets));
         propertiesNode->setComponent (std::move (settingsComponent));
     };

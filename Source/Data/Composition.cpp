@@ -111,7 +111,7 @@ std::vector<MidiNote> Composition::extractMidiSequence (size_t seqIndex, double 
 
     for (auto& n : seq.notes)
     {
-        auto midi = n->asMidiNote (seq.getTimeline(), seq.getScale(), tempo);
+        auto midi = n->asMidiNote (seq.getTimeline(), seq.getScale(), tempo, seq.getRootNote());
 
         if (midi)
         {
@@ -137,7 +137,7 @@ std::vector<MidiNote> Composition::extractMidiSequenceForBeatRange (size_t seqIn
 
     for (auto& n : seq.notes)
     {
-        auto midi = n->asMidiNote (seq.getTimeline(), seq.getScale(), tempo);
+        auto midi = n->asMidiNote (seq.getTimeline(), seq.getScale(), tempo, seq.getRootNote());
 
         if (! midi)
             continue;

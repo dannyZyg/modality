@@ -102,6 +102,9 @@ public:
     void increaseNoteDuration();
     void decreaseNoteDuration();
 
+    void increaseRootNote (int semitones = 1);
+    void decreaseRootNote (int semitones = 1);
+
     void yankNotes (double originTimepoint, double originDegree);
     void yank (juce::Identifier yankMode);
     void paste();

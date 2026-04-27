@@ -78,7 +78,7 @@ public:
     std::optional<Modifier> getModifier (ModifierType type);
 
     bool hasAnyModifier();
-    std::optional<MidiNote> asMidiNote (Timeline t, Scale s, double tempo);
+    std::optional<MidiNote> asMidiNote (Timeline t, Scale s, double tempo, int rootNote = 64);
 
 private:
     juce::ValueTree state;

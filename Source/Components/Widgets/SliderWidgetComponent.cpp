@@ -11,8 +11,8 @@ SliderWidgetComponent::SliderWidgetComponent (double _min, double _max, double _
     setup();
 }
 
-SliderWidgetComponent::SliderWidgetComponent (const juce::String& _title, juce::Value valueToBindTo, double _min, double _max, double _interval)
-    : min (_min), max (_max), interval (_interval), initial (static_cast<double> (valueToBindTo.getValue())), title (_title)
+SliderWidgetComponent::SliderWidgetComponent (const juce::String& _title, juce::Value valueToBindTo, double _min, double _max, double _interval, std::function<juce::String (double)> _labelFormatter)
+    : min (_min), max (_max), interval (_interval), initial (static_cast<double> (valueToBindTo.getValue())), title (_title), labelFormatter (std::move (_labelFormatter))
 {
     setup();
     horizontalSlider.getValueObject().referTo (valueToBindTo);
@@ -51,7 +51,9 @@ void SliderWidgetComponent::paint (juce::Graphics& g)
     g.drawText (title, inner.removeFromTop (22), juce::Justification::centred, true);
 
     g.setColour (isSelected() ? juce::Colours::aqua : juce::Colours::white);
-    g.drawText (juce::String (horizontalSlider.getValue(), 2),
+    auto labelText = labelFormatter ? labelFormatter (horizontalSlider.getValue())
+                                    : juce::String (horizontalSlider.getValue(), 2);
+    g.drawText (labelText,
                 inner.removeFromBottom (20),
                 juce::Justification::centred,
                 true);

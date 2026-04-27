@@ -371,6 +371,20 @@ void Cursor::decreaseNoteDuration()
     }
 }
 
+void Cursor::increaseRootNote (int semitones)
+{
+    auto& seq = getSelectedSequence();
+    undoManager.beginNewTransaction ("increaseRootNote");
+    seq.setRootNote (juce::jlimit (0, 127, seq.getRootNote() + semitones), &undoManager);
+}
+
+void Cursor::decreaseRootNote (int semitones)
+{
+    auto& seq = getSelectedSequence();
+    undoManager.beginNewTransaction ("decreaseRootNote");
+    seq.setRootNote (juce::jlimit (0, 127, seq.getRootNote() - semitones), &undoManager);
+}
+
 const std::vector<Position>& Cursor::getVisualSelectionPositions() const
 {
     return visualSelection.getPositions();

@@ -38,6 +38,20 @@ void PaginatedSettingsComponent::paint (juce::Graphics& g)
     if (widgets.empty())
         return;
 
+    // Scroll indicators
+    auto widgetAreaTop = 20 + (descriptionText.isNotEmpty() ? descriptionHeight : 0);
+    auto widgetAreaBottom = getHeight() - footerHeight;
+    int visible = visibleWidgetCount();
+    g.setColour (juce::Colours::lightgrey.withAlpha (0.8f));
+    g.setFont (juce::Font (juce::FontOptions (14.0f)));
+    if (scrollOffset > 0)
+        g.drawText (juce::CharPointer_UTF8 ("\xe2\x96\xb2"), getLocalBounds().getX(), widgetAreaTop - 16, getWidth(), 14, juce::Justification::centred, false);
+    if (scrollOffset + visible < static_cast<int> (widgets.size()))
+    {
+        auto lastWidgetBottom = widgetAreaTop + visible * 90 - 5;
+        g.drawText (juce::CharPointer_UTF8 ("\xe2\x96\xbc"), getLocalBounds().getX(), lastWidgetBottom, getWidth(), 14, juce::Justification::centred, false);
+    }
+
     auto& selected = widgets[selectedWidgetIndex];
     if (! selected->isSelected())
         return;
@@ -105,14 +119,38 @@ void PaginatedSettingsComponent::resized()
     auto padding = 90;
     auto availableHeight = getHeight() - footerHeight;
 
-    for (auto& widget : widgets)
+    for (int i = 0; i < static_cast<int> (widgets.size()); ++i)
     {
-        if (y + height > availableHeight)
-            break;
+        if (i < scrollOffset)
+        {
+            widgets[static_cast<size_t> (i)]->setBounds (0, 0, 0, 0); // hide above scroll window
+            continue;
+        }
 
-        widget->setBounds (x, y, width, height);
+        if (y + height > availableHeight)
+        {
+            widgets[static_cast<size_t> (i)]->setBounds (0, 0, 0, 0); // hide below scroll window
+            continue;
+        }
+
+        widgets[static_cast<size_t> (i)]->setBounds (x, y, width, height);
         y += padding;
     }
+}
+
+int PaginatedSettingsComponent::visibleWidgetCount() const
+{
+    auto height = 85;
+    auto padding = 90;
+    auto y = 20 + (descriptionText.isNotEmpty() ? descriptionHeight : 0);
+    auto availableHeight = getHeight() - footerHeight;
+    int count = 0;
+    while (y + height <= availableHeight)
+    {
+        ++count;
+        y += padding;
+    }
+    return juce::jmax (1, count);
 }
 
 void PaginatedSettingsComponent::update() {}
@@ -140,6 +178,14 @@ bool PaginatedSettingsComponent::keyPressed (const juce::KeyPress& key)
         widgets[selectedWidgetIndex]->setSelected (false);
         selectedWidgetIndex = (selectedWidgetIndex + 1) % widgets.size();
         widgets[selectedWidgetIndex]->setSelected (true);
+
+        int visible = visibleWidgetCount();
+        if (static_cast<int> (selectedWidgetIndex) >= scrollOffset + visible)
+            scrollOffset = static_cast<int> (selectedWidgetIndex) - visible + 1;
+        if (static_cast<int> (selectedWidgetIndex) < scrollOffset)
+            scrollOffset = static_cast<int> (selectedWidgetIndex);
+
+        resized();
         widgets[selectedWidgetIndex]->grabKeyboardFocus();
         repaint();
         return true;
@@ -150,6 +196,14 @@ bool PaginatedSettingsComponent::keyPressed (const juce::KeyPress& key)
         widgets[selectedWidgetIndex]->setSelected (false);
         selectedWidgetIndex = (selectedWidgetIndex - 1 + widgets.size()) % widgets.size();
         widgets[selectedWidgetIndex]->setSelected (true);
+
+        int visible = visibleWidgetCount();
+        if (static_cast<int> (selectedWidgetIndex) < scrollOffset)
+            scrollOffset = static_cast<int> (selectedWidgetIndex);
+        if (static_cast<int> (selectedWidgetIndex) >= scrollOffset + visible)
+            scrollOffset = static_cast<int> (selectedWidgetIndex) - visible + 1;
+
+        resized();
         widgets[selectedWidgetIndex]->grabKeyboardFocus();
         repaint();
         return true;
