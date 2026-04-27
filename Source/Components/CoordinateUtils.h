@@ -20,10 +20,11 @@ public:
         return static_cast<float> (1.0 / timeline.size() * screenWidth);
     }
 
-    static float getStepHeight (float screenHeight, const Scale& scale)
+    static float getStepHeight (float screenHeight)
     {
-        double totalDegreeRange = scale.getUpperBound() - scale.getLowerBound();
-        return static_cast<float> ((scale.getSmallestStepSize() / totalDegreeRange) * screenHeight);
+        constexpr double fixedRange = 25.0;
+        constexpr double fixedStep  = 1.0;
+        return static_cast<float> ((fixedStep / fixedRange) * screenHeight);
     }
 
     // Convert musical time to screen X coordinate
@@ -33,16 +34,11 @@ public:
     }
 
     // Convert musical degree to screen Y coordinate
-    static float degreeToScreenY (double degree, float screenHeight, const Scale& scale)
+    static float degreeToScreenY (double degree, float screenHeight)
     {
-        // Calculate height of each position
-        double positionHeight = screenHeight / scale.size();
-
-        // Convert degree to position index (24 to 0), where 12 maps to index 0
-        double positionIndex = scale.getUpperBound() - degree;
-
-        // Return y coordinate
-        return static_cast<float> (positionIndex * positionHeight);
+        constexpr double fixedRange = 25.0;
+        constexpr double fixedUpper = 12.0;
+        return static_cast<float> ((fixedUpper - degree) * (screenHeight / fixedRange));
     }
 
     // Convert musical coordinates to screen coordinates
@@ -54,7 +50,7 @@ public:
     {
         return {
             timeToScreenX (note.getStartTime(), screenWidth, timeline),
-            degreeToScreenY (note.getDegree(), screenHeight, scale)
+            degreeToScreenY (note.getDegree(), screenHeight)
         };
     }
 
@@ -63,7 +59,7 @@ public:
     {
         return {
             timeToScreenX (timePos, screenWidth, timeline),
-            degreeToScreenY (degree, screenHeight, scale)
+            degreeToScreenY (degree, screenHeight)
         };
     }
 
@@ -76,7 +72,7 @@ public:
     {
         return {
             timeToScreenX (c.cursorPosition.xTimepoint.value, screenWidth, timeline),
-            degreeToScreenY (c.cursorPosition.yDegree.value, screenHeight, scale)
+            degreeToScreenY (c.cursorPosition.yDegree.value, screenHeight)
         };
     }
 
@@ -85,7 +81,7 @@ public:
     {
         auto point = musicToScreen (timePos, degree, screenWidth, screenHeight, timeline, scale);
         float width = getStepWidthAtStepSize (screenWidth, timeline);
-        float height = getStepHeight (screenHeight, scale);
+        float height = getStepHeight (screenHeight);
 
         return juce::Rectangle<float> (
             point.x,
@@ -147,7 +143,7 @@ public:
     {
         auto point = musicToScreen (n, screenWidth, screenHeight, timeline, scale);
         float width = getStepWidthAtSmallestSize (screenWidth, timeline);
-        float height = getStepHeight (screenHeight, scale);
+        float height = getStepHeight (screenHeight);
 
         juce::Path path;
         path.startNewSubPath (point);
@@ -165,7 +161,7 @@ public:
     {
         auto point = musicToScreen (n, screenWidth, screenHeight, timeline, scale);
         float width = getStepWidthAtSmallestSize (screenWidth, timeline);
-        float height = getStepHeight (screenHeight, scale);
+        float height = getStepHeight (screenHeight);
         return { point.x + width, point.y + height / 2.0f };
     }
 

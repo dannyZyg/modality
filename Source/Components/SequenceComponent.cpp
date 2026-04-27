@@ -73,7 +73,7 @@ void SequenceComponent::paint (juce::Graphics& g)
         if (durationLineSet.count (note.get()) > 0)
         {
             auto origin = CoordinateUtils::musicToScreen (*note, width, height, cursor.getCurrentTimeline(), cursor.getCurrentScale());
-            float stepHeight = CoordinateUtils::getStepHeight (height, cursor.getCurrentScale());
+            float stepHeight = CoordinateUtils::getStepHeight (height);
             float midY = origin.y + stepHeight / 2.0f;
             float durWidth = CoordinateUtils::getDurationPixelWidth (*note, width, cursor.getCurrentTimeline());
             g.setColour (juce::Colours::darkgrey);
