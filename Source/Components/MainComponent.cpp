@@ -425,7 +425,7 @@ void MainComponent::setupKeyboardShortcuts()
 
         Shortcut (
             juce::KeyPress ('u'),
-            { Mode::normal },
+            { Mode::normal, Mode::insert },
             [this]()
             {
                 cursor.undo();
