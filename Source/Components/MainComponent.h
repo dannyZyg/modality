@@ -5,6 +5,8 @@
 #include "Components/ContextualMenuComponent.h"
 #include "Components/CursorComponent.h"
 #include "Components/MidlineComponent.h"
+#include "Components/PitchLegendComponent.h"
+#include "Components/BeatLegendComponent.h"
 #include "Components/Modifiers/ModifierMenuManager.h"
 #include "Components/SequenceComponent.h"
 #include "Components/SequenceSelectionComponent.h"
@@ -60,6 +62,8 @@ private:
     SequenceComponent sequenceComponent;
     CursorComponent cursorComponent;
     MidlineComponent midlineComponent;
+    PitchLegendComponent pitchLegendComponent;
+    BeatLegendComponent beatLegendComponent;
     StatusBarComponent statusBarComponent;
     SequenceSelectionComponent sequenceSelectionComponent;
 

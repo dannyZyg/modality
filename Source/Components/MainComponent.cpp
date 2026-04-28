@@ -16,6 +16,7 @@ MainComponent::MainComponent() : cursor (composition),
                                  sequenceComponent (cursor, transport),
                                  cursorComponent (cursor),
                                  midlineComponent (cursor),
+                                 beatLegendComponent (cursor),
                                  statusBarComponent (cursor, composition),
                                  sequenceSelectionComponent (cursor, composition),
                                  modifierMenuManager (cursor, [this] (juce::String message, int timeout)
@@ -36,6 +37,8 @@ MainComponent::MainComponent() : cursor (composition),
     setFramesPerSecond (60); // This sets the frequency of the update calls.
     setWantsKeyboardFocus (true);
     addAndMakeVisible (midlineComponent);
+    addAndMakeVisible (pitchLegendComponent);
+    addAndMakeVisible (beatLegendComponent);
     addAndMakeVisible (cursorComponent);
     addAndMakeVisible (sequenceComponent);
     addAndMakeVisible (statusBarComponent);
@@ -164,10 +167,17 @@ void MainComponent::paint (juce::Graphics& g)
 
 void MainComponent::resized()
 {
-    sequenceComponent.setBounds (50, 50, getWidth() - 100, getHeight() - 100);
-    cursorComponent.setBounds (50, 50, getWidth() - 100, getHeight() - 100);
-    midlineComponent.setBounds (50, 50, getWidth() - 100, getHeight() - 100);
-    sequenceSelectionComponent.setBounds (50, 10, getWidth() - 100, 30);
+    const int leftMargin = 60;
+    const int gridWidth  = getWidth() - leftMargin - 50;
+    const int gridTop    = 50;
+    const int gridHeight = getHeight() - 130;
+
+    sequenceComponent.setBounds (leftMargin, gridTop, gridWidth, gridHeight);
+    cursorComponent.setBounds   (leftMargin, gridTop, gridWidth, gridHeight);
+    midlineComponent.setBounds  (leftMargin, gridTop, gridWidth, gridHeight);
+    pitchLegendComponent.setBounds (0, gridTop, leftMargin - 10, gridHeight);
+    beatLegendComponent.setBounds  (leftMargin, gridTop + gridHeight, gridWidth, 30);
+    sequenceSelectionComponent.setBounds (leftMargin, 10, gridWidth, 30);
     statusBarComponent.resized();
 
     auto menuWidth = getWidth() * 0.6;
