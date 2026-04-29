@@ -103,30 +103,18 @@ const std::vector<std::unique_ptr<Sequence>>& Composition::getSequences() const
     return sequences;
 }
 
-std::vector<MidiNote> Composition::extractMidiSequence (size_t seqIndex, double tempo)
-{
-    std::vector<MidiNote> midiClip;
-
-    auto& seq = getSequence (seqIndex);
-
-    for (auto& n : seq.notes)
-    {
-        auto midi = n->asMidiNote (seq.getTimeline(), seq.getScale(), tempo, seq.getRootNote());
-
-        if (midi)
-        {
-            midiClip.emplace_back (*midi);
-        }
-    }
-    return midiClip;
-}
-
 std::vector<MidiNote> Composition::extractMidiSequenceForBeatRange (size_t seqIndex, double startBeat, double endBeat, double tempo)
 {
     std::vector<MidiNote> midiClip;
 
     auto& seq = getSequence (seqIndex);
     double loopLengthBeats = seq.getLengthBeats();
+    
+    // Clear any stale triggered state from previous scheduling passes
+    for (auto& n : seq.notes)
+    {
+        n->clearLastTriggeredMidiNote();
+    }
 
     // Convert global beats to loop-local beats
     double localStartBeat = std::fmod (startBeat, loopLengthBeats);
@@ -178,7 +166,6 @@ std::vector<MidiNote> Composition::extractMidiSequenceForBeatRange (size_t seqIn
         {
             // Convert adjusted beat time back to seconds
             double adjustedStartTimeSeconds = adjustedStartTime * (60.0 / tempo);
-            midiClip.emplace_back (adjustedStartTimeSeconds, midi->noteNumber, midi->velocity, midi->duration);
 
             // Store the post-modifier result on the note for the UI to read for visualisation
             // Use loop-local start time in seconds so it's directly comparable to
@@ -186,6 +173,10 @@ std::vector<MidiNote> Composition::extractMidiSequenceForBeatRange (size_t seqIn
             MidiNote triggered = *midi;
             triggered.startTime = noteStartBeat * (60.0 / tempo);
             n->setLastTriggeredMidiNote (triggered);
+
+            // Do not schedule muted notes for playback, but still allow the UI to show them
+            if (! midi->isMuted)
+                midiClip.emplace_back (adjustedStartTimeSeconds, midi->noteNumber, midi->velocity, midi->duration);
         }
     }
 

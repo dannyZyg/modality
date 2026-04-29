@@ -2,19 +2,21 @@
 
 #include "Audio/MidiOutputManager.h"
 #include "Audio/Transport.h"
+#include "Components/BeatLegendComponent.h"
 #include "Components/ContextualMenuComponent.h"
 #include "Components/CursorComponent.h"
 #include "Components/MidlineComponent.h"
-#include "Components/PitchLegendComponent.h"
-#include "Components/BeatLegendComponent.h"
 #include "Components/Modifiers/ModifierMenuManager.h"
+#include "Components/PitchLegendComponent.h"
 #include "Components/SequenceComponent.h"
 #include "Components/SequenceSelectionComponent.h"
 #include "Components/Settings/SequenceSettingsManager.h"
 #include "Components/StatusBarComponent.h"
+#include "Components/ShortcutInfoComponent.h"
 #include "Data/Composition.h"
 #include "Data/Cursor.h"
 #include "Data/KeyboardShortcutManager.h"
+#include "Data/MenuNode.h"
 #include <JuceHeader.h>
 
 //==============================================================================
@@ -44,6 +46,7 @@ public:
 
 private:
     //==============================================================================
+    // Data model
     Composition composition;
 
     // Unified transport control (owns tempo, play state, MIDI scheduling)
@@ -77,6 +80,10 @@ private:
 
     SequenceSettingsManager sequenceSettngsManager;
 
+    KeyboardShortcutManager shortcutManager;
+
+    //==============================================================================
+    // Private methods
     std::unique_ptr<MenuNode> createHelpMenuTree();
 
     // Schedule beats for a track (per-beat scheduling)
@@ -89,7 +96,6 @@ private:
     void stop();
 
     void setupKeyboardShortcuts();
-    KeyboardShortcutManager shortcutManager;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

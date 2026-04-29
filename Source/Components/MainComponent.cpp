@@ -168,15 +168,15 @@ void MainComponent::paint (juce::Graphics& g)
 void MainComponent::resized()
 {
     const int leftMargin = 60;
-    const int gridWidth  = getWidth() - leftMargin - 50;
-    const int gridTop    = 50;
+    const int gridWidth = getWidth() - leftMargin - 50;
+    const int gridTop = 50;
     const int gridHeight = getHeight() - 130;
 
     sequenceComponent.setBounds (leftMargin, gridTop, gridWidth, gridHeight);
-    cursorComponent.setBounds   (leftMargin, gridTop, gridWidth, gridHeight);
-    midlineComponent.setBounds  (leftMargin, gridTop, gridWidth, gridHeight);
+    cursorComponent.setBounds (leftMargin, gridTop, gridWidth, gridHeight);
+    midlineComponent.setBounds (leftMargin, gridTop, gridWidth, gridHeight);
     pitchLegendComponent.setBounds (0, gridTop, leftMargin - 10, gridHeight);
-    beatLegendComponent.setBounds  (leftMargin, gridTop + gridHeight, gridWidth, 30);
+    beatLegendComponent.setBounds (leftMargin, gridTop + gridHeight, gridWidth, 30);
     sequenceSelectionComponent.setBounds (leftMargin, 10, gridWidth, 30);
     statusBarComponent.resized();
 
@@ -283,10 +283,9 @@ bool MainComponent::keyPressed (const juce::KeyPress& key)
         return true;
     }
 
-    if (key == juce::KeyPress::createFromDescription ("cmd+q"))
-    {
+    // Let all cmd+ shortcuts pass through to the native menu bar
+    if (key.getModifiers().isCommandDown())
         return false;
-    }
 
     return true; // Consume all key events to prevent OS beep
 }

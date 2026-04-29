@@ -33,6 +33,7 @@ struct MidiNote
     int noteNumber; // MIDI note number (0-127)
     int velocity; // Velocity (0-127)
     double duration; // Duration in seconds
+    bool isMuted = false; // Whether note was deactivated by modifier
 
     MidiNote (double t, int note, int vel, double dur)
         : startTime (t), noteNumber (note), velocity (vel), duration (dur) {}
@@ -71,6 +72,7 @@ public:
     void setStartTime (double value, juce::UndoManager* undoManager = nullptr);
 
     void setLastTriggeredMidiNote (const MidiNote& m);
+    void clearLastTriggeredMidiNote();
     std::optional<MidiNote> lastTriggeredMidiNote;
 
     void addModifier (Modifier m, UndoManager* undoManager = nullptr);

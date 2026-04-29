@@ -87,12 +87,61 @@ void SequenceComponent::paint (juce::Graphics& g)
 
         juce::Colour baseColour = note->hasAnyModifier() ? juce::Colours::orange
                                                          : juce::Colours::lightgrey;
+        // Duration fill and ghost notes: only show while note is actually playing
+        if (transport.isPlaying() && note->lastTriggeredMidiNote.has_value())
+        {
+            const auto& triggered = *note->lastTriggeredMidiNote;
+            // Keep timing calculations in double precision to avoid precision loss
+            double noteStart = triggered.startTime;
+            double noteDur = triggered.duration;
+            double elapsed = loopedPosition - noteStart;
+
+            // Add timing tolerance to account for frame timing and floating-point precision
+            // Use a small tolerance (1/60th second ~= 16.67ms) to handle UI/audio sync differences
+            const double timingTolerance = 1.0 / 60.0;
+
+            // Check if note is currently playing (within its duration window with tolerance)
+            bool isCurrentlyPlaying = (elapsed >= -timingTolerance && elapsed <= (noteDur + timingTolerance));
+
+            // Only draw ghost notes while the note is playing
+            if (! triggered.isMuted && isCurrentlyPlaying && triggered.noteNumber != (selectedSequence.getRootNote() + static_cast<int> (note->getDegree())))
+            {
+                // Original left edge position
+                auto origPoint = CoordinateUtils::musicToScreen (*note, width, height, cursor.getCurrentTimeline(), cursor.getCurrentScale());
+                float stepW = CoordinateUtils::getStepWidthAtSmallestSize (width, cursor.getCurrentTimeline());
+                float stepH = CoordinateUtils::getStepHeight (height);
+                float origLeftX = origPoint.x;
+                float origMidY = origPoint.y + stepH * 0.5f;
+
+                double ghostDegree = static_cast<double> (triggered.noteNumber - selectedSequence.getRootNote());
+                auto ghostPoint = CoordinateUtils::musicToScreen (note->getStartTime(), ghostDegree, width, height, cursor.getCurrentTimeline(), cursor.getCurrentScale());
+                float ghostLeftX = ghostPoint.x;
+                float ghostMidY = ghostPoint.y + stepH * 0.5f;
+
+                // Draw connector from left edges
+                g.setColour (juce::Colours::black);
+                g.drawLine (origLeftX, origMidY, ghostLeftX, ghostMidY, 1.0f);
+
+                // Build ghost triangle path
+                juce::Path ghostTri;
+                ghostTri.startNewSubPath (ghostPoint);
+                ghostTri.lineTo (juce::Point<float> (ghostPoint.x + stepW, ghostPoint.y + stepH / 2.0f));
+                ghostTri.lineTo (juce::Point<float> (ghostPoint.x, ghostPoint.y + stepH));
+                ghostTri.closeSubPath();
+
+                // Light red fill and subtle stroke
+                g.setColour (juce::Colours::red.withAlpha (0.35f));
+                g.fillPath (ghostTri);
+                g.setColour (juce::Colours::black.withAlpha (0.6f));
+                g.strokePath (ghostTri, juce::PathStrokeType (1.0f));
+            }
+        }
+
         g.setColour (baseColour.darker (darkenAmount));
         g.fillPath (tri);
 
         // Velocity flash: cyan overlay fading out over the note's duration
-        // Uses the post-modifier velocity from the last scheduling pass
-        // Guarded on transport playing to avoid stale flash when stopped
+        // Do not show a velocity flash for muted notes
         if (transport.isPlaying() && note->lastTriggeredMidiNote.has_value())
         {
             const auto& triggered = *note->lastTriggeredMidiNote;
@@ -100,7 +149,7 @@ void SequenceComponent::paint (juce::Graphics& g)
             float noteDur = static_cast<float> (triggered.duration);
             float elapsed = static_cast<float> (loopedPosition) - noteStart;
 
-            if (elapsed >= 0.0f && elapsed < noteDur)
+            if (! triggered.isMuted && elapsed >= 0.0f && elapsed < noteDur)
             {
                 float fadeAlpha = 1.0f - (elapsed / noteDur);
                 float triggeredV = static_cast<float> (triggered.velocity) / 127.0f;

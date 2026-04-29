@@ -29,8 +29,6 @@ public:
     Sequence& getSequence (size_t index) const;
     const std::vector<std::unique_ptr<Sequence>>& getSequences() const;
 
-    std::vector<MidiNote> extractMidiSequence (size_t seqIndex, double tempo);
-
     std::vector<MidiNote> extractMidiSequenceForBeatRange (size_t seqIndex, double startBeat, double endBeat, double tempo);
 
     void valueTreeChildAdded (juce::ValueTree& parentTree,
