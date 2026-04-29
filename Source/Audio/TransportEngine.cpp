@@ -112,10 +112,8 @@ bool TransportEngine::insertEventsSorted (const std::vector<ScheduledEvent>& new
     // stays globally ordered by timestamp.
     std::copy (newEvents.begin(), newEvents.end(), eventBuffer.begin() + currentCount);
     int newCount = currentCount + static_cast<int> (newEvents.size());
-    std::stable_sort (eventBuffer.begin(), eventBuffer.begin() + newCount,
-                      [] (const ScheduledEvent& a, const ScheduledEvent& b) {
-                          return a.timestamp < b.timestamp;
-                      });
+    std::stable_sort (eventBuffer.begin(), eventBuffer.begin() + newCount, [] (const ScheduledEvent& a, const ScheduledEvent& b)
+                      { return a.timestamp < b.timestamp; });
 
     // Commit the new count atomically so the audio thread sees a consistent snapshot.
     eventCount.store (newCount);

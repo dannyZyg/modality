@@ -27,8 +27,8 @@ class TransportEngine
 public:
     static constexpr size_t MAX_TRACKS = 16;
     static constexpr size_t MAX_EVENTS = 4096;
-    static constexpr double LOOKAHEAD_BEATS = 2.0;   // Schedule this many beats ahead
-    static constexpr double SCHEDULE_THRESHOLD_BEATS = 0.5; // Start scheduling when within this many beats
+    static constexpr double LOOKAHEAD_BEATS = 1.5;   // Schedule this many beats ahead
+    static constexpr double SCHEDULE_THRESHOLD_BEATS = 0.0; // Start scheduling when within this many beats
 
     TransportEngine();
     ~TransportEngine() = default;

@@ -36,6 +36,22 @@ const juce::ValueTree& Modifier::getState() const
     return state;
 }
 
+ModifierParameterSnapshot Modifier::createParameterSnapshot() const
+{
+    ModifierParameterSnapshot snapshot;
+    snapshot.type = getType();
+
+    // Create atomic snapshot of all properties from the ValueTree
+    // This prevents race conditions when parameters are being modified from UI thread
+    for (int i = 0; i < state.getNumProperties(); ++i)
+    {
+        auto prop = state.getPropertyName (i);
+        snapshot.parameters[prop] = state.getProperty (prop);
+    }
+
+    return snapshot;
+}
+
 bool Modifier::operator< (const Modifier& other) const
 {
     return getType().toString() < other.getType().toString();

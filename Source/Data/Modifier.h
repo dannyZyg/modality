@@ -3,6 +3,7 @@
 #include "Data/Parameter.h"
 #include "juce_core/juce_core.h"
 #include <JuceHeader.h>
+#include <map>
 #include <variant>
 
 // Type alias - used throughout codebase
@@ -66,6 +67,23 @@ struct DualValueParamDefinition
 
 using ParamDefinition = std::variant<SingleValueParamDefinition, DualValueParamDefinition>;
 
+// Thread-safe parameter snapshot for atomic parameter reads during modifier application
+struct ModifierParameterSnapshot
+{
+    juce::Identifier type;
+    std::map<juce::Identifier, juce::var> parameters;
+
+    // Get parameter value with default fallback
+    template <typename T>
+    T getParam (const juce::Identifier& paramId, T defaultValue = T {}) const
+    {
+        auto it = parameters.find (paramId);
+        if (it != parameters.end())
+            return static_cast<T> (it->second);
+        return defaultValue;
+    }
+};
+
 class Modifier
 {
 public:
@@ -78,6 +96,9 @@ public:
 
     juce::ValueTree& getState();
     const juce::ValueTree& getState() const;
+
+    // Create thread-safe parameter snapshot for atomic reads during modifier application
+    ModifierParameterSnapshot createParameterSnapshot() const;
 
     // For std::set ordering - compares by type only (one modifier per type per note)
     bool operator< (const Modifier& other) const;

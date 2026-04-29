@@ -68,9 +68,14 @@ void Note::setLastTriggeredMidiNote (const MidiNote& m)
     lastTriggeredMidiNote = m;
 }
 
+void Note::clearLastTriggeredMidiNote()
+{
+    lastTriggeredMidiNote.reset();
+}
+
 void Note::addModifier (Modifier m, UndoManager* undoManager)
 {
-    if (!state.getChildWithName (m.getType()).isValid())
+    if (! state.getChildWithName (m.getType()).isValid())
         state.appendChild (m.getState(), undoManager);
 }
 
@@ -114,26 +119,27 @@ std::optional<MidiNote> Note::asMidiNote (Timeline t, [[maybe_unused]] Scale s, 
     double dur = t.convertDivisionToSeconds (getDuration(), tempo);
     auto midi = MidiNote (start, static_cast<int> (rootNote + getDegree()), getVelocity(), dur);
 
-    std::vector<Modifier> modifiers;
+    // Create thread-safe parameter snapshots to avoid race conditions during modifier application
+    std::vector<ModifierParameterSnapshot> modifierSnapshots;
     for (int i = 0; i < state.getNumChildren(); i++)
     {
         auto child = state.getChild (i);
         auto modifier = Modifier (child);
-        modifiers.push_back (modifier);
+        modifierSnapshots.push_back (modifier.createParameterSnapshot());
     }
 
-    // Sort modifiers by their position in AllTypes so execution order is deterministic
+    // Sort snapshots by their position in AllTypes so execution order is deterministic
     // (e.g. RandomPitchVariation always runs before RandomOctaveShift)
-    std::sort (modifiers.begin(), modifiers.end(), [] (const Modifier& a, const Modifier& b)
-    {
+    std::sort (modifierSnapshots.begin(), modifierSnapshots.end(), [] (const ModifierParameterSnapshot& a, const ModifierParameterSnapshot& b)
+               {
         auto indexOf = [] (const juce::Identifier& id)
         {
             const auto& types = ModifierIDs::AllTypes;
             auto it = std::find (types.begin(), types.end(), id);
             return it != types.end() ? std::distance (types.begin(), it) : static_cast<ptrdiff_t> (types.size());
         };
-        return indexOf (a.getType()) < indexOf (b.getType());
-    });
+        return indexOf (a.type) < indexOf (b.type); });
 
-    return ModifierApplicator::getInstance().applyModifiers (modifiers, std::move (midi), s);
+    MidiNote finalMidi = ModifierApplicator::getInstance().applyModifiersThreadSafe (modifierSnapshots, std::move (midi), s);
+    return finalMidi;
 }

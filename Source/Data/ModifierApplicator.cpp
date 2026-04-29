@@ -8,17 +8,17 @@ namespace
 {
 static std::mt19937 rng { std::random_device {}() };
 
-static bool reg0 = (ModifierApplicator::getInstance().registerCallback (
+static bool reg0 = (ModifierApplicator::getInstance().registerSnapshotCallback (
                         ModifierIDs::RandomPitchVariation,
-                        [] (const Modifier& mod, MidiNote note, const Scale& scale) -> std::optional<MidiNote>
+                        [] (const ModifierParameterSnapshot& snapshot, MidiNote note, const Scale& scale) -> MidiNote
                         {
-                            auto probability = static_cast<float> (mod.getValue (ModifierIDs::RandomPitchVariationProbability));
+                            auto probability = snapshot.getParam<float> (ModifierIDs::RandomPitchVariationProbability, 0.0f);
                             std::uniform_real_distribution<float> probDist (0.0f, 1.0f);
                             if (probDist (rng) > probability)
                                 return note;
 
-                            auto rangeMin = static_cast<int> (mod.getValue (ModifierIDs::RandomPitchVariationRangeMin));
-                            auto rangeMax = static_cast<int> (mod.getValue (ModifierIDs::RandomPitchVariationRangeMax));
+                            auto rangeMin = snapshot.getParam<int> (ModifierIDs::RandomPitchVariationRangeMin, 0);
+                            auto rangeMax = snapshot.getParam<int> (ModifierIDs::RandomPitchVariationRangeMax, 0);
                             if (rangeMin == rangeMax)
                                 return note;
 
@@ -37,28 +37,32 @@ static bool reg0 = (ModifierApplicator::getInstance().registerCallback (
                         }),
                     true);
 
-static bool reg1 = (ModifierApplicator::getInstance().registerCallback (
+static bool reg1 = (ModifierApplicator::getInstance().registerSnapshotCallback (
                         ModifierIDs::RandomTrigger,
-                        [] (const Modifier& mod, MidiNote note, const Scale&) -> std::optional<MidiNote>
+                        [] (const ModifierParameterSnapshot& snapshot, MidiNote note, const Scale&) -> MidiNote
                         {
-                            auto probability = static_cast<float> (mod.getValue (ModifierIDs::RandomTriggerProbability));
+                            auto probability = snapshot.getParam<float> (ModifierIDs::RandomTriggerProbability, 0.0f);
                             std::uniform_real_distribution<float> dist (0.0f, 1.0f);
+
                             if (dist (rng) > probability)
-                                return std::nullopt;
+                            {
+                                note.isMuted = true;
+                                return note;
+                            }
                             return note;
                         }),
                     true);
 
-static bool reg2 = (ModifierApplicator::getInstance().registerCallback (
+static bool reg2 = (ModifierApplicator::getInstance().registerSnapshotCallback (
                         ModifierIDs::RandomOctaveShift,
-                        [] (const Modifier& mod, MidiNote note, const Scale&) -> std::optional<MidiNote>
+                        [] (const ModifierParameterSnapshot& snapshot, MidiNote note, const Scale&) -> MidiNote
                         {
-                            auto probability = static_cast<float> (mod.getValue (ModifierIDs::RandomOctaveShiftProbability));
+                            auto probability = snapshot.getParam<float> (ModifierIDs::RandomOctaveShiftProbability, 0.0f);
                             std::uniform_real_distribution<float> dist (0.0f, 1.0f);
                             if (dist (rng) > probability)
                                 return note;
-                            auto rangeMin = static_cast<int> (mod.getValue (ModifierIDs::RandomOctaveShiftRangeMin));
-                            auto rangeMax = static_cast<int> (mod.getValue (ModifierIDs::RandomOctaveShiftRangeMax));
+                            auto rangeMin = snapshot.getParam<int> (ModifierIDs::RandomOctaveShiftRangeMin, 0);
+                            auto rangeMax = snapshot.getParam<int> (ModifierIDs::RandomOctaveShiftRangeMax, 0);
                             std::uniform_int_distribution<int> octaveDist (rangeMin, rangeMax);
                             int shift = octaveDist (rng) * 12;
                             note.noteNumber = std::clamp (note.noteNumber + shift, 0, 127);
@@ -66,16 +70,16 @@ static bool reg2 = (ModifierApplicator::getInstance().registerCallback (
                         }),
                     true);
 
-static bool reg3 = (ModifierApplicator::getInstance().registerCallback (
+static bool reg3 = (ModifierApplicator::getInstance().registerSnapshotCallback (
                         ModifierIDs::RandomVelocity,
-                        [] (const Modifier& mod, MidiNote note, const Scale&) -> std::optional<MidiNote>
+                        [] (const ModifierParameterSnapshot& snapshot, MidiNote note, const Scale&) -> MidiNote
                         {
-                            auto probability = static_cast<float> (mod.getValue (ModifierIDs::RandomVelocityProbability));
+                            auto probability = snapshot.getParam<float> (ModifierIDs::RandomVelocityProbability, 0.0f);
                             std::uniform_real_distribution<float> dist (0.0f, 1.0f);
                             if (dist (rng) > probability)
                                 return note;
-                            auto rangeMin = static_cast<int> (mod.getValue (ModifierIDs::RandomVelocityRangeMin));
-                            auto rangeMax = static_cast<int> (mod.getValue (ModifierIDs::RandomVelocityRangeMax));
+                            auto rangeMin = snapshot.getParam<int> (ModifierIDs::RandomVelocityRangeMin, 0);
+                            auto rangeMax = snapshot.getParam<int> (ModifierIDs::RandomVelocityRangeMax, 0);
                             std::uniform_int_distribution<int> velDist (rangeMin, rangeMax);
                             note.velocity = std::clamp (velDist (rng), 0, 127);
                             return note;
