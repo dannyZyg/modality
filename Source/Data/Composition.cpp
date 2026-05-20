@@ -7,7 +7,7 @@
 Composition::Composition() : state (CompositionIDs::Composition)
 {
     state.addListener (this);
-    createDefaultSequences();
+    reset();
 }
 
 Composition::Composition (juce::ValueTree existingState)
@@ -46,9 +46,10 @@ double Composition::getTempo() const
     return static_cast<double> (state.getProperty (CompositionIDs::Tempo));
 }
 
-void Composition::setTempo (double newTemp, juce::UndoManager* undoManager)
+void Composition::setTempo (double newTempo, juce::UndoManager* undoManager)
 {
-    state.setProperty (CompositionIDs::Tempo, newTemp, undoManager);
+    newTempo = juce::jlimit (MIN_TEMPO, MAX_TEMPO, newTempo);
+    state.setProperty (CompositionIDs::Tempo, newTempo, undoManager);
 }
 
 void Composition::valueTreeChildAdded (juce::ValueTree& parentTree,
@@ -77,6 +78,9 @@ void Composition::valueTreeChildRemoved (juce::ValueTree& parentTree,
 void Composition::valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHasChanged,
                                             const juce::Identifier& property)
 {
+    if (property == CompositionIDs::Tempo && onTempoChanged)
+        onTempoChanged (getTempo());
+
     setIsDirty (true);
 }
 
@@ -109,7 +113,7 @@ std::vector<MidiNote> Composition::extractMidiSequenceForBeatRange (size_t seqIn
 
     auto& seq = getSequence (seqIndex);
     double loopLengthBeats = seq.getLengthBeats();
-    
+
     // Clear any stale triggered state from previous scheduling passes
     for (auto& n : seq.notes)
     {
@@ -288,6 +292,11 @@ void Composition::reset()
     sequences.clear();
     currentFile = juce::File {};
     createDefaultSequences();
+
+    // Set random tempo for new projects (80-180 BPM)
+    auto randomTempo = 80.0 + juce::Random::getSystemRandom().nextDouble() * 100.0;
+    setTempo (randomTempo, nullptr);
+
     setIsDirty (false);
 }
 

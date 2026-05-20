@@ -2,6 +2,7 @@
 
 #include "Data/Sequence.h"
 #include "juce_data_structures/juce_data_structures.h"
+#include <functional>
 
 namespace CompositionIDs
 {
@@ -16,6 +17,10 @@ DECLARE_ID (Sequences)
 class Composition : public juce::ValueTree::Listener, public juce::ChangeBroadcaster
 {
 public:
+    static constexpr double MIN_TEMPO     = 20.0;
+    static constexpr double MAX_TEMPO     = 300.0;
+    static constexpr double DEFAULT_TEMPO = 120.0;
+
     Composition();
     explicit Composition (juce::ValueTree existingState);
     ~Composition() override;
@@ -58,6 +63,10 @@ public:
 
     bool isDirty() const;
     void setIsDirty (bool v);
+
+    // Called on the message thread whenever tempo changes (ValueTree write).
+    // Use this to push the new value into an atomic for audio-thread reads.
+    std::function<void(double)> onTempoChanged;
 
 private:
     juce::ValueTree state;

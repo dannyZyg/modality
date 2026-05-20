@@ -2,7 +2,9 @@
 #include "Components/MidlineComponent.h"
 #include "Components/Modifiers/ModifierMenuManager.h"
 #include "Components/Settings/MidiSettingsSelectionFactory.h"
+#include "Components/Settings/PaginatedSettingsComponent.h"
 #include "Components/ShortcutInfoComponent.h"
+#include "Components/Widgets/SliderWidgetComponent.h"
 #include "Data/AppSettings.h"
 #include "Data/Cursor.h"
 #include "Data/MenuNode.h"
@@ -13,7 +15,7 @@
 
 //==============================================================================
 MainComponent::MainComponent() : cursor (composition),
-                                 sequenceComponent (cursor, transport),
+                                 sequenceComponent (cursor, composition),
                                  cursorComponent (cursor),
                                  midlineComponent (cursor),
                                  beatLegendComponent (cursor),
@@ -87,7 +89,31 @@ MainComponent::MainComponent() : cursor (composition),
 
     helpMenuRoot->addChild (std::move (shortcutsNode));
 
-    auto tempoNode = std::make_unique<MenuNode> ("Tempo Settings", juce::KeyPress::createFromDescription ("t"));
+    // Wire tempo changes from Composition → flush and reschedule
+    composition.onTempoChanged = [this] (double /*bpm*/)
+    {
+        if (transport.isPlaying())
+        {
+            transport.clearScheduledEvents();
+            transport.resetScheduling();
+        }
+    };
+
+    auto tempoSlider = std::make_unique<SliderWidgetComponent> (
+        "Tempo",
+        composition.getState().getPropertyAsValue (CompositionIDs::Tempo, nullptr),
+        Composition::MIN_TEMPO,
+        Composition::MAX_TEMPO,
+        1.0,
+        [] (double bpm)
+        { return juce::String (static_cast<int> (bpm)) + " BPM"; });
+
+    std::vector<std::unique_ptr<ISelectableWidget>> tempoWidgets;
+    tempoWidgets.push_back (std::move (tempoSlider));
+
+    auto tempoSettings = std::make_unique<PaginatedSettingsComponent> (std::move (tempoWidgets));
+
+    auto tempoNode = std::make_unique<MenuNode> ("Tempo Settings", juce::KeyPress::createFromDescription ("t"), std::move (tempoSettings));
     // auto deviceNode = std::make_unique<MenuNode> ("Midi Settings", juce::KeyPress::createFromDescription ("d"));
 
     auto initialMidiOutDevice = AppSettings::getInstance().getDefaultMidiOutputDevice();
@@ -139,7 +165,7 @@ void MainComponent::update()
 void MainComponent::checkAndScheduleTracks()
 {
     size_t numTracks = composition.getSequences().size();
-    double currentBeat = transport.getCurrentBeat();
+    double currentBeat = transport.getCurrentPosition() * composition.getTempo() / 60.0;
 
     for (size_t i = 0; i < numTracks; ++i)
     {
@@ -163,6 +189,7 @@ void MainComponent::paint (juce::Graphics& g)
     // Get the current position from transport (in seconds)
     double currentPosition = transport.getCurrentPosition();
     sequenceComponent.setCurrentPlayheadTime (currentPosition);
+    sequenceComponent.setIsPlaying (transport.isPlaying());
 }
 
 void MainComponent::resized()
@@ -209,7 +236,7 @@ void MainComponent::start()
     }
 
     transport.start();
-    juce::Logger::writeToLog ("Transport Started at " + juce::String (transport.getTempo()) + " BPM");
+    juce::Logger::writeToLog ("Transport Started at " + juce::String (composition.getTempo()) + " BPM");
 }
 
 void MainComponent::scheduleTrackBeats (size_t trackIndex, double currentBeat)
@@ -242,17 +269,17 @@ void MainComponent::scheduleTrackBeats (size_t trackIndex, double currentBeat)
         return;
     }
 
-    double tempo = transport.getTempo();
+    double tempo = composition.getTempo();
 
     // Calculate beat range to schedule
     double startBeat = currentBeat;
-    double endBeat = startBeat + TransportEngine::LOOKAHEAD_BEATS; // Schedule ahead
+    double endBeat = startBeat + TransportEngine::LOOKAHEAD_BEATS;
 
     // Extract MIDI notes for this beat range
     auto notes = composition.extractMidiSequenceForBeatRange (trackIndex, startBeat, endBeat, tempo);
 
     // Convert beat times to absolute seconds for scheduling
-    double loopStartTimeSeconds = transport.beatsToSeconds (startBeat);
+    double loopStartTimeSeconds = startBeat * 60.0 / tempo;
     int midiChannel = seq.getMidiChannel();
 
     // Schedule the beat slice

@@ -2,13 +2,13 @@
   ==============================================================================
 
     Transport.h
-    Unified transport control - tempo, play state, position, and MIDI scheduling.
+    Transport control - play state, position, and MIDI scheduling.
 
     Design:
-    - Single source of truth for global tempo
     - Wraps JUCE AudioTransportSource for position tracking
     - Owns TransportEngine for MIDI event scheduling
     - Implements AudioIODeviceCallback (audio thread entry point)
+    - Tempo is owned by Composition; Transport has no knowledge of it
 
   ==============================================================================
 */
@@ -17,45 +17,12 @@
 
 #include "Audio/TransportEngine.h"
 #include <JuceHeader.h>
-#include <atomic>
 
 class Transport : public juce::AudioIODeviceCallback
 {
 public:
-    // Tempo bounds
-    static constexpr double MIN_TEMPO = 20.0;
-    static constexpr double MAX_TEMPO = 300.0;
-    static constexpr double DEFAULT_TEMPO = 120.0;
-
     Transport();
     ~Transport() override;
-
-    // === Tempo ===
-
-    /**
-     * Set the global tempo. If called during playback, the change is
-     * queued and applied at each track's next loop boundary.
-     *
-     * @param bpm Beats per minute (clamped to MIN_TEMPO..MAX_TEMPO)
-     */
-    void setTempo (double bpm);
-
-    /**
-     * Get the current active tempo.
-     */
-    double getTempo() const;
-
-    /**
-     * Check if there's a pending tempo change waiting to be applied.
-     */
-    bool hasPendingTempoChange() const;
-
-    /**
-     * Apply the pending tempo change and return the new tempo.
-     * Call this when scheduling a track at its loop boundary.
-     * If no change is pending, returns the current tempo.
-     */
-    double applyPendingTempo();
 
     // === Transport Control ===
 
@@ -81,10 +48,19 @@ public:
 
     /**
      * Set the playback position.
-     *
-     * @param positionSeconds Position in seconds
      */
     void setPosition (double positionSeconds);
+
+    /**
+     * Reset all tracks to beginning (time 0).
+     */
+    void reset();
+
+    /**
+     * Reset scheduling state for all tracks without affecting playback position.
+     * Call this when tempo changes during playback so tracks reschedule immediately.
+     */
+    void resetScheduling();
 
     // === Track Scheduling (delegates to TransportEngine) ===
 
@@ -109,18 +85,11 @@ public:
 
     /**
      * Check if a track needs beat scheduling.
-     * 
-     * @param trackIndex The track index to check
-     * @param currentBeat Current transport beat position
-     * @return true if this track needs more beats scheduled
      */
     bool trackNeedsBeatScheduling (size_t trackIndex, double currentBeat) const;
 
     /**
      * Mark beats as scheduled for a track.
-     * 
-     * @param trackIndex The track that was scheduled
-     * @param endBeat The highest beat that was scheduled
      */
     void markBeatsScheduled (size_t trackIndex, double endBeat);
 
@@ -128,11 +97,6 @@ public:
      * Clear all scheduled MIDI events.
      */
     void clearScheduledEvents();
-
-    /**
-     * Reset all tracks to beginning (time 0).
-     */
-    void reset();
 
     // === Audio Callback (from AudioIODeviceCallback) ===
 
@@ -146,30 +110,7 @@ public:
     void audioDeviceAboutToStart (juce::AudioIODevice* device) override;
     void audioDeviceStopped() override;
 
-    // === Utility ===
-
-    /**
-     * Convert beats to seconds using current tempo.
-     */
-    double beatsToSeconds (double beats) const;
-
-    /**
-     * Convert seconds to beats using current tempo.
-     */
-    double secondsToBeats (double seconds) const;
-
-    /**
-     * Get the current playback position in beats.
-     * Uses current position and tempo to calculate beat position.
-     */
-    double getCurrentBeat() const;
-
 private:
-    // Tempo (atomic for thread-safe access)
-    std::atomic<double> tempo { DEFAULT_TEMPO };
-    std::atomic<double> pendingTempo { DEFAULT_TEMPO };
-    std::atomic<bool> tempoPending { false };
-
     // MIDI scheduling engine
     TransportEngine engine;
 

@@ -10,14 +10,13 @@
 
 #include "SequenceComponent.h"
 #include "AppColours.h"
-#include "Audio/Transport.h"
 #include "CoordinateUtils.h"
 #include <JuceHeader.h>
 #include <unordered_set>
 
 //==============================================================================
-SequenceComponent::SequenceComponent (const Cursor& c, const Transport& t)
-    : cursor (c), transport (t)
+SequenceComponent::SequenceComponent (const Cursor& c, const Composition& comp)
+    : cursor (c), composition (comp)
 {
     setWantsKeyboardFocus (false);
 }
@@ -35,7 +34,7 @@ void SequenceComponent::paint (juce::Graphics& g)
     g.setColour (AppColours::playhead);
 
     const auto& selectedSequence = cursor.getSelectedSequence();
-    double tempoBPM = transport.getTempo();
+    double tempoBPM = composition.getTempo();
 
     double sequenceDurationInSeconds = selectedSequence.getLengthSeconds (tempoBPM);
 
@@ -88,7 +87,7 @@ void SequenceComponent::paint (juce::Graphics& g)
         juce::Colour baseColour = note->hasAnyModifier() ? juce::Colours::orange
                                                          : juce::Colours::lightgrey;
         // Duration fill and ghost notes: only show while note is actually playing
-        if (transport.isPlaying() && note->lastTriggeredMidiNote.has_value())
+        if (isPlaying_ && note->lastTriggeredMidiNote.has_value())
         {
             const auto& triggered = *note->lastTriggeredMidiNote;
             // Keep timing calculations in double precision to avoid precision loss
@@ -142,7 +141,7 @@ void SequenceComponent::paint (juce::Graphics& g)
 
         // Velocity flash: cyan overlay fading out over the note's duration
         // Do not show a velocity flash for muted notes
-        if (transport.isPlaying() && note->lastTriggeredMidiNote.has_value())
+        if (isPlaying_ && note->lastTriggeredMidiNote.has_value())
         {
             const auto& triggered = *note->lastTriggeredMidiNote;
             float noteStart = static_cast<float> (triggered.startTime);
@@ -176,4 +175,9 @@ void SequenceComponent::setCurrentPlayheadTime (double time)
 {
     currentPlayheadTime_ = time;
     repaint();
+}
+
+void SequenceComponent::setIsPlaying (bool playing)
+{
+    isPlaying_ = playing;
 }

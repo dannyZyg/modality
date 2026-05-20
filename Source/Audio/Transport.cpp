@@ -20,49 +20,6 @@ Transport::~Transport()
     transportSource.setSource (nullptr);
 }
 
-// === Tempo ===
-
-void Transport::setTempo (double bpm)
-{
-    // Clamp to valid range
-    bpm = juce::jlimit (MIN_TEMPO, MAX_TEMPO, bpm);
-
-    if (isPlaying())
-    {
-        // Queue the change to be applied at next loop boundary
-        pendingTempo.store (bpm);
-        tempoPending.store (true);
-    }
-    else
-    {
-        // Apply immediately when not playing
-        tempo.store (bpm);
-        pendingTempo.store (bpm);
-    }
-}
-
-double Transport::getTempo() const
-{
-    return tempo.load();
-}
-
-bool Transport::hasPendingTempoChange() const
-{
-    return tempoPending.load();
-}
-
-double Transport::applyPendingTempo()
-{
-    if (tempoPending.load())
-    {
-        double newTempo = pendingTempo.load();
-        tempo.store (newTempo);
-        tempoPending.store (false);
-        return newTempo;
-    }
-    return tempo.load();
-}
-
 // === Transport Control ===
 
 void Transport::start()
@@ -131,9 +88,11 @@ void Transport::reset()
 {
     setPosition (0.0);
     engine.reset();
+}
 
-    // Clear any pending tempo change on reset
-    tempoPending.store (false);
+void Transport::resetScheduling()
+{
+    engine.reset();
 }
 
 // === Audio Callback ===
@@ -179,19 +138,3 @@ void Transport::audioDeviceStopped()
     juce::Logger::writeToLog ("Transport: Audio device stopped");
 }
 
-// === Utility ===
-
-double Transport::beatsToSeconds (double beats) const
-{
-    return (beats / getTempo()) * 60.0;
-}
-
-double Transport::secondsToBeats (double seconds) const
-{
-    return (seconds / 60.0) * getTempo();
-}
-
-double Transport::getCurrentBeat() const
-{
-    return secondsToBeats (getCurrentPosition());
-}
