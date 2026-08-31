@@ -64,14 +64,14 @@ void SequenceComponent::paint (juce::Graphics& g)
     // Draw the notes
     for (auto& note : cursor.getSelectedSequence().notes)
     {
-        auto tri = CoordinateUtils::getTriangleAtPoint (*note, width, height, cursor.getCurrentTimeline(), cursor.getCurrentScale());
+        auto tri = CoordinateUtils::getTriangleAtPoint (*note, width, height, cursor.getCurrentTimeline());
 
         // Duration line — only for the note under the cursor
         // Drawn first so the triangle paints on top of it
         // Anchored at the left edge of the triangle (note start), extending right
         if (durationLineSet.count (note.get()) > 0)
         {
-            auto origin = CoordinateUtils::musicToScreen (*note, width, height, cursor.getCurrentTimeline(), cursor.getCurrentScale());
+            auto origin = CoordinateUtils::musicToScreen (*note, width, height, cursor.getCurrentTimeline());
             float stepHeight = CoordinateUtils::getStepHeight (height);
             float midY = origin.y + stepHeight / 2.0f;
             float durWidth = CoordinateUtils::getDurationPixelWidth (*note, width, cursor.getCurrentTimeline());
@@ -106,14 +106,14 @@ void SequenceComponent::paint (juce::Graphics& g)
             if (! triggered.isMuted && isCurrentlyPlaying && triggered.noteNumber != (selectedSequence.getRootNote() + static_cast<int> (note->getDegree())))
             {
                 // Original left edge position
-                auto origPoint = CoordinateUtils::musicToScreen (*note, width, height, cursor.getCurrentTimeline(), cursor.getCurrentScale());
+                auto origPoint = CoordinateUtils::musicToScreen (*note, width, height, cursor.getCurrentTimeline());
                 float stepW = CoordinateUtils::getStepWidthAtSmallestSize (width, cursor.getCurrentTimeline());
                 float stepH = CoordinateUtils::getStepHeight (height);
                 float origLeftX = origPoint.x;
                 float origMidY = origPoint.y + stepH * 0.5f;
 
                 double ghostDegree = static_cast<double> (triggered.noteNumber - selectedSequence.getRootNote());
-                auto ghostPoint = CoordinateUtils::musicToScreen (note->getStartTime(), ghostDegree, width, height, cursor.getCurrentTimeline(), cursor.getCurrentScale());
+                auto ghostPoint = CoordinateUtils::musicToScreen (note->getStartTime(), ghostDegree, width, height, cursor.getCurrentTimeline());
                 float ghostLeftX = ghostPoint.x;
                 float ghostMidY = ghostPoint.y + stepH * 0.5f;
 

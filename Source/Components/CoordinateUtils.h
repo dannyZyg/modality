@@ -23,7 +23,7 @@ public:
     static float getStepHeight (float screenHeight)
     {
         constexpr double fixedRange = 25.0;
-        constexpr double fixedStep  = 1.0;
+        constexpr double fixedStep = 1.0;
         return static_cast<float> ((fixedStep / fixedRange) * screenHeight);
     }
 
@@ -45,8 +45,7 @@ public:
     static juce::Point<float> musicToScreen (const Note& note,
                                              float screenWidth,
                                              float screenHeight,
-                                             const Timeline& timeline,
-                                             const Scale& scale)
+                                             const Timeline& timeline)
     {
         return {
             timeToScreenX (note.getStartTime(), screenWidth, timeline),
@@ -55,7 +54,7 @@ public:
     }
 
     // Convert musical coordinates to screen coordinates
-    static juce::Point<float> musicToScreen (double timePos, double degree, float screenWidth, float screenHeight, const Timeline& timeline, const Scale& scale)
+    static juce::Point<float> musicToScreen (double timePos, double degree, float screenWidth, float screenHeight, const Timeline& timeline)
     {
         return {
             timeToScreenX (timePos, screenWidth, timeline),
@@ -67,8 +66,7 @@ public:
     static juce::Point<float> musicToScreen (const Cursor& c,
                                              float screenWidth,
                                              float screenHeight,
-                                             const Timeline& timeline,
-                                             const Scale& scale)
+                                             const Timeline& timeline)
     {
         return {
             timeToScreenX (c.cursorPosition.xTimepoint.value, screenWidth, timeline),
@@ -77,9 +75,9 @@ public:
     }
 
     // Get rectangle dimensions at a point
-    static juce::Rectangle<float> getRectAtPoint (double timePos, double degree, float screenWidth, float screenHeight, const Timeline& timeline, const Scale& scale)
+    static juce::Rectangle<float> getRectAtPoint (double timePos, double degree, float screenWidth, float screenHeight, const Timeline& timeline)
     {
-        auto point = musicToScreen (timePos, degree, screenWidth, screenHeight, timeline, scale);
+        auto point = musicToScreen (timePos, degree, screenWidth, screenHeight, timeline);
         float width = getStepWidthAtStepSize (screenWidth, timeline);
         float height = getStepHeight (screenHeight);
 
@@ -94,54 +92,47 @@ public:
     static juce::Rectangle<float> getRectAtPoint (const Cursor& c,
                                                   float screenWidth,
                                                   float screenHeight,
-                                                  const Timeline& timeline,
-                                                  const Scale& scale)
+                                                  const Timeline& timeline)
     {
         return getRectAtPoint (c.cursorPosition.xTimepoint.value,
                                c.cursorPosition.yDegree.value,
                                screenWidth,
                                screenHeight,
-                               timeline,
-                               scale);
+                               timeline);
     }
 
     // Get rectangle dimensions for cursor
     static juce::Rectangle<float> getRectAtPosition (const Position& p,
                                                      float screenWidth,
                                                      float screenHeight,
-                                                     const Timeline& timeline,
-                                                     const Scale& scale)
+                                                     const Timeline& timeline)
     {
         return getRectAtPoint (p.xTimepoint.value,
                                p.yDegree.value,
                                screenWidth,
                                screenHeight,
-                               timeline,
-                               scale);
+                               timeline);
     }
 
     // Get rectangle dimensions for cursor
     static juce::Rectangle<float> getRectAtPoint (const Note& n,
                                                   float screenWidth,
                                                   float screenHeight,
-                                                  const Timeline& timeline,
-                                                  const Scale& scale)
+                                                  const Timeline& timeline)
     {
         return getRectAtPoint (n.getStartTime(),
                                n.getDegree(),
                                screenWidth,
                                screenHeight,
-                               timeline,
-                               scale);
+                               timeline);
     }
 
     static juce::Path getTriangleAtPoint (Note n,
                                           float screenWidth,
                                           float screenHeight,
-                                          const Timeline& timeline,
-                                          const Scale& scale)
+                                          const Timeline& timeline)
     {
-        auto point = musicToScreen (n, screenWidth, screenHeight, timeline, scale);
+        auto point = musicToScreen (n, screenWidth, screenHeight, timeline);
         float width = getStepWidthAtSmallestSize (screenWidth, timeline);
         float height = getStepHeight (screenHeight);
 
@@ -156,10 +147,9 @@ public:
     static juce::Point<float> getTriangleTipPoint (const Note& n,
                                                    float screenWidth,
                                                    float screenHeight,
-                                                   const Timeline& timeline,
-                                                   const Scale& scale)
+                                                   const Timeline& timeline)
     {
-        auto point = musicToScreen (n, screenWidth, screenHeight, timeline, scale);
+        auto point = musicToScreen (n, screenWidth, screenHeight, timeline);
         float width = getStepWidthAtSmallestSize (screenWidth, timeline);
         float height = getStepHeight (screenHeight);
         return { point.x + width, point.y + height / 2.0f };

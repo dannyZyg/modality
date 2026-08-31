@@ -1,6 +1,7 @@
 #include "ModifierComponentFactory.h"
 #include "Components/Widgets/RangeSliderWidgetComponent.h"
 #include "Components/Widgets/SliderWidgetComponent.h"
+#include "Data/Modifier.h"
 #include "Data/ModifierRegistry.h"
 
 namespace ModifierComponentFactory
@@ -15,6 +16,8 @@ std::unique_ptr<ISelectableWidget> createWidget (const SingleValueParamDefinitio
         case ParamWidgetType::toggle:
             // TODO: Implement toggle widget when needed
             return nullptr;
+        case ParamWidgetType::rangeSlider:
+            return nullptr;
         default:
             return nullptr;
     }
@@ -26,6 +29,10 @@ std::unique_ptr<ISelectableWidget> createDualValueWidget (const DualValueParamDe
     {
         case ParamWidgetType::rangeSlider:
             return std::make_unique<RangeSliderWidgetComponent> (def.displayName, minValueBinding, maxValueBinding, def.min, def.max, def.interval);
+        case ParamWidgetType::slider:
+            return nullptr;
+        case ParamWidgetType::toggle:
+            return nullptr;
         default:
             return nullptr;
     }
@@ -44,7 +51,7 @@ std::vector<std::unique_ptr<ISelectableWidget>> createWidgets (const juce::Ident
         std::unique_ptr<ISelectableWidget> widget;
 
         std::visit ([&widget, &state] (const auto& p)
-        {
+                    {
             using T = std::decay_t<decltype (p)>;
             if constexpr (std::is_same_v<T, DualValueParamDefinition>)
             {
@@ -61,8 +68,8 @@ std::vector<std::unique_ptr<ISelectableWidget>> createWidgets (const juce::Ident
             {
                 juce::Value valueBinding = state.getPropertyAsValue (p.id, nullptr);
                 widget = createWidget (p, valueBinding);
-            }
-        }, paramDef);
+            } },
+                    paramDef);
 
         if (widget != nullptr)
             widgets.push_back (std::move (widget));
@@ -72,4 +79,3 @@ std::vector<std::unique_ptr<ISelectableWidget>> createWidgets (const juce::Ident
 }
 
 } // namespace ModifierComponentFactory
-

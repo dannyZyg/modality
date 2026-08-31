@@ -1,11 +1,3 @@
-/*
-  ==============================================================================
-
-    This file contains the basic startup code for a JUCE application.
-
-  ==============================================================================
-*/
-
 #include "AppMenuModel.h"
 #include "Components/MainComponent.h"
 #include <JuceHeader.h>
@@ -24,16 +16,12 @@ public:
     //==============================================================================
     void initialise ([[maybe_unused]] const juce::String& commandLine) override
     {
-        // This method is where you should put your application's initialisation code..
-
         mainWindow.reset (new MainWindow (getApplicationName()));
     }
 
     void shutdown() override
     {
-        // Add your application's shutdown code here..
-
-        mainWindow = nullptr; // (deletes our window)
+        mainWindow = nullptr;
     }
 
     //==============================================================================
@@ -111,21 +99,23 @@ public:
                     juce::MessageBoxIconType::QuestionIcon,
                     "Unsaved Changes",
                     "You have unsaved changes. Save before closing?",
-                    "Save", "Discard", "Cancel",
+                    "Save",
+                    "Discard",
+                    "Cancel",
                     this,
                     juce::ModalCallbackFunction::create ([this] (int result)
-                    {
-                        if (result == 1) // Save
-                        {
-                            appMenuModel->setQuitAfterSave (true);
-                            commandManager.invokeDirectly (AppMenuModel::FileSave, false);
-                        }
-                        else if (result == 2) // Discard
-                        {
-                            JUCEApplication::getInstance()->quit();
-                        }
-                        // result == 0 (Cancel) → do nothing
-                    }));
+                                                         {
+                                                             if (result == 1) // Save
+                                                             {
+                                                                 appMenuModel->setQuitAfterSave (true);
+                                                                 commandManager.invokeDirectly (AppMenuModel::FileSave, false);
+                                                             }
+                                                             else if (result == 2) // Discard
+                                                             {
+                                                                 JUCEApplication::getInstance()->quit();
+                                                             }
+                                                             // result == 0 (Cancel) → do nothing
+                                                         }));
             }
             else
             {

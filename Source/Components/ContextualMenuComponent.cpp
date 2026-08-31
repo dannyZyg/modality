@@ -14,7 +14,7 @@ ContextualMenuComponent::~ContextualMenuComponent()
     stopTimer();
 }
 
-void ContextualMenuComponent::focusGained (FocusChangeType cause)
+void ContextualMenuComponent::focusGained ([[maybe_unused]] FocusChangeType cause)
 {
     // Refresh UI when focus is gained
     repaint();
@@ -98,7 +98,7 @@ void ContextualMenuComponent::paint (juce::Graphics& g)
     // ESC hint — always visible, pinned to absolute bottom, label reflects stack depth
     juce::String escLabel = backStack.empty() ? "ESC: Exit Menu" : "ESC: Prev Menu";
     g.setColour (juce::Colours::lightgrey);
-    g.setFont (juce::Font (16.0f, juce::Font::italic));
+    g.setFont (juce::Font (juce::FontOptions (16.0f, juce::Font::italic)));
     g.drawText (escLabel,
                 getLocalBounds().getX() + 50,
                 getLocalBounds().getBottom() - 30,
@@ -115,7 +115,7 @@ void ContextualMenuComponent::drawContextualContent (juce::Graphics& g)
     g.drawText (currentMenuNode->title, getLocalBounds().reduced (10), juce::Justification::centredTop);
 }
 
-void ContextualMenuComponent::drawShortcutHelp (juce::Graphics& g) {}
+void ContextualMenuComponent::drawShortcutHelp ([[maybe_unused]] juce::Graphics& g) {}
 
 void ContextualMenuComponent::drawMessage (juce::Graphics& g)
 {
@@ -248,7 +248,7 @@ void ContextualMenuComponent::drawSubNavOptions (juce::Graphics& g)
     if (currentMenuNode == nullptr)
         return;
 
-    g.setFont (juce::Font (20.0f));
+    g.setFont (juce::Font (juce::FontOptions (20.0f)));
 
     int yOffset = 50;
     int itemHeight = 30;

@@ -40,7 +40,6 @@ void PaginatedSettingsComponent::paint (juce::Graphics& g)
 
     // Scroll indicators
     auto widgetAreaTop = 20 + (descriptionText.isNotEmpty() ? descriptionHeight : 0);
-    auto widgetAreaBottom = getHeight() - footerHeight;
     int visible = visibleWidgetCount();
     g.setColour (juce::Colours::lightgrey.withAlpha (0.8f));
     g.setFont (juce::Font (juce::FontOptions (14.0f)));

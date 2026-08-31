@@ -49,14 +49,14 @@ static const juce::Colour velocityFlash = juce::Colour (80, 220, 255);
     }
 }
 // Sequence selection component
-static const juce::Colour sequenceSelected       = juce::Colours::orchid;
-static const juce::Colour sequenceMutedSelected  = juce::Colours::orchid.withAlpha (0.35f);
-static const juce::Colour sequenceMutedFill      = juce::Colours::darkgrey.withAlpha (0.4f);
-static const juce::Colour sequenceSoloFill       = juce::Colour (0xffE8A020);
-static const juce::Colour sequenceSoloFlash      = juce::Colour (0xffFFCC44);
-static const juce::Colour sequenceOutline        = juce::Colours::grey;
-static const juce::Colour sequenceMutedOutline   = juce::Colours::grey.withAlpha (0.4f);
-static const juce::Colour sequenceTextSelected   = juce::Colours::white;
-static const juce::Colour sequenceText           = juce::Colours::black;
-static const juce::Colour sequenceTextMuted      = juce::Colours::grey.withAlpha (0.5f);
+static const juce::Colour sequenceSelected = juce::Colours::orchid;
+static const juce::Colour sequenceMutedSelected = juce::Colours::orchid.withAlpha (0.35f);
+static const juce::Colour sequenceMutedFill = juce::Colours::darkgrey.withAlpha (0.4f);
+static const juce::Colour sequenceSoloFill = juce::Colour (0xffE8A020);
+static const juce::Colour sequenceSoloFlash = juce::Colour (0xffFFCC44);
+static const juce::Colour sequenceOutline = juce::Colours::grey;
+static const juce::Colour sequenceMutedOutline = juce::Colours::grey.withAlpha (0.4f);
+static const juce::Colour sequenceTextSelected = juce::Colours::white;
+static const juce::Colour sequenceText = juce::Colours::black;
+static const juce::Colour sequenceTextMuted = juce::Colours::grey.withAlpha (0.5f);
 } // namespace AppColours

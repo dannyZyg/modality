@@ -40,11 +40,11 @@ void CursorComponent::paint (juce::Graphics& g)
         }
     }
 
-    juce::Colour flashFill    = AppColours::yankFlashFill.withMultipliedAlpha (yankBlend);
+    juce::Colour flashFill = AppColours::yankFlashFill.withMultipliedAlpha (yankBlend);
     juce::Colour flashOutline = AppColours::yankFlashOutline.withMultipliedAlpha (yankBlend);
 
     // Get rectangle for cursor
-    auto rect = CoordinateUtils::getRectAtPoint (cursor, width, height, cursor.getCurrentTimeline(), cursor.getCurrentScale());
+    auto rect = CoordinateUtils::getRectAtPoint (cursor, width, height, cursor.getCurrentTimeline());
 
     if (cursor.isNormalMode())
     {
@@ -73,7 +73,7 @@ void CursorComponent::paint (juce::Graphics& g)
 
         for (const auto& pos : cursor.getVisualSelectionPositions())
         {
-            auto selection = CoordinateUtils::getRectAtPosition (pos, width, height, cursor.getCurrentTimeline(), cursor.getCurrentScale());
+            auto selection = CoordinateUtils::getRectAtPosition (pos, width, height, cursor.getCurrentTimeline());
             g.fillRect (selection);
         }
 

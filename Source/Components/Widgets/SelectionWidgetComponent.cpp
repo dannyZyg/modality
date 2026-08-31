@@ -91,7 +91,12 @@ void SelectionWidgetComponent::paint (juce::Graphics& g)
         {
             juce::Path leftArrow;
             leftArrow.addTriangle (
-                leftArrowArea.getX(), leftArrowArea.getCentreY(), leftArrowArea.getRight(), leftArrowArea.getY(), leftArrowArea.getRight(), leftArrowArea.getBottom());
+                static_cast<float> (leftArrowArea.getX()),
+                static_cast<float> (leftArrowArea.getCentreY()),
+                static_cast<float> (leftArrowArea.getRight()),
+                static_cast<float> (leftArrowArea.getY()),
+                static_cast<float> (leftArrowArea.getRight()),
+                static_cast<float> (leftArrowArea.getBottom()));
 
             g.fillPath (leftArrow);
         }
@@ -100,7 +105,12 @@ void SelectionWidgetComponent::paint (juce::Graphics& g)
         {
             juce::Path rightArrow;
             rightArrow.addTriangle (
-                rightArrowArea.getRight(), rightArrowArea.getCentreY(), rightArrowArea.getX(), rightArrowArea.getY(), rightArrowArea.getX(), rightArrowArea.getBottom());
+                static_cast<float> (rightArrowArea.getRight()),
+                static_cast<float> (rightArrowArea.getCentreY()),
+                static_cast<float> (rightArrowArea.getX()),
+                static_cast<float> (rightArrowArea.getY()),
+                static_cast<float> (rightArrowArea.getX()),
+                static_cast<float> (rightArrowArea.getBottom()));
             g.fillPath (rightArrow);
         }
     }

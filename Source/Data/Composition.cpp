@@ -75,7 +75,7 @@ void Composition::valueTreeChildRemoved (juce::ValueTree& parentTree,
     setIsDirty (true);
 }
 
-void Composition::valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHasChanged,
+void Composition::valueTreePropertyChanged ([[maybe_unused]] juce::ValueTree& treeWhosePropertyHasChanged,
                                             const juce::Identifier& property)
 {
     if (property == CompositionIDs::Tempo && onTempoChanged)
@@ -84,9 +84,9 @@ void Composition::valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHa
     setIsDirty (true);
 }
 
-void Composition::valueTreeChildOrderChanged (ValueTree& treeWhichChildrenBelongTo,
-                                              int oldChildIndex,
-                                              int newChildIndex)
+void Composition::valueTreeChildOrderChanged ([[maybe_unused]] ValueTree& treeWhichChildrenBelongTo,
+                                              [[maybe_unused]] int oldChildIndex,
+                                              [[maybe_unused]] int newChildIndex)
 {
     setIsDirty (true);
 }
