@@ -24,36 +24,11 @@ public:
     Transport();
     ~Transport() override;
 
-    // === Transport Control ===
-
-    /**
-     * Start playback from the current position.
-     */
     void start();
-
-    /**
-     * Stop playback.
-     */
     void stop();
-
-    /**
-     * Check if transport is currently playing.
-     */
     bool isPlaying() const;
-
-    /**
-     * Get the current playback position in seconds.
-     */
-    double getCurrentPosition() const;
-
-    /**
-     * Set the playback position.
-     */
+    double getCurrentPositionSeconds() const;
     void setPosition (double positionSeconds);
-
-    /**
-     * Reset all tracks to beginning (time 0).
-     */
     void reset();
 
     /**
@@ -62,21 +37,8 @@ public:
      */
     void resetScheduling();
 
-    // === Track Scheduling (delegates to TransportEngine) ===
-
-    /**
-     * Set the number of active tracks.
-     */
     void setNumTracks (size_t numTracks);
-
-    /**
-     * Get the number of active tracks.
-     */
     size_t getNumTracks() const;
-
-    /**
-     * Schedule a pattern for a specific track.
-     */
     void scheduleTrack (size_t trackIndex,
                         const std::vector<MidiNote>& notes,
                         double loopStartTime,
@@ -111,7 +73,6 @@ public:
     void audioDeviceStopped() override;
 
 private:
-    // MIDI scheduling engine
     TransportEngine engine;
 
     // JUCE transport for position tracking

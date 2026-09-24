@@ -29,14 +29,11 @@ MainComponent::MainComponent() : cursor (composition),
 
 {
     AppSettings::getInstance().initialise ("Modality");
-
-    // Make sure you set the size of the component after
-    // you add any child components.
     setSize (AppSettings::getInstance().getLastWindowWidth(), AppSettings::getInstance().getLastWindowHeight());
 
     setupKeyboardShortcuts();
 
-    setFramesPerSecond (60); // This sets the frequency of the update calls.
+    setFramesPerSecond (60);
     setWantsKeyboardFocus (true);
     addAndMakeVisible (midlineComponent);
     addAndMakeVisible (pitchLegendComponent);
@@ -46,32 +43,6 @@ MainComponent::MainComponent() : cursor (composition),
     addAndMakeVisible (statusBarComponent);
     addAndMakeVisible (sequenceSelectionComponent);
 
-    // Initialise audio and register Transport as the audio callback
-    deviceManager.initialise (0, 2, nullptr, true);
-    deviceManager.addAudioCallback (&transport);
-
-    auto defaultMidiOutputId = AppSettings::getInstance().getDefaultMidiOutputDevice();
-
-    // MIDI outputs are managed by MidiOutputManager
-    // Each sequence can specify its own output device via midiOutputId
-    auto availableDevices = midiOutputManager.getAvailableDevices();
-    if (! availableDevices.isEmpty())
-    {
-        juce::Logger::writeToLog ("Available MIDI outputs:");
-        for (const auto& device : availableDevices)
-        {
-            juce::Logger::writeToLog ("  - " + device.name + " (" + device.identifier + ")");
-            if (device.identifier == defaultMidiOutputId)
-            {
-                juce::Logger::writeToLog ("Found default MIDI output device: " + device.name + " (" + device.identifier + ")");
-                midiOutputManager.setDefaultDeviceId (device.identifier);
-            }
-        }
-    }
-
-    // Make sure all children components have size set
-    resized();
-
     addAndMakeVisible (contextualMenuComponent);
     contextualMenuComponent.setVisible (false);
     contextualMenuComponent.onUndo = [this]()
@@ -79,79 +50,28 @@ MainComponent::MainComponent() : cursor (composition),
     contextualMenuComponent.onRedo = [this]()
     { cursor.redo(); };
 
-    // GLOBAL SETTINGS MENU
+    setupMenuTree();
 
-    helpMenuRoot = std::make_unique<MenuNode> ("Help");
-    globalSettingsMenuRoot = std::make_unique<MenuNode> ("Global Settings");
+    deviceManager.initialise (0, 2, nullptr, true);
+    deviceManager.addAudioCallback (&transport);
 
-    auto shortcutInfoComponent = std::make_unique<ShortcutInfoComponent> (shortcutManager);
-    auto shortcutsNode = std::make_unique<MenuNode> ("Shortcuts", juce::KeyPress::createFromDescription ("s"), std::move (shortcutInfoComponent));
+    findDefaultMidiDevice();
 
-    helpMenuRoot->addChild (std::move (shortcutsNode));
-
-    // Wire tempo changes from Composition → flush and reschedule
-    composition.onTempoChanged = [this] (double /*bpm*/)
-    {
-        if (transport.isPlaying())
-        {
-            transport.clearScheduledEvents();
-            transport.resetScheduling();
-        }
-    };
-
-    auto tempoSlider = std::make_unique<SliderWidgetComponent> (
-        "Tempo",
-        composition.getState().getPropertyAsValue (CompositionIDs::Tempo, nullptr),
-        Composition::MIN_TEMPO,
-        Composition::MAX_TEMPO,
-        1.0,
-        [] (double bpm)
-        { return juce::String (static_cast<int> (bpm)) + " BPM"; });
-
-    std::vector<std::unique_ptr<ISelectableWidget>> tempoWidgets;
-    tempoWidgets.push_back (std::move (tempoSlider));
-
-    auto tempoSettings = std::make_unique<PaginatedSettingsComponent> (std::move (tempoWidgets));
-
-    auto tempoNode = std::make_unique<MenuNode> ("Tempo Settings", juce::KeyPress::createFromDescription ("t"), std::move (tempoSettings));
-    // auto deviceNode = std::make_unique<MenuNode> ("Midi Settings", juce::KeyPress::createFromDescription ("d"));
-
-    auto initialMidiOutDevice = AppSettings::getInstance().getDefaultMidiOutputDevice();
-    auto initialMidiChannel = AppSettings::getInstance().getDefaultMidiOutputDevice();
-    auto onChangeMidiOut = [] (const String& s)
-    {
-        AppSettings::getInstance().setDefaultMidiOutputDevice (s);
-    };
-    auto onChangeMidiChannel = [] (const String& s)
-    {
-        AppSettings::getInstance().setDefaultMidiChannel (s);
-    };
-
-    auto midiSettingsNode = MidiSettingsSelectionFactory::createMenuNode (midiOutputManager, initialMidiOutDevice, initialMidiChannel, onChangeMidiOut, onChangeMidiChannel);
-
-    // Add children and receive the raw pointer to them (to further assign children to these) - the original unq ptr has moved!
-    [[maybe_unused]] MenuNode* tempoNodePtr = globalSettingsMenuRoot->addChild (std::move (tempoNode));
-    [[maybe_unused]] MenuNode* deviceNodePtr = globalSettingsMenuRoot->addChild (std::move (midiSettingsNode));
+    // Make sure all children components have size set
+    resized();
 }
 
 MainComponent::~MainComponent()
 {
-    // Remove audio callback before destroying transport
     deviceManager.removeAudioCallback (&transport);
-
     stop();
-
-    // Close all MIDI outputs
     midiOutputManager.closeAll();
-
     AppSettings::getInstance().shutdown();
 }
 
 //==============================================================================
 void MainComponent::update()
 {
-    // This function is called at the frequency specified by the setFramesPerSecond() call
-    // in the constructor. You can use it to update counters, animate values, etc.
     sequenceComponent.update();
 
     // Check if any tracks need their next loop scheduled (UI thread responsibility)
@@ -165,7 +85,7 @@ void MainComponent::update()
 void MainComponent::checkAndScheduleTracks()
 {
     size_t numTracks = composition.getSequences().size();
-    double currentBeat = transport.getCurrentPosition() * composition.getTempo() / 60.0;
+    double currentBeat = transport.getCurrentPositionSeconds() * composition.getTempo() / 60.0;
 
     for (size_t i = 0; i < numTracks; ++i)
     {
@@ -186,8 +106,7 @@ void MainComponent::paint (juce::Graphics& g)
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (juce::Colour (255, 253, 240));
 
-    // Get the current position from transport (in seconds)
-    double currentPosition = transport.getCurrentPosition();
+    double currentPosition = transport.getCurrentPositionSeconds();
     sequenceComponent.setCurrentPlayheadTime (currentPosition);
     sequenceComponent.setIsPlaying (transport.isPlaying());
 }
@@ -803,4 +722,78 @@ void MainComponent::repaintSequenceComponents()
 {
     sequenceComponent.repaint();
     sequenceSelectionComponent.repaint();
+}
+
+void MainComponent::setupMenuTree()
+{
+    helpMenuRoot = std::make_unique<MenuNode> ("Help");
+    globalSettingsMenuRoot = std::make_unique<MenuNode> ("Global Settings");
+
+    auto shortcutInfoComponent = std::make_unique<ShortcutInfoComponent> (shortcutManager);
+    auto shortcutsNode = std::make_unique<MenuNode> ("Shortcuts", juce::KeyPress::createFromDescription ("s"), std::move (shortcutInfoComponent));
+
+    helpMenuRoot->addChild (std::move (shortcutsNode));
+
+    // Wire tempo changes from Composition → flush and reschedule
+    composition.onTempoChanged = [this] (double /*bpm*/)
+    {
+        if (transport.isPlaying())
+        {
+            transport.clearScheduledEvents();
+            transport.resetScheduling();
+        }
+    };
+
+    auto tempoSlider = std::make_unique<SliderWidgetComponent> (
+        "Tempo",
+        composition.getState().getPropertyAsValue (CompositionIDs::Tempo, nullptr),
+        Composition::MIN_TEMPO,
+        Composition::MAX_TEMPO,
+        1.0,
+        [] (double bpm)
+        { return juce::String (static_cast<int> (bpm)) + " BPM"; });
+
+    std::vector<std::unique_ptr<ISelectableWidget>> tempoWidgets;
+    tempoWidgets.push_back (std::move (tempoSlider));
+
+    auto tempoSettings = std::make_unique<PaginatedSettingsComponent> (std::move (tempoWidgets));
+
+    auto tempoNode = std::make_unique<MenuNode> ("Tempo Settings", juce::KeyPress::createFromDescription ("t"), std::move (tempoSettings));
+
+    auto initialMidiOutDevice = AppSettings::getInstance().getDefaultMidiOutputDevice();
+    auto initialMidiChannel = AppSettings::getInstance().getDefaultMidiOutputDevice();
+    auto onChangeMidiOut = [] (const String& s)
+    {
+        AppSettings::getInstance().setDefaultMidiOutputDevice (s);
+    };
+    auto onChangeMidiChannel = [] (const String& s)
+    {
+        AppSettings::getInstance().setDefaultMidiChannel (s);
+    };
+
+    auto midiSettingsNode = MidiSettingsSelectionFactory::createMenuNode (midiOutputManager, initialMidiOutDevice, initialMidiChannel, onChangeMidiOut, onChangeMidiChannel);
+
+    // Add children and receive the raw pointer to them (to further assign children to these) - the original unq ptr has moved!
+    [[maybe_unused]] MenuNode* tempoNodePtr = globalSettingsMenuRoot->addChild (std::move (tempoNode));
+    [[maybe_unused]] MenuNode* deviceNodePtr = globalSettingsMenuRoot->addChild (std::move (midiSettingsNode));
+}
+
+void MainComponent::findDefaultMidiDevice()
+{
+    auto defaultMidiOutputId = AppSettings::getInstance().getDefaultMidiOutputDevice();
+
+    auto availableDevices = midiOutputManager.getAvailableDevices();
+    if (! availableDevices.isEmpty())
+    {
+        juce::Logger::writeToLog ("Available MIDI outputs:");
+        for (const auto& device : availableDevices)
+        {
+            juce::Logger::writeToLog ("  - " + device.name + " (" + device.identifier + ")");
+            if (device.identifier == defaultMidiOutputId)
+            {
+                juce::Logger::writeToLog ("Found default MIDI output device: " + device.name + " (" + device.identifier + ")");
+                midiOutputManager.setDefaultDeviceId (device.identifier);
+            }
+        }
+    }
 }

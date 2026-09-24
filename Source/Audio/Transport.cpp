@@ -1,12 +1,3 @@
-/*
-  ==============================================================================
-
-    Transport.cpp
-    Unified transport control implementation.
-
-  ==============================================================================
-*/
-
 #include "Transport.h"
 
 Transport::Transport()
@@ -19,8 +10,6 @@ Transport::~Transport()
 {
     transportSource.setSource (nullptr);
 }
-
-// === Transport Control ===
 
 void Transport::start()
 {
@@ -38,7 +27,7 @@ bool Transport::isPlaying() const
     return transportSource.isPlaying();
 }
 
-double Transport::getCurrentPosition() const
+double Transport::getCurrentPositionSeconds() const
 {
     return transportSource.getCurrentPosition();
 }
@@ -47,8 +36,6 @@ void Transport::setPosition (double positionSeconds)
 {
     transportSource.setPosition (positionSeconds);
 }
-
-// === Track Scheduling (delegates to TransportEngine) ===
 
 void Transport::setNumTracks (size_t numTracks)
 {
@@ -95,8 +82,6 @@ void Transport::resetScheduling()
     engine.reset();
 }
 
-// === Audio Callback ===
-
 void Transport::audioDeviceIOCallbackWithContext (
     [[maybe_unused]] const float* const* inputChannelData,
     [[maybe_unused]] int numInputChannels,
@@ -116,7 +101,7 @@ void Transport::audioDeviceIOCallbackWithContext (
     juce::AudioBuffer<float> tempBuffer (outputChannelData, numOutputChannels, numSamples);
     transportSource.getNextAudioBlock (juce::AudioSourceChannelInfo (tempBuffer));
 
-    double currentPosition = getCurrentPosition();
+    double currentPosition = getCurrentPositionSeconds();
     double bufferDuration = static_cast<double> (numSamples) / sampleRate;
 
     // Process MIDI events - realtime safe, no allocations
@@ -137,4 +122,3 @@ void Transport::audioDeviceStopped()
     transportSource.releaseResources();
     juce::Logger::writeToLog ("Transport: Audio device stopped");
 }
-

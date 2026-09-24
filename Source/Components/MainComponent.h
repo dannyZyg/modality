@@ -12,7 +12,6 @@
 #include "Components/SequenceSelectionComponent.h"
 #include "Components/Settings/SequenceSettingsManager.h"
 #include "Components/StatusBarComponent.h"
-#include "Components/ShortcutInfoComponent.h"
 #include "Data/Composition.h"
 #include "Data/Cursor.h"
 #include "Data/KeyboardShortcutManager.h"
@@ -27,38 +26,22 @@
 class MainComponent : public juce::AnimatedAppComponent
 {
 public:
-    //==============================================================================
     MainComponent();
     ~MainComponent() override;
 
-    //==============================================================================
     void update() override;
 
-    //==============================================================================
     void paint (juce::Graphics& g) override;
     void resized() override;
-
     bool keyPressed (const juce::KeyPress& key) override;
-
     void repaintSequenceComponents();
-
     Composition& getComposition() { return composition; }
 
 private:
-    //==============================================================================
-    // Data model
     Composition composition;
-
-    // Unified transport control (owns tempo, play state, MIDI scheduling)
     Transport transport;
-
-    // MIDI output management (per-track routing)
     MidiOutputManager midiOutputManager;
-
-    // Audio device management
     juce::AudioDeviceManager deviceManager;
-
-    // Data model
     Cursor cursor;
 
     // UI Components
@@ -77,25 +60,19 @@ private:
     // Menu structures
     std::unique_ptr<MenuNode> helpMenuRoot;
     std::unique_ptr<MenuNode> globalSettingsMenuRoot;
-
     SequenceSettingsManager sequenceSettngsManager;
-
     KeyboardShortcutManager shortcutManager;
-
-    //==============================================================================
-    // Private methods
     std::unique_ptr<MenuNode> createHelpMenuTree();
 
-    // Schedule beats for a track (per-beat scheduling)
     void scheduleTrackBeats (size_t trackIndex, double currentBeat);
-
-    // Check and schedule any tracks that need their next loop
     void checkAndScheduleTracks();
 
     void start();
     void stop();
 
     void setupKeyboardShortcuts();
+    void findDefaultMidiDevice();
+    void setupMenuTree();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
