@@ -67,11 +67,11 @@ public:
 
     std::vector<std::unique_ptr<Note>> notes;
 
-    void valueTreeChildAdded (ValueTree& parentTree,
-                              ValueTree& childWhichHasBeenAdded);
+    void valueTreeChildAdded (juce::ValueTree& parentTree,
+                              juce::ValueTree& childWhichHasBeenAdded);
 
-    void valueTreeChildRemoved (ValueTree& parentTree,
-                                ValueTree& childWhichHasBeenRemoved,
+    void valueTreeChildRemoved (juce::ValueTree& parentTree,
+                                juce::ValueTree& childWhichHasBeenRemoved,
                                 int indexFromWhichChildWasRemoved);
 
     std::vector<std::reference_wrapper<std::unique_ptr<Note>>> findNotes (double minTime, double maxTime, double minDegree, double maxDegree);

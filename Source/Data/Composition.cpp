@@ -3,6 +3,7 @@
 #include "juce_core/juce_core.h"
 #include "juce_core/system/juce_PlatformDefs.h"
 #include "juce_data_structures/juce_data_structures.h"
+#include "juce_gui_basics/juce_gui_basics.h"
 
 Composition::Composition() : state (CompositionIDs::Composition)
 {
@@ -84,7 +85,7 @@ void Composition::valueTreePropertyChanged ([[maybe_unused]] juce::ValueTree& tr
     setIsDirty (true);
 }
 
-void Composition::valueTreeChildOrderChanged ([[maybe_unused]] ValueTree& treeWhichChildrenBelongTo,
+void Composition::valueTreeChildOrderChanged ([[maybe_unused]] juce::ValueTree& treeWhichChildrenBelongTo,
                                               [[maybe_unused]] int oldChildIndex,
                                               [[maybe_unused]] int newChildIndex)
 {
@@ -115,10 +116,11 @@ std::vector<MidiNote> Composition::extractMidiSequenceForBeatRange (size_t seqIn
     double loopLengthBeats = seq.getLengthBeats();
 
     // Clear any stale triggered state from previous scheduling passes
-    for (auto& n : seq.notes)
-    {
-        n->clearLastTriggeredMidiNote();
-    }
+
+    // for (auto& n : seq.notes)
+    // {
+    //     n->clearLastTriggeredMidiNote();
+    // }
 
     // Convert global beats to loop-local beats
     double localStartBeat = std::fmod (startBeat, loopLengthBeats);
@@ -181,6 +183,8 @@ std::vector<MidiNote> Composition::extractMidiSequenceForBeatRange (size_t seqIn
             // Do not schedule muted notes for playback, but still allow the UI to show them
             if (! midi->isMuted)
                 midiClip.emplace_back (adjustedStartTimeSeconds, midi->noteNumber, midi->velocity, midi->duration);
+
+            DBG ("Composition::extractMidiSequenceForBeatRange: " << midi->noteNumber);
         }
     }
 

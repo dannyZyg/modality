@@ -1,7 +1,6 @@
 #include "Components/CursorComponent.h"
 #include "AppColours.h"
 #include "Components/CoordinateUtils.h"
-#include <JuceHeader.h>
 
 //==============================================================================
 CursorComponent::CursorComponent (const Cursor& c)

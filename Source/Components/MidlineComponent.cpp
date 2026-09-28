@@ -1,6 +1,5 @@
 #include "MidlineComponent.h"
 #include "CoordinateUtils.h"
-#include <JuceHeader.h>
 
 //==============================================================================
 MidlineComponent::MidlineComponent (const Cursor& c)

@@ -2,7 +2,7 @@
 
 #include "Audio/ScheduledEvent.h"
 #include "Data/Note.h"
-#include <JuceHeader.h>
+#include "juce_audio_devices/juce_audio_devices.h"
 #include <array>
 #include <atomic>
 
@@ -55,4 +55,6 @@ private:
     double sampleRate { 44100.0 };
 
     bool insertEventsSorted (const std::vector<ScheduledEvent>& newEvents);
+
+    // juce::AbstractFifo debugLog;
 };

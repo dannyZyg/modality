@@ -1,6 +1,5 @@
 #pragma once
 #include "juce_data_structures/juce_data_structures.h"
-#include <JuceHeader.h>
 
 namespace TimelineIDs
 {

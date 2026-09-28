@@ -73,13 +73,13 @@ void Note::clearLastTriggeredMidiNote()
     lastTriggeredMidiNote.reset();
 }
 
-void Note::addModifier (Modifier m, UndoManager* undoManager)
+void Note::addModifier (Modifier m, juce::UndoManager* undoManager)
 {
     if (! state.getChildWithName (m.getType()).isValid())
         state.appendChild (m.getState(), undoManager);
 }
 
-bool Note::removeModifier (ModifierType type, UndoManager* undoManager)
+bool Note::removeModifier (ModifierType type, juce::UndoManager* undoManager)
 {
     for (int i = 0; i < state.getNumChildren(); i++)
     {

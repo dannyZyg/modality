@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Data/Cursor.h"
-#include <JuceHeader.h>
+#include "juce_gui_basics/juce_gui_basics.h"
 
 //==============================================================================
 /*

@@ -17,8 +17,8 @@ DECLARE_ID (Sequences)
 class Composition : public juce::ValueTree::Listener, public juce::ChangeBroadcaster
 {
 public:
-    static constexpr double MIN_TEMPO     = 20.0;
-    static constexpr double MAX_TEMPO     = 300.0;
+    static constexpr double MIN_TEMPO = 20.0;
+    static constexpr double MAX_TEMPO = 300.0;
     static constexpr double DEFAULT_TEMPO = 120.0;
 
     Composition();
@@ -46,7 +46,7 @@ public:
     void valueTreePropertyChanged (juce::ValueTree& treeWhosePropertyHasChanged,
                                    const juce::Identifier& property) override;
 
-    void valueTreeChildOrderChanged (ValueTree& treeWhichChildrenBelongTo,
+    void valueTreeChildOrderChanged (juce::ValueTree& treeWhichChildrenBelongTo,
                                      int oldChildIndex,
                                      int newChildIndex) override;
 
@@ -66,7 +66,7 @@ public:
 
     // Called on the message thread whenever tempo changes (ValueTree write).
     // Use this to push the new value into an atomic for audio-thread reads.
-    std::function<void(double)> onTempoChanged;
+    std::function<void (double)> onTempoChanged;
 
 private:
     juce::ValueTree state;

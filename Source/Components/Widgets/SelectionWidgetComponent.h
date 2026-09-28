@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Components/Widgets/ISelectableWidget.h"
-#include <JuceHeader.h>
 
 struct SelectionOption
 {

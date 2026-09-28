@@ -755,11 +755,11 @@ void MainComponent::setupMenuTree()
 
     auto initialMidiOutDevice = AppSettings::getInstance().getDefaultMidiOutputDevice();
     auto initialMidiChannel = AppSettings::getInstance().getDefaultMidiOutputDevice();
-    auto onChangeMidiOut = [] (const String& s)
+    auto onChangeMidiOut = [] (const juce::String& s)
     {
         AppSettings::getInstance().setDefaultMidiOutputDevice (s);
     };
-    auto onChangeMidiChannel = [] (const String& s)
+    auto onChangeMidiChannel = [] (const juce::String& s)
     {
         AppSettings::getInstance().setDefaultMidiChannel (s);
     };

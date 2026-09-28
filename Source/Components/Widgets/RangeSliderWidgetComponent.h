@@ -1,6 +1,5 @@
 #pragma once
 #include "Components/Widgets/ISelectableWidget.h"
-#include <JuceHeader.h>
 
 class RangeSliderWidgetComponent : public ISelectableWidget, public juce::Slider::Listener
 {
@@ -23,7 +22,11 @@ public:
     void sliderValueChanged (juce::Slider* slider) override;
 
 private:
-    enum class ActiveHandle { Min, Max };
+    enum class ActiveHandle
+    {
+        Min,
+        Max
+    };
 
     void setup();
 

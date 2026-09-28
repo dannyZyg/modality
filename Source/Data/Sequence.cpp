@@ -247,8 +247,8 @@ void Sequence::removeNotes (
     }
 }
 
-void Sequence::valueTreeChildAdded (ValueTree& parentTree,
-                                    ValueTree& childWhichHasBeenAdded)
+void Sequence::valueTreeChildAdded (juce::ValueTree& parentTree,
+                                    juce::ValueTree& childWhichHasBeenAdded)
 {
     if (parentTree.hasType (SequenceIDs::Notes))
     {
@@ -257,8 +257,8 @@ void Sequence::valueTreeChildAdded (ValueTree& parentTree,
     }
 }
 
-void Sequence::valueTreeChildRemoved (ValueTree& parentTree,
-                                      ValueTree& childWhichHasBeenRemoved,
+void Sequence::valueTreeChildRemoved (juce::ValueTree& parentTree,
+                                      juce::ValueTree& childWhichHasBeenRemoved,
                                       [[maybe_unused]] int indexFromWhichChildWasRemoved)
 {
     if (parentTree.hasType (SequenceIDs::Notes))

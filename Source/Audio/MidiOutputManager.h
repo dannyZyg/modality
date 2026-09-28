@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include <JuceHeader.h>
+#include "juce_audio_devices/juce_audio_devices.h"
 #include <map>
 
 class MidiOutputManager

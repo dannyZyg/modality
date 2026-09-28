@@ -1,9 +1,9 @@
 #pragma once
 
+#include "juce_graphics/juce_graphics.h"
 #include <Data/Cursor.h>
 #include <Data/Scale.h>
 #include <Data/Timeline.h>
-#include <JuceHeader.h>
 
 class CoordinateUtils
 {

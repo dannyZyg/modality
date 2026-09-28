@@ -1,6 +1,5 @@
 #pragma once
 #include "Data/MenuNode.h"
-#include <JuceHeader.h>
 #include <functional>
 #include <stack>
 #include <vector>
@@ -60,6 +59,5 @@ private:
     std::function<bool (const juce::String&)> isActiveTag;
 
 private:
-
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ContextualMenuComponent)
 };

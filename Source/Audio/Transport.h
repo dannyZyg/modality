@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Audio/Scheduler.h"
-#include <JuceHeader.h>
+#include "juce_audio_devices/juce_audio_devices.h"
 
 class Transport : public juce::AudioIODeviceCallback
 {
@@ -20,7 +20,7 @@ public:
                                            float* const* outputChannelData,
                                            int numOutputChannels,
                                            int numSamples,
-                                           const AudioIODeviceCallbackContext& context) override;
+                                           const juce::AudioIODeviceCallbackContext& context) override;
 
     void audioDeviceAboutToStart (juce::AudioIODevice* device) override;
     void audioDeviceStopped() override;

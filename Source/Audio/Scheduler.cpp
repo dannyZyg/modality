@@ -185,7 +185,9 @@ void Scheduler::processBlock (double currentPosition, double bufferDuration)
     {
         const auto& event = buffer.data[static_cast<size_t> (head)];
         if (event.output != nullptr)
+        {
             event.output->sendMessageNow (event.message);
+        }
         ++head;
     }
 

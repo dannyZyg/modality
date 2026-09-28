@@ -2,7 +2,6 @@
 
 #include "Components/Widgets/ISelectableWidget.h"
 #include "Data/Modifier.h"
-#include <JuceHeader.h>
 #include <memory>
 #include <vector>
 
@@ -17,4 +16,3 @@ std::unique_ptr<ISelectableWidget> createWidget (const SingleValueParamDefinitio
 // Creates a dual-value widget (e.g. range slider) bound to two ValueTree properties
 std::unique_ptr<ISelectableWidget> createDualValueWidget (const DualValueParamDefinition& def, juce::Value minValueBinding, juce::Value maxValueBinding);
 } // namespace ModifierComponentFactory
-

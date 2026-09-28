@@ -1,6 +1,5 @@
 #pragma once
 #include "Components/Widgets/ISelectableWidget.h"
-#include <JuceHeader.h>
 
 class SliderWidgetComponent : public ISelectableWidget, public juce::Slider::Listener
 {

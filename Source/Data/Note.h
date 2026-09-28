@@ -13,7 +13,6 @@
 #include "Data/Modifier.h"
 #include "Data/Scale.h"
 #include "Data/Timeline.h"
-#include <JuceHeader.h>
 namespace NoteIDs
 {
 #define DECLARE_ID(name) inline const juce::Identifier name { #name };
@@ -75,8 +74,8 @@ public:
     void clearLastTriggeredMidiNote();
     std::optional<MidiNote> lastTriggeredMidiNote;
 
-    void addModifier (Modifier m, UndoManager* undoManager = nullptr);
-    bool removeModifier (ModifierType type, UndoManager* undoManager = nullptr);
+    void addModifier (Modifier m, juce::UndoManager* undoManager = nullptr);
+    bool removeModifier (ModifierType type, juce::UndoManager* undoManager = nullptr);
     std::optional<Modifier> getModifier (ModifierType type);
 
     bool hasAnyModifier();

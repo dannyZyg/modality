@@ -2,7 +2,7 @@
 
 #include "Data/Parameter.h"
 #include "juce_core/juce_core.h"
-#include <JuceHeader.h>
+#include "juce_data_structures/juce_data_structures.h"
 #include <map>
 #include <variant>
 

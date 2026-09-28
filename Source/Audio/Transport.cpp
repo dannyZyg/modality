@@ -49,7 +49,7 @@ void Transport::audioDeviceIOCallbackWithContext (
     float* const* outputChannelData,
     int numOutputChannels,
     int numSamples,
-    [[maybe_unused]] const AudioIODeviceCallbackContext& context)
+    [[maybe_unused]] const juce::AudioIODeviceCallbackContext& context)
 {
     // Clear output buffer
     for (int channel = 0; channel < numOutputChannels; ++channel)

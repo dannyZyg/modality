@@ -17,7 +17,9 @@
 #include "Data/Cursor.h"
 #include "Data/KeyboardShortcutManager.h"
 #include "Data/MenuNode.h"
-#include <JuceHeader.h>
+
+#include <juce_audio_devices/juce_audio_devices.h>
+#include <juce_gui_extra/juce_gui_extra.h>
 
 //==============================================================================
 /*

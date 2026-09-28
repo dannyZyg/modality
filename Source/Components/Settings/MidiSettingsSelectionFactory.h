@@ -22,7 +22,7 @@ namespace detail
 
         for (int i = 1; i <= numMidiChannels; ++i)
         {
-            channelOptions.push_back (SelectionOption { "Channel " + String (i), String (i) });
+            channelOptions.push_back (SelectionOption { "Channel " + juce::String (i), juce::String (i) });
         }
         return channelOptions;
     }

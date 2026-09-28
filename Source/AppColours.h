@@ -1,6 +1,6 @@
 #pragma once
 #include "Data/Cursor.h"
-#include <JuceHeader.h>
+#include "juce_graphics/juce_graphics.h"
 
 namespace AppColours
 {

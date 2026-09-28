@@ -1,6 +1,5 @@
 #include "Components/StatusBarComponent.h"
 #include "AppColours.h"
-#include <JuceHeader.h>
 
 //==============================================================================
 

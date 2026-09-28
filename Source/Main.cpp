@@ -1,6 +1,6 @@
 #include "AppMenuModel.h"
 #include "Components/MainComponent.h"
-#include <JuceHeader.h>
+#include "juce_core/juce_core.h"
 
 //==============================================================================
 class ModalityApplication : public juce::JUCEApplication
@@ -9,8 +9,8 @@ public:
     //==============================================================================
     ModalityApplication() {}
 
-    const juce::String getApplicationName() override { return ProjectInfo::projectName; }
-    const juce::String getApplicationVersion() override { return ProjectInfo::versionString; }
+    const juce::String getApplicationName() override { return APP_NAME; }
+    const juce::String getApplicationVersion() override { return APP_VERSION; }
     bool moreThanOneInstanceAllowed() override { return true; }
 
     //==============================================================================

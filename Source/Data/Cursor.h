@@ -15,7 +15,6 @@
 #include "Note.h"
 #include "Sequence.h"
 #include "juce_data_structures/juce_data_structures.h"
-#include <JuceHeader.h>
 #include <random>
 #pragma once
 

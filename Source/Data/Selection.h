@@ -1,6 +1,5 @@
 #include "Data/Scale.h"
 #include "Data/Timeline.h"
-#include <JuceHeader.h>
 #pragma once
 
 enum class Direction

@@ -2,7 +2,6 @@
 #include "AppColours.h"
 #include "Data/Sequence.h"
 #include "juce_graphics/juce_graphics.h"
-#include <JuceHeader.h>
 
 //==============================================================================
 SequenceSelectionComponent::SequenceSelectionComponent (const Cursor& curs, Composition& comp)

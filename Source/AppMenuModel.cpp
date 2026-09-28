@@ -141,7 +141,7 @@ void AppMenuModel::doSave()
         if (quitAfterSave)
         {
             quitAfterSave = false;
-            JUCEApplication::getInstance()->quit();
+            juce::JUCEApplication::getInstance()->quit();
         }
     }
     else
@@ -168,7 +168,7 @@ void AppMenuModel::doSaveAs()
                 if (quitAfterSave)
                 {
                     quitAfterSave = false;
-                    JUCEApplication::getInstance()->quit();
+                    juce::JUCEApplication::getInstance()->quit();
                 }
             }
             else

@@ -3,7 +3,6 @@
 #include "Data/Modifier.h"
 #include "Data/Note.h"
 #include "Data/Scale.h"
-#include <JuceHeader.h>
 #include <functional>
 #include <map>
 

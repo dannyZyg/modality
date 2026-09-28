@@ -11,7 +11,6 @@
 #include "SequenceComponent.h"
 #include "AppColours.h"
 #include "CoordinateUtils.h"
-#include <JuceHeader.h>
 #include <unordered_set>
 
 //==============================================================================

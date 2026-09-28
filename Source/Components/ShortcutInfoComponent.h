@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Data/KeyboardShortcutManager.h"
-#include <JuceHeader.h>
 
 class ShortcutInfoComponent : public juce::Component
 {

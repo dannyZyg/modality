@@ -2,7 +2,7 @@
 
 #include "Data/Cursor.h"
 #include "juce_core/juce_core.h"
-#include <JuceHeader.h>
+#include "juce_gui_basics/juce_gui_basics.h"
 #include <functional>
 
 // Shortcut data structure to hold keybinding information

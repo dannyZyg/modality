@@ -1,7 +1,7 @@
 #pragma once
 
+#include "juce_audio_devices/juce_audio_devices.h"
 #include "juce_core/juce_core.h"
-#include <JuceHeader.h>
 
 /**
  * A MIDI event with timestamp and output destination.

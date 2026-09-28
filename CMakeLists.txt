@@ -25,48 +25,66 @@ CPMAddPackage(
   SOURCE_DIR ${LIB_DIR}/juce
 )
 
-juce_add_gui_app(${PROJECT_NAME}
-  PRODUCT_NAME ${PROJECT_NAME}
-  COMPANY_NAME MyCompany
-)
-
-juce_generate_juce_header(${PROJECT_NAME})
-
-file(GLOB_RECURSE SourceFiles CONFIGURE_DEPENDS
+# --- Core library (everything testable) ---------------------------------
+file(GLOB_RECURSE CoreSources CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/Source/*.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/Source/*.h"
 )
+list(FILTER CoreSources EXCLUDE REGEX ".*/Source/Main\\.cpp$")
 
-# Add source files to the app target
-target_sources(${PROJECT_NAME} PRIVATE ${SourceFiles})
+add_library(${PROJECT_NAME}Core STATIC ${CoreSources})
 
-# Include the Source directory
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Source)
+target_include_directories(${PROJECT_NAME}Core PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/Source
+)
 
-target_link_libraries(${PROJECT_NAME}
-  PRIVATE
+target_link_libraries(${PROJECT_NAME}Core
+  PUBLIC
     juce::juce_core
     juce::juce_audio_basics
     juce::juce_audio_devices
     juce::juce_audio_formats
     juce::juce_audio_processors
     juce::juce_audio_utils
-  PUBLIC
     juce::juce_recommended_config_flags
     juce::juce_recommended_lto_flags
     juce::juce_recommended_warning_flags
 )
 
-# These definitions are recommended by JUCE.
-target_compile_definitions(${PROJECT_NAME}
-  PRIVATE
+target_compile_definitions(${PROJECT_NAME}Core
+  PUBLIC
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
     JUCE_VST3_CAN_REPLACE_VST2=0
+    JUCE_MODAL_LOOPS_PERMITTED=1
 )
+
+# --- The app -----------------------------------------------------------
+juce_add_gui_app(${PROJECT_NAME}
+  PRODUCT_NAME ${PROJECT_NAME}
+  COMPANY_NAME MyCompany
+)
+
+target_compile_definitions(${PROJECT_NAME}
+  PRIVATE
+    APP_NAME="${PROJECT_NAME}"
+    APP_VERSION="${PROJECT_VERSION}"
+)
+
+target_sources(${PROJECT_NAME} PRIVATE Source/Main.cpp)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}Core)
 
 if (MSVC)
   add_compile_options(/Wall /WX)
 else()
   add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+# --- Tests -------------------------------------------------------------
+option(MODALITY_BUILD_TESTS "Build unit tests" ON)
+
+if (MODALITY_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
 endif()
