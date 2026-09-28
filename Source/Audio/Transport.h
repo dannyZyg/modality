@@ -1,27 +1,12 @@
-/*
-  ==============================================================================
-
-    Transport.h
-    Transport control - play state, position, and MIDI scheduling.
-
-    Design:
-    - Wraps JUCE AudioTransportSource for position tracking
-    - Owns TransportEngine for MIDI event scheduling
-    - Implements AudioIODeviceCallback (audio thread entry point)
-    - Tempo is owned by Composition; Transport has no knowledge of it
-
-  ==============================================================================
-*/
-
 #pragma once
 
-#include "Audio/TransportEngine.h"
+#include "Audio/Scheduler.h"
 #include <JuceHeader.h>
 
 class Transport : public juce::AudioIODeviceCallback
 {
 public:
-    Transport();
+    Transport (Scheduler& s);
     ~Transport() override;
 
     void start();
@@ -30,38 +15,6 @@ public:
     double getCurrentPositionSeconds() const;
     void setPosition (double positionSeconds);
     void reset();
-
-    /**
-     * Reset scheduling state for all tracks without affecting playback position.
-     * Call this when tempo changes during playback so tracks reschedule immediately.
-     */
-    void resetScheduling();
-
-    void setNumTracks (size_t numTracks);
-    size_t getNumTracks() const;
-    void scheduleTrack (size_t trackIndex,
-                        const std::vector<MidiNote>& notes,
-                        double loopStartTime,
-                        juce::MidiOutput* output,
-                        int midiChannel);
-
-    /**
-     * Check if a track needs beat scheduling.
-     */
-    bool trackNeedsBeatScheduling (size_t trackIndex, double currentBeat) const;
-
-    /**
-     * Mark beats as scheduled for a track.
-     */
-    void markBeatsScheduled (size_t trackIndex, double endBeat);
-
-    /**
-     * Clear all scheduled MIDI events.
-     */
-    void clearScheduledEvents();
-
-    // === Audio Callback (from AudioIODeviceCallback) ===
-
     void audioDeviceIOCallbackWithContext (const float* const* inputChannelData,
                                            int numInputChannels,
                                            float* const* outputChannelData,
@@ -73,12 +26,10 @@ public:
     void audioDeviceStopped() override;
 
 private:
-    TransportEngine engine;
+    Scheduler& scheduler;
 
-    // JUCE transport for position tracking
     juce::AudioTransportSource transportSource;
 
-    // Silent audio source (provides position without generating audio)
     class SilentPositionableSource : public juce::PositionableAudioSource
     {
     public:

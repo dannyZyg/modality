@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Audio/MidiOutputManager.h"
+#include "Audio/Scheduler.h"
 #include "Audio/Transport.h"
 #include "Components/BeatLegendComponent.h"
 #include "Components/ContextualMenuComponent.h"
@@ -40,9 +41,10 @@ public:
 private:
     Composition composition;
     Transport transport;
+    Scheduler scheduler;
+    Cursor cursor;
     MidiOutputManager midiOutputManager;
     juce::AudioDeviceManager deviceManager;
-    Cursor cursor;
 
     // UI Components
     SequenceComponent sequenceComponent;

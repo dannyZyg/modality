@@ -1,17 +1,6 @@
-/*
-  ==============================================================================
-
-    ScheduledEvent.h
-    Realtime-safe MIDI event structure for lock-free audio processing.
-
-    Each event contains its own output destination, enabling per-track
-    MIDI routing in a polymetric environment.
-
-  ==============================================================================
-*/
-
 #pragma once
 
+#include "juce_core/juce_core.h"
 #include <JuceHeader.h>
 
 /**
@@ -44,6 +33,11 @@ struct ScheduledEvent
     {
         return timestamp < other.timestamp;
     }
+
+    bool operator== (const ScheduledEvent& other) const
+    {
+        return juce::approximatelyEqual (timestamp, other.timestamp);
+    }
 };
 
 /**
@@ -52,7 +46,7 @@ struct ScheduledEvent
  */
 struct PerTrackState
 {
-    std::atomic<double> lastScheduledBeat { 0.0 };   // Highest beat we've scheduled
+    std::atomic<double> lastScheduledBeat { 0.0 }; // Highest beat we've scheduled
 
     // Cached for realtime access - set during scheduling, read during processing
     juce::MidiOutput* cachedOutput = nullptr;

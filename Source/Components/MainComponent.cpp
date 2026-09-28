@@ -1,4 +1,5 @@
 #include "MainComponent.h"
+#include "Audio/Transport.h"
 #include "Components/MidlineComponent.h"
 #include "Components/Modifiers/ModifierMenuManager.h"
 #include "Components/Settings/MidiSettingsSelectionFactory.h"
@@ -14,7 +15,8 @@
 #include <utility>
 
 //==============================================================================
-MainComponent::MainComponent() : cursor (composition),
+MainComponent::MainComponent() : transport (scheduler),
+                                 cursor (composition),
                                  sequenceComponent (cursor, composition),
                                  cursorComponent (cursor),
                                  midlineComponent (cursor),
@@ -89,7 +91,7 @@ void MainComponent::checkAndScheduleTracks()
 
     for (size_t i = 0; i < numTracks; ++i)
     {
-        if (transport.trackNeedsBeatScheduling (i, currentBeat))
+        if (scheduler.trackNeedsBeatScheduling (i, currentBeat))
         {
             scheduleTrackBeats (i, currentBeat);
         }
@@ -129,7 +131,7 @@ void MainComponent::resized()
     auto menuWidth = getWidth() * 0.6;
     auto menuHeight = getHeight() * 0.8;
 
-    auto xPos = getWidth() / 2 - (menuWidth / 2);
+    auto xPos = static_cast<float> (getWidth()) / 2 - (menuWidth / 2);
     auto yPos = (getHeight() - menuHeight) / 2;
     juce::Point<int> position = juce::Point<int> (static_cast<int> (xPos), static_cast<int> (yPos));
 
@@ -145,7 +147,7 @@ void MainComponent::start()
     transport.reset();
 
     // Set up track count based on number of sequences
-    transport.setNumTracks (composition.getSequences().size());
+    scheduler.setNumTracks (composition.getSequences().size());
 
     // Schedule initial beats for all tracks (0-2 beats)
     size_t numTracks = composition.getSequences().size();
@@ -190,26 +192,20 @@ void MainComponent::scheduleTrackBeats (size_t trackIndex, double currentBeat)
 
     double tempo = composition.getTempo();
 
-    // Calculate beat range to schedule
-    double startBeat = currentBeat;
-    double endBeat = startBeat + TransportEngine::LOOKAHEAD_BEATS;
-
-    // Extract MIDI notes for this beat range
-    auto notes = composition.extractMidiSequenceForBeatRange (trackIndex, startBeat, endBeat, tempo);
+    double endBeat = currentBeat + Scheduler::LOOKAHEAD_BEATS;
+    auto notes = composition.extractMidiSequenceForBeatRange (trackIndex, currentBeat, endBeat, tempo);
 
     // Convert beat times to absolute seconds for scheduling
-    double loopStartTimeSeconds = startBeat * 60.0 / tempo;
+    double loopStartTimeSeconds = currentBeat * 60.0 / tempo;
     int midiChannel = seq.getMidiChannel();
 
-    // Schedule the beat slice
-    transport.scheduleTrack (trackIndex, notes, loopStartTimeSeconds, output, midiChannel);
-
-    // Mark beats as scheduled
-    transport.markBeatsScheduled (trackIndex, endBeat);
+    scheduler.scheduleTrack (trackIndex, notes, loopStartTimeSeconds, output, midiChannel);
+    scheduler.markBeatsScheduled (trackIndex, endBeat);
 }
 
 void MainComponent::stop()
 {
+    juce::Logger::writeToLog ("Transport Stopped");
     transport.stop();
 
     // Clear stale flash state on all notes so they don't show the velocity
@@ -218,8 +214,6 @@ void MainComponent::stop()
         if (seq)
             for (auto& note : seq->notes)
                 note->lastTriggeredMidiNote.reset();
-
-    juce::Logger::writeToLog ("Transport Stopped");
 }
 
 bool MainComponent::keyPressed (const juce::KeyPress& key)
@@ -739,8 +733,7 @@ void MainComponent::setupMenuTree()
     {
         if (transport.isPlaying())
         {
-            transport.clearScheduledEvents();
-            transport.resetScheduling();
+            scheduler.reset();
         }
     };
 

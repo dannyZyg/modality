@@ -1,6 +1,6 @@
 #include "Transport.h"
 
-Transport::Transport()
+Transport::Transport (Scheduler& s) : scheduler (s)
 {
     silentSource = std::make_unique<SilentPositionableSource>();
     transportSource.setSource (silentSource.get(), 0, nullptr, sampleRate);
@@ -37,49 +37,10 @@ void Transport::setPosition (double positionSeconds)
     transportSource.setPosition (positionSeconds);
 }
 
-void Transport::setNumTracks (size_t numTracks)
-{
-    engine.setNumTracks (numTracks);
-}
-
-size_t Transport::getNumTracks() const
-{
-    return engine.getNumTracks();
-}
-
-void Transport::scheduleTrack (size_t trackIndex,
-                               const std::vector<MidiNote>& notes,
-                               double loopStartTime,
-                               juce::MidiOutput* output,
-                               int midiChannel)
-{
-    engine.scheduleTrack (trackIndex, notes, loopStartTime, output, midiChannel);
-}
-
-bool Transport::trackNeedsBeatScheduling (size_t trackIndex, double currentBeat) const
-{
-    return engine.trackNeedsBeatScheduling (trackIndex, currentBeat);
-}
-
-void Transport::markBeatsScheduled (size_t trackIndex, double endBeat)
-{
-    engine.markBeatsScheduled (trackIndex, endBeat);
-}
-
-void Transport::clearScheduledEvents()
-{
-    engine.clearScheduledEvents();
-}
-
 void Transport::reset()
 {
     setPosition (0.0);
-    engine.reset();
-}
-
-void Transport::resetScheduling()
-{
-    engine.reset();
+    scheduler.reset();
 }
 
 void Transport::audioDeviceIOCallbackWithContext (
@@ -105,14 +66,14 @@ void Transport::audioDeviceIOCallbackWithContext (
     double bufferDuration = static_cast<double> (numSamples) / sampleRate;
 
     // Process MIDI events - realtime safe, no allocations
-    engine.processBlock (currentPosition, bufferDuration, isPlaying());
+    scheduler.processBlock (currentPosition, bufferDuration);
 }
 
 void Transport::audioDeviceAboutToStart (juce::AudioIODevice* device)
 {
     sampleRate = device->getCurrentSampleRate();
     transportSource.prepareToPlay (512, sampleRate);
-    engine.prepareToPlay (sampleRate);
+    scheduler.prepareToPlay (sampleRate);
 
     juce::Logger::writeToLog ("Transport: Audio device starting - " + device->getName() + " @ " + juce::String (sampleRate) + " Hz");
 }
