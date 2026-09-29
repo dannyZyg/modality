@@ -34,7 +34,7 @@ public:
     Sequence& getSequence (size_t index) const;
     const std::vector<std::unique_ptr<Sequence>>& getSequences() const;
 
-    std::vector<MidiNote> extractMidiSequenceForBeatRange (size_t seqIndex, double startBeat, double endBeat, double tempo);
+    std::vector<MidiNote> extractMidiSequenceForBeatRange (size_t seqIndex, double startBeat, double endBeat);
 
     void valueTreeChildAdded (juce::ValueTree& parentTree,
                               juce::ValueTree& childWhichHasBeenAdded) override;

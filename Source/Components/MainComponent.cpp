@@ -193,7 +193,7 @@ void MainComponent::scheduleTrackBeats (size_t trackIndex, double currentBeat)
     double tempo = composition.getTempo();
 
     double endBeat = currentBeat + Scheduler::LOOKAHEAD_BEATS;
-    auto notes = composition.extractMidiSequenceForBeatRange (trackIndex, currentBeat, endBeat, tempo);
+    auto notes = composition.extractMidiSequenceForBeatRange (trackIndex, currentBeat, endBeat);
 
     // Convert beat times to absolute seconds for scheduling
     double loopStartTimeSeconds = currentBeat * 60.0 / tempo;

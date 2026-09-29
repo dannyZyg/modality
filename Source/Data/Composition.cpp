@@ -108,7 +108,7 @@ const std::vector<std::unique_ptr<Sequence>>& Composition::getSequences() const
     return sequences;
 }
 
-std::vector<MidiNote> Composition::extractMidiSequenceForBeatRange (size_t seqIndex, double startBeat, double endBeat, double tempo)
+std::vector<MidiNote> Composition::extractMidiSequenceForBeatRange (size_t seqIndex, double startBeat, double endBeat)
 {
     std::vector<MidiNote> midiClip;
 
@@ -128,6 +128,7 @@ std::vector<MidiNote> Composition::extractMidiSequenceForBeatRange (size_t seqIn
 
     // Handle wraparound case where we need notes from multiple loop iterations
     bool wrapsAround = localEndBeat > loopLengthBeats;
+    double tempo = getTempo();
 
     for (auto& n : seq.notes)
     {
@@ -183,8 +184,6 @@ std::vector<MidiNote> Composition::extractMidiSequenceForBeatRange (size_t seqIn
             // Do not schedule muted notes for playback, but still allow the UI to show them
             if (! midi->isMuted)
                 midiClip.emplace_back (adjustedStartTimeSeconds, midi->noteNumber, midi->velocity, midi->duration);
-
-            DBG ("Composition::extractMidiSequenceForBeatRange: " << midi->noteNumber);
         }
     }
 

@@ -10,8 +10,8 @@
 
 #include "Note.h"
 #include "Data/ModifierApplicator.h"
+#include "juce_core/system/juce_PlatformDefs.h"
 #include "juce_data_structures/juce_data_structures.h"
-#include <algorithm>
 #include <vector>
 
 Note::Note (double deg, double time, double dur) : state (NoteIDs::Note)
@@ -119,27 +119,15 @@ std::optional<MidiNote> Note::asMidiNote (Timeline t, [[maybe_unused]] Scale s, 
     double dur = t.convertDivisionToSeconds (getDuration(), tempo);
     auto midi = MidiNote (start, static_cast<int> (rootNote + getDegree()), getVelocity(), dur);
 
-    // Create thread-safe parameter snapshots to avoid race conditions during modifier application
-    std::vector<ModifierParameterSnapshot> modifierSnapshots;
+    std::vector<Modifier> modifiers;
+
     for (int i = 0; i < state.getNumChildren(); i++)
     {
         auto child = state.getChild (i);
         auto modifier = Modifier (child);
-        modifierSnapshots.push_back (modifier.createParameterSnapshot());
+        modifiers.push_back (modifier);
     }
 
-    // Sort snapshots by their position in AllTypes so execution order is deterministic
-    // (e.g. RandomPitchVariation always runs before RandomOctaveShift)
-    std::sort (modifierSnapshots.begin(), modifierSnapshots.end(), [] (const ModifierParameterSnapshot& a, const ModifierParameterSnapshot& b)
-               {
-        auto indexOf = [] (const juce::Identifier& id)
-        {
-            const auto& types = ModifierIDs::AllTypes;
-            auto it = std::find (types.begin(), types.end(), id);
-            return it != types.end() ? std::distance (types.begin(), it) : static_cast<ptrdiff_t> (types.size());
-        };
-        return indexOf (a.type) < indexOf (b.type); });
-
-    MidiNote finalMidi = ModifierApplicator::getInstance().applyModifiersThreadSafe (modifierSnapshots, std::move (midi), s);
+    MidiNote finalMidi = ModifierApplicator::getInstance().applyModifiers (modifiers, std::move (midi), s);
     return finalMidi;
 }
